@@ -113,33 +113,4 @@ mixin TreeOperations {
 
   /// Clear all tree and the any selection if needed
   void clearRoot();
-
-  /// Move the current selected node to the next position
-  /// and its next sibling is moved to the old position
-  /// of the current one
-  void moveBelow();
-
-  /// Move the current selected node to the before position
-  /// and its next sibling is moved to the old position
-  /// of the current one
-  void moveUp();
-
-  /// Move the selection to the next node of the last one
-  /// adding its sibling
-  ///
-  /// # Note!
-  /// The selection it's limited to the first element selected
-  /// this means if we select an element into a CompositeTreeNode
-  /// we just can select the elements that are into that CompositeTreeNode
-  void moveSelectionToNextSibling();
-
-  /// Move the selection to the before node of the last one
-  ///
-  /// this removes the last node
-  ///
-  /// # Note!
-  /// The selection it's limited to the first element selected
-  /// this means if we select an element into a CompositeTreeNode
-  /// we just can select the elements that are into that CompositeTreeNode
-  void moveSelectionToUpSibling();
 }

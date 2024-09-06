@@ -175,7 +175,7 @@ class LeafTreeNodeItem extends StatelessWidget {
     final Offset? offset = context.globalPaintBounds;
     final provider = context.watchTree();
     final isSelected = leafNode.id == provider.visualSelection?.id;
-    return DragTarget<TreeNode>(
+    Widget child = DragTarget<TreeNode>(
       onMove: (details) {
         if (details.data.id == leafNode.id) {
           context.readDrag()
@@ -216,6 +216,7 @@ class LeafTreeNodeItem extends StatelessWidget {
               ? null
               : () => configuration.leafConfiguration.onDoubleTap?.call(leafNode, context),
           hoverColor: configuration.leafConfiguration.onHoverColor,
+          canRequestFocus: false,
           mouseCursor: configuration.leafConfiguration.mouseCursor,
           onHover: (onHover) => configuration.leafConfiguration.onHover?.call(leafNode, onHover, context),
           onTap: () {
@@ -240,6 +241,10 @@ class LeafTreeNodeItem extends StatelessWidget {
         ),
       ),
     );
+    if (configuration.leafConfiguration.wrapper != null) {
+      return configuration.leafConfiguration.wrapper!(child);
+    }
+    return child;
   }
 }
 

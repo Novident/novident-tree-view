@@ -83,7 +83,7 @@ class TreeConfiguration {
   final Widget Function(TreeNode node, DraggedObject object)
       buildSectionBetweenNodes;
   final Widget Function(TreeNode node)? buildChildWhileDragging;
-  final Widget Function(List<Widget> preloadedChildren)? buildCustomChildren;
+  final Widget Function(List<TreeNode> preloadedChildren)? buildCustomChildren;
 
   /// Contains all necessary configs to the CompositeTreeNode widget
   final CompositeConfiguration compositeConfiguration;

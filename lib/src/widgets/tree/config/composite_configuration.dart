@@ -53,6 +53,9 @@ class CompositeConfiguration {
   final Widget? Function(
       CompositeTreeNode node, double indent, BuildContext context)? trailing;
   final ExpandableIconConfiguration? expandableIconConfiguration;
+  /// Wrap the Composite item into your custom widget 
+  /// to add more features to it
+  final Widget Function(Widget leafWidget)? wrapper;
 
   const CompositeConfiguration({
     required this.compositeBoxDecoration,
@@ -60,6 +63,7 @@ class CompositeConfiguration {
     required this.height,
     required this.leading,
     required this.content,
+    this.wrapper,
     this.onTap,
     this.childrenLeftIndent = 10,
     this.showExpandableButton = true,

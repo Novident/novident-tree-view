@@ -9,6 +9,7 @@ import 'package:flutter_tree_view/src/utils/context_util_ext.dart';
 import 'package:flutter_tree_view/src/widgets/depth_lines_painter/depth_lines_painter.dart';
 import 'package:flutter_tree_view/src/widgets/tree/config/tree_configuration.dart';
 import 'package:flutter_tree_view/src/widgets/tree/extension/context_tree_ext.dart';
+import 'package:flutter_tree_view/src/widgets/tree_items/leaf_node_item.dart';
 
 import '../../entities/drag/dragged_object.dart';
 import '../../entities/node/node.dart';
@@ -17,7 +18,6 @@ import '../../entities/tree_node/leaf_tree_node.dart';
 import '../../entities/tree_node/tree_node.dart';
 import '../../interfaces/draggable_node.dart' as tv;
 import '../../utils/compute_padding_by_level.dart';
-import '../../utils/preload_tree.dart';
 
 class CompositeTreeNodeItemView extends StatefulWidget {
   final CompositeTreeNode compositeNode;
@@ -37,7 +37,6 @@ class CompositeTreeNodeItemView extends StatefulWidget {
 }
 
 class _CompositeTreeNodeItemViewState extends State<CompositeTreeNodeItemView> {
-
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
@@ -204,11 +203,6 @@ class _ExpandableCompositeNodeItemViewState extends State<ExpandableCompositeNod
   Widget build(BuildContext context) {
     final Offset? offset = context.globalPaintBounds;
     final Size size = MediaQuery.sizeOf(context);
-    final List<Widget> tree = preloadTree(
-      parent: widget.compositeNode, //this folder is now parent of its children
-      files: widget.files,
-      config: widget.configuration,
-    );
     final currentSelectedNode = context.watchTree().visualSelection;
     final isSelected = currentSelectedNode != null && currentSelectedNode.id == widget.compositeNode.id;
     final showExpandableButton = widget.configuration.compositeConfiguration.showExpandableButton;
@@ -332,7 +326,7 @@ class _ExpandableCompositeNodeItemViewState extends State<ExpandableCompositeNod
                               ),
                             ),
                       );
-                final child = SizedBox(
+                Widget child = SizedBox(
                   height: widget.configuration.compositeConfiguration.height,
                   child: Padding(
                     padding: widget.configuration.compositeConfiguration.padding,
@@ -341,6 +335,7 @@ class _ExpandableCompositeNodeItemViewState extends State<ExpandableCompositeNod
                       child: InkWell(
                         splashColor: widget.configuration.compositeConfiguration.onTapSplashColor,
                         splashFactory: widget.configuration.compositeConfiguration.splashFactory,
+                        canRequestFocus: false,
                         borderRadius: widget.configuration.compositeConfiguration.borderSplashRadius ??
                             BorderRadius.circular(10),
                         customBorder: widget.configuration.compositeConfiguration.customSplashBorder,
@@ -403,8 +398,13 @@ class _ExpandableCompositeNodeItemViewState extends State<ExpandableCompositeNod
                   ),
                 );
 
-                if (!widget.compositeNode.canDrag() || !widget.configuration.activateDragAndDropFeature)
+                if (widget.configuration.compositeConfiguration.wrapper != null) {
+                  child = widget.configuration.compositeConfiguration.wrapper!.call(child);
+                }
+
+                if (!widget.compositeNode.canDrag() || !widget.configuration.activateDragAndDropFeature) {
                   return child;
+                }
 
                 final feedback = widget.configuration.buildFeedback(widget.compositeNode);
                 if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
@@ -448,11 +448,33 @@ class _ExpandableCompositeNodeItemViewState extends State<ExpandableCompositeNod
               padding: EdgeInsets.only(
                 left: widget.configuration.compositeConfiguration.childrenLeftIndent,
               ),
-              child: widget.configuration.buildCustomChildren?.call(tree) ??
-                  Column(
-                    children: [
-                      if (widget.compositeNode.isExpanded) ...tree,
-                    ],
+              child: widget.configuration.buildCustomChildren?.call(widget.compositeNode.children) ??
+                  Visibility(
+                    visible: widget.compositeNode.isExpanded,
+                    maintainSize: false,
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      physics: const NeverScrollableScrollPhysics(),
+                      primary: false,
+                      itemCount: widget.compositeNode.length,
+                      itemBuilder: (context, index) {
+                        final TreeNode file = widget.compositeNode.elementAt(index);
+                        if (file is LeafTreeNode) {
+                          return LeafTreeNodeItemView(
+                            leafNode: file,
+                            parent: null,
+                            configuration: widget.configuration,
+                          );
+                        } else
+                          return CompositeTreeNodeItemView(
+                            parent: null,
+                            compositeNode: file as CompositeTreeNode,
+                            configuration: widget.configuration,
+                            findFirstAncestorParent: () => null,
+                          );
+                      },
+                    ),
                   ),
             ),
           ],

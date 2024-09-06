@@ -36,6 +36,9 @@ class LeafConfiguration {
       content;
   final Widget? Function(
       LeafTreeNode node, double indent, BuildContext context)? trailing;
+  /// Wrap the Leaf item into your custom widget 
+  /// to add more features to it
+  final Widget Function(Widget leafWidget)? wrapper;
 
   const LeafConfiguration({
     required this.leafBoxDecoration,
@@ -43,6 +46,7 @@ class LeafConfiguration {
     required this.height,
     required this.leading,
     required this.content,
+    this.wrapper,
     this.onTap,
     this.onSecundaryTap,
     this.mouseCursor,

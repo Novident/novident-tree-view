@@ -86,8 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     borderRadius: BorderRadius.circular(10),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                          node is File ? node.name : (node as Directory).name),
+                      child: Text(node is File ? node.name : (node as Directory).name),
                     ),
                   );
                 },
@@ -100,16 +99,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
                 leafConfiguration: LeafConfiguration(
-                  leafBoxDecoration:
-                      (leaf, isSelected, isDraggingAboveThisNode) =>
-                          BoxDecoration(
-                    color: isSelected
-                        ? Colors.black.withOpacity(0.10)
-                        : Colors.transparent,
+                  leafBoxDecoration: (leaf, isSelected, isDraggingAboveThisNode) => BoxDecoration(
+                    color: isSelected ? Colors.black.withOpacity(0.10) : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   height: size.height * 0.070,
                   leading: (leaf, indent, context) => Padding(
                     padding: EdgeInsets.only(left: indent, right: 5),
@@ -135,17 +129,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: const Icon(Icons.more_vert),
                       onPressed: () async {
                         final position = render_position(context);
-                        await showMenu(
-                            context: context,
-                            position: position,
-                            items: [
-                              PopupMenuItem(
-                                onTap: () {
-                                  context.readTree().removeAt(node.id);
-                                },
-                                child: const Text('Delete'),
-                              ),
-                            ]);
+                        await showMenu(context: context, position: position, items: [
+                          PopupMenuItem(
+                            onTap: () {
+                              context.readTree().removeAt(node.id);
+                            },
+                            child: const Text('Delete'),
+                          ),
+                        ]);
                       },
                     );
                   },
@@ -153,27 +144,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 overrideDefaultActions: false,
                 compositeConfiguration: CompositeConfiguration(
                   showExpandableButton: showExpandableButton,
-                  expandableIconConfiguration:
-                      const ExpandableIconConfiguration(),
-                  compositeBoxDecoration:
-                      (compositeNode, isSelected, isDraggingAboveThisNode) =>
-                          BoxDecoration(
-                    color: isSelected
-                        ? Colors.black.withOpacity(0.10)
-                        : Colors.transparent,
+                  expandableIconConfiguration: const ExpandableIconConfiguration(),
+                  compositeBoxDecoration: (compositeNode, isSelected, isDraggingAboveThisNode) => BoxDecoration(
+                    color: isSelected ? Colors.black.withOpacity(0.10) : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 1.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1.5),
                   height: size.height * 0.070,
                   leading: (CompositeTreeNode node, indent, context) => Padding(
                     padding: const EdgeInsets.only(right: 10),
-                    child: Icon(node.isExpanded && node.isEmpty
-                        ? CupertinoIcons.folder_open
-                        : CupertinoIcons.folder_fill),
+                    child: Icon(
+                        node.isExpanded && node.isEmpty ? CupertinoIcons.folder_open : CupertinoIcons.folder_fill),
                   ),
-                  content: (CompositeTreeNode node, indent, context) =>
-                      Expanded(
+                  content: (CompositeTreeNode node, indent, context) => Expanded(
                     child: Text(
                       '${(node as Directory).name} - ${node.level}',
                       maxLines: 1,
@@ -186,56 +169,51 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: const Icon(Icons.more_vert),
                       onPressed: () async {
                         final position = render_position(context);
-                        await showMenu(
-                            context: context,
-                            position: position,
-                            items: [
-                              PopupMenuItem(
-                                onTap: () {
-                                  context.readTree().insertAt(
-                                      File(
-                                        node: Node.withId(),
-                                        nodeParent: node.id,
-                                        name: 'File',
-                                        createAt: DateTime.now(),
-                                      ),
-                                      node.id,
-                                      removeIfNeeded: true);
-                                  return;
-                                },
-                                child: const Text('Add a document'),
-                              ),
-                              PopupMenuItem(
-                                onTap: () {
-                                  context.readTree().insertAt(
-                                      Directory(
-                                        node: Node.withId(),
-                                        children: List.from([]),
-                                        isExpanded: false,
-                                        nodeParent: node.id,
-                                        name: 'Directory',
-                                        createAt: DateTime.now(),
-                                      ),
-                                      node.id,
-                                      removeIfNeeded: true);
-                                },
-                                child: const Text('Add a directory'),
-                              ),
-                              PopupMenuItem(
-                                onTap: () {
-                                  context.readTree().removeAt(node.id);
-                                },
-                                child: const Text('Delete this directory'),
-                              ),
-                              PopupMenuItem(
-                                onTap: () {
-                                  context
-                                      .readTree()
-                                      .clearChildrenByNode(node.id);
-                                },
-                                child: const Text('Clear'),
-                              ),
-                            ]);
+                        await showMenu(context: context, position: position, items: [
+                          PopupMenuItem(
+                            onTap: () {
+                              context.readTree().insertAt(
+                                  File(
+                                    node: Node.withId(),
+                                    nodeParent: node.id,
+                                    name: 'File',
+                                    createAt: DateTime.now(),
+                                  ),
+                                  node.id,
+                                  removeIfNeeded: true);
+                              return;
+                            },
+                            child: const Text('Add a document'),
+                          ),
+                          PopupMenuItem(
+                            onTap: () {
+                              context.readTree().insertAt(
+                                  Directory(
+                                    node: Node.withId(),
+                                    children: List.from([]),
+                                    isExpanded: false,
+                                    nodeParent: node.id,
+                                    name: 'Directory',
+                                    createAt: DateTime.now(),
+                                  ),
+                                  node.id,
+                                  removeIfNeeded: true);
+                            },
+                            child: const Text('Add a directory'),
+                          ),
+                          PopupMenuItem(
+                            onTap: () {
+                              context.readTree().removeAt(node.id);
+                            },
+                            child: const Text('Delete this directory'),
+                          ),
+                          PopupMenuItem(
+                            onTap: () {
+                              context.readTree().clearChildrenByNode(node.id);
+                            },
+                            child: const Text('Clear'),
+                          ),
+                        ]);
                       },
                     );
                   },
@@ -246,25 +224,17 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'Add',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
   RelativeRect render_position(BuildContext context, [Size? size]) {
     size ??= MediaQuery.sizeOf(context);
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final RenderBox button = context.findRenderObject() as RenderBox;
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromPoints(
         button.localToGlobal(const Offset(0, -65), ancestor: overlay),
-        button.localToGlobal(
-            button.size.bottomRight(Offset.zero) + const Offset(-50, 0),
-            ancestor: overlay),
+        button.localToGlobal(button.size.bottomRight(Offset.zero) + const Offset(-50, 0), ancestor: overlay),
       ),
       Offset.zero & size * 0.40,
     );
