@@ -63,6 +63,23 @@ abstract class BaseTreeController extends ChangeNotifier implements TreeOperatio
     notifyListeners();
   }
 
+  void setNewIdToRoot(String id) {
+    verifyState();
+    assert(id.isNotEmpty, 'The id passed cannot be empty');
+    assert(id.replaceAll(RegExp(r'\p{Z}', unicode: true), '').isNotEmpty, 'The id passed cannot be empty');
+    final lastNodeState = root.node;
+    final newRootState = root.clone();
+    newRootState.updateInternalNodesByParentId(id);
+    root.addNewChange([...newRootState.children], TreeOperation.update, lastNodeState);
+    root = root.copyWith(
+      node: root.node.copyWith(
+        id: id,
+      ),
+    );
+    root.updateInternalNodesByParentId(id);
+    notifyListeners();
+  }
+
   bool get isFocused => focused;
 
   /// Get all nodes contained into the [Root]
