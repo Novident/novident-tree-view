@@ -43,11 +43,14 @@ class _LeafTreeNodeItemViewState extends State<LeafTreeNodeItemView> {
     final bool isDragging = dragNodeController.node != null;
     final Offset? offset = context.globalPaintBounds;
     // this is the leafNode view
-    final Widget child = LeafTreeNodeItem(
+    Widget child = LeafTreeNodeItem(
       leafNode: widget.leafNode,
       configuration: widget.configuration,
       parent: widget.parent,
     );
+    if (widget.configuration.leafConfiguration.wrapper != null) {
+      child = widget.configuration.leafConfiguration.wrapper!.call(child);
+    }
     return Column(
       children: [
         // above logic
@@ -175,7 +178,7 @@ class LeafTreeNodeItem extends StatelessWidget {
     final Offset? offset = context.globalPaintBounds;
     final provider = context.watchTree();
     final isSelected = leafNode.id == provider.visualSelection?.id;
-    Widget child = DragTarget<TreeNode>(
+    return DragTarget<TreeNode>(
       onMove: (details) {
         if (details.data.id == leafNode.id) {
           context.readDrag()
@@ -241,10 +244,6 @@ class LeafTreeNodeItem extends StatelessWidget {
         ),
       ),
     );
-    if (configuration.leafConfiguration.wrapper != null) {
-      return configuration.leafConfiguration.wrapper!(child);
-    }
-    return child;
   }
 }
 
