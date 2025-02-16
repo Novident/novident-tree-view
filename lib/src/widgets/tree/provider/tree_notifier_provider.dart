@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../controller/tree_controller.dart';
+import '../../../exceptions/provider_not_found.dart';
 
-/// The `TreeNotifierProvider` is a specialized `InheritedWidget` that serves as a provider for a 
-/// `TreeController` in a widget tree. It ensures that the `TreeController` is accessible to all 
-/// descendant widgets, allowing them to interact with and respond to changes in the tree structure 
+/// The `TreeNotifierProvider` is a specialized `InheritedWidget` that serves as a provider for a
+/// `TreeController` in a widget tree. It ensures that the `TreeController` is accessible to all
+/// descendant widgets, allowing them to interact with and respond to changes in the tree structure
 /// managed by the controller.
 @immutable
 class TreeNotifierProvider extends InheritedWidget {
@@ -28,9 +29,10 @@ class TreeNotifierProvider extends InheritedWidget {
           'You cannot use TreeNotifierProvider.of(...) if the context is no longer stable or mounted into the widgets tree');
     }
     if (listen) {
-      return (context
-              .dependOnInheritedWidgetOfExactType<TreeNotifierProvider>())!
-          .controller;
+      final provider =
+          context.dependOnInheritedWidgetOfExactType<TreeNotifierProvider>();
+      if (provider == null) throw ProviderNotFound();
+      return provider.controller;
     }
     return (context.getInheritedWidgetOfExactType<TreeNotifierProvider>())!
         .controller;
@@ -43,6 +45,6 @@ class TreeNotifierProvider extends InheritedWidget {
     // exactly if a part of the tree changes because we would need
     // traverse into it manually a decide if some child is different from
     // the other ones
-    return true;
+    return false;
   }
 }

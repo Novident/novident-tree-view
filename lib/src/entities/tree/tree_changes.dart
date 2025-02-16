@@ -1,16 +1,16 @@
 import 'tree_operation.dart';
 import 'tree_state.dart';
 
-import '../tree_node/tree_node.dart';
+import '../node/node.dart';
 
 /// Represents the change maded by the user
 /// the children of this change are the nodes
 /// pasted, removed, moved or inserted directly
 /// into the tree
 class TreeChange {
-  final List<TreeNode> children;
+  final List<Node> children;
   final TreeOperation operation;
-  final TreeNode? node;
+  final Node? node;
 
   TreeChange({
     required this.children,
@@ -20,7 +20,7 @@ class TreeChange {
 
   @override
   String toString() {
-    return 'Change: $node | Operation(name: ${operation.name}) | \nNodes changed: $children';
+    return 'Change: $node |= Operation(name: ${operation.name}) |= \nNodes changed: $children';
   }
 }
 
@@ -37,6 +37,6 @@ class TreeStateChanges {
 
   @override
   String toString() {
-    return 'TreeStateChanges: $change | OldState => \n$oldState';
+    return 'TreeStateChanges: $change';
   }
 }

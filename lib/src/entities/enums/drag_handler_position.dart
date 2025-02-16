@@ -1,14 +1,11 @@
-/// Represents where is handle this drag actions
-/// # Position Options and what means them
+/// Represents where is handled this dragging action
 ///
-/// [BetweenNodes] means the sections where will be applied the actions
-/// only when a node will be moved above another one
+/// - [BetweenNodes] means that the dragged object, will be inserted above a [Node]
 ///
-/// [IntoNode] means the section where will be applied the actions
-/// only when the dragged node will be inserted into a [CompositeTreeNode]
+/// - [IntoNode] means that the dragged object, will be inserted into a [NodeContainer]
+/// as its child
 ///
-/// [Root] means the section where all nodes that are not into the root
-/// tree level. If the node already exist into the root, will be ignored
+/// - [Root] means that the dragged object, will be inserted at [Root] level (zero)
 enum DragHandlerPosition {
   betweenNodes,
   intoNode,

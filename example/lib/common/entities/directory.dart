@@ -1,52 +1,47 @@
 import 'package:flutter_tree_view/flutter_tree_view.dart';
 
-class Directory extends CompositeTreeNode<TreeNode> {
+class Directory extends NodeContainer<Node> {
   final String name;
   final DateTime createAt;
 
   Directory({
     required super.children,
-    required super.node,
+    required super.details,
     super.isExpanded,
-    required super.nodeParent,
     required this.name,
     required this.createAt,
   });
 
   @override
   Directory copyWith({
-    Node? node,
-    List<TreeNode>? children,
+    NodeDetails? details,
+    List<Node>? children,
     bool? isExpanded,
-    String? nodeParent,
     String? name,
     DateTime? createAt,
   }) {
     return Directory(
       children: children ?? this.children,
       isExpanded: isExpanded ?? this.isExpanded,
-      node: node ?? this.node,
-      nodeParent: nodeParent ?? this.nodeParent,
+      details: details ?? this.details,
       name: name ?? this.name,
       createAt: createAt ?? this.createAt,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [node, children, isEmpty, nodeParent, name, createAt];
+  List<Object?> get props => [details, children, isEmpty, name, createAt];
 
   @override
   String toString() {
-    return 'Directory(Node: $node, children: $children, isOpen: $isExpanded, parent: $nodeParent, name: $name, create at: $createAt)';
+    return 'Directory(name: $name, isExpanded: $isExpanded, children: ${children.length})';
   }
 
   @override
   Directory clone() {
     return Directory(
       children: children,
-      node: node,
-      nodeParent: nodeParent,
+      details: NodeDetails.withLevel(level),
       name: name,
       createAt: createAt,
     );

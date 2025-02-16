@@ -1,9 +1,9 @@
-import '../entities/tree_node/tree_node.dart';
+import '../entities/node/node.dart';
 
 class InvalidCustomNodeBuilderCallbackReturn {
   final String message;
-  final TreeNode originalVersionNode;
-  final TreeNode newNodeVersion;
+  final Node originalVersionNode;
+  final Node newNodeVersion;
   final String? reason;
 
   const InvalidCustomNodeBuilderCallbackReturn({

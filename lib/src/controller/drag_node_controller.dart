@@ -1,47 +1,62 @@
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
-
-import '../entities/drag/dragged_object.dart';
-import '../entities/tree_node/tree_node.dart';
+import '../entities/node/node.dart';
 
 /// This controller is used by the Drag and Drop
 /// feature to know what is the node that is being dragged
 /// at the moment
-class DragNodeController extends ChangeNotifier {
-  final DraggedObject _draggedObject = DraggedObject();
-  DraggedObject get object => _draggedObject;
-  TreeNode? get node => _draggedObject.node;
-  TreeNode? get targetNode => _draggedObject.targetNode;
-  Offset? get offset => _draggedObject.offset;
+class DragNodeController {
+  /// This is the current node that the user is dragging
+  /// to another part of the tree
+  Node? node;
 
-  bool get isDragging => node != null;
+  /// This represents the current position on the screen
+  /// where is the dragged node
+  Offset? offset;
 
-  set setDraggedNode(TreeNode? node) {
-    _draggedObject.node = node;
-    notifyListeners();
+  /// This node is the current node where the offset is
+  /// if the user put the current dragged node above another
+  /// node, then this will be setted
+  Node? targetNode;
+
+  DragNodeController._();
+
+  factory DragNodeController() {
+    return DragNodeController._()
+      ..setOffset = null
+      ..setTargetNode = null
+      ..setDraggedNode = null;
+  }
+
+  factory DragNodeController.values(
+      {required Node? node,
+      required Offset? offset,
+      required Node? targetNode}) {
+    return DragNodeController._()
+      ..setOffset = offset
+      ..setTargetNode = targetNode
+      ..setDraggedNode = node;
+  }
+
+  factory DragNodeController.byController(
+      {required DragNodeController controller}) {
+    return DragNodeController._()
+      ..setOffset = controller.offset
+      ..setTargetNode = controller.targetNode
+      ..setDraggedNode = controller.node;
+  }
+
+  bool get isDragging => node != null && offset != null;
+
+  set setDraggedNode(Node? node) {
+    this.node = node;
   }
 
   set setOffset(Offset? offset) {
-    _draggedObject.offset = offset;
-    notifyListeners();
+    this.offset = offset;
   }
 
-  set setTargetNode(TreeNode? node) {
-    _draggedObject.targetNode = node;
-    notifyListeners();
+  set setTargetNode(Node? node) {
+    targetNode = node;
   }
-
-  @override
-  bool operator ==(covariant DragNodeController other) {
-    if (identical(this, other)) return true;
-    return _draggedObject == other._draggedObject;
-  }
-
-  @override
-  int get hashCode => Object.hashAll(
-        [
-          _draggedObject,
-        ],
-      );
 }

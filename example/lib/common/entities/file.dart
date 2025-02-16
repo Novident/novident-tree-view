@@ -1,49 +1,59 @@
 import 'package:flutter_tree_view/flutter_tree_view.dart';
 
-class File extends LeafTreeNode {
+class File extends LeafNode {
   final String name;
+  final String content;
   final DateTime createAt;
   File({
-    required super.node,
-    required super.nodeParent,
+    required super.details,
+    required this.content,
     required this.name,
     required this.createAt,
   });
 
   @override
-  bool canDrag({bool isSelectingModeActive = false}) {
-    return !isSelectingModeActive;
+  bool canDrag() {
+    return true;
   }
 
   @override
-  bool canDrop({required TreeNode target}) {
-    return target is CompositeTreeNode;
+  bool canDrop({required Node target}) {
+    return target is NodeContainer;
   }
 
   @override
   String toString() {
-    return 'File(Node: $node, parent: $nodeParent, name: $name, create at: $createAt)';
+    return 'File(name: $name)';
   }
 
   @override
-  TreeNode copyWith(
-      {Node? node, String? nodeParent, String? name, DateTime? createAt}) {
+  Node copyWith({
+    NodeDetails? details,
+    String? name,
+    DateTime? createAt,
+    String? content,
+  }) {
     return File(
-      node: node ?? this.node,
-      nodeParent: nodeParent ?? this.nodeParent,
+      details: details ?? this.details,
+      content: content ?? this.content,
       name: name ?? this.name,
       createAt: createAt ?? this.createAt,
     );
   }
 
   @override
-  List<Object?> get props => [node, nodeParent, name, createAt];
+  List<Object?> get props => [
+        details,
+        name,
+        createAt,
+        content,
+      ];
 
   @override
   File clone() {
     return File(
-      node: node,
-      nodeParent: nodeParent,
+      details: NodeDetails.withLevel(level),
+      content: content,
       name: name,
       createAt: createAt,
     );

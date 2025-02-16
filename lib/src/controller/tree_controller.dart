@@ -1,75 +1,105 @@
-
-import '../entities/enums/log_level.dart';
-import '../entities/node/node.dart';
-import '../entities/tree/tree_operation.dart';
-import '../entities/tree_node/composite_tree_node.dart';
-import '../entities/tree_node/tree_node.dart';
-import '../exceptions/invalid_node_update.dart';
-import '../exceptions/invalid_type_ref.dart';
-import '../exceptions/node_not_exist_in_tree.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_tree_view/flutter_tree_view.dart';
+import 'package:flutter_tree_view/src/exceptions/invalid_operation.dart';
+import 'package:flutter_tree_view/src/extensions/base_controller_helpers.dart';
+import 'package:flutter_tree_view/src/utils/solve_invalid_update.dart';
 import 'base/base_tree_controller.dart';
 
 /// The [`TreeController`] manages a tree of nodes, allowing for the manipulation and querying of its structure.
 /// This includes the `insertion`, `deletion`, `updating`, and `movement` of nodes within the tree.
 /// Additionally, it supports operations on node selections and notifies subscribers when there are changes in the tree.
 class TreeController extends BaseTreeController {
-  TreeController(String rootId, List<TreeNode> nodes) {
-    root = root.copyWith(children: [...nodes]);
-    setNewIdToRoot(rootId);
+  TreeController(Iterable<Node> nodes) {
+    root.addAll(nodes);
+  }
+
+  /// Removes the current node selected
+  void invalidateSelection() {
+    selectNode(null);
+  }
+
+  void selectFirstNode() {
+    if (isEmpty) return;
+    selectNode(root.first);
+  }
+
+  void selectLastNode() {
+    if (isEmpty) return;
+    selectNode(root.last);
   }
 
   @override
-  void insertAt(TreeNode node, String nodeTargetId, {bool removeIfNeeded = false}) {
-    logger.writeLog(
-      level: LogLevel.info,
-      message: 'Should insert the node type ${node.runtimeType}(id: ${node.id}). [Root => ${root.level}]',
-    );
+  void insertAt(
+    Node node,
+    String nodeTargetId, {
+    bool removeIfNeeded = false,
+  }) {
     if (removeIfNeeded) {
-      removeAt(node.id, verifyDuplicates: true);
+      removeAt(node.id, verifyDuplicates: true, ignoreNotify: true);
     }
-    final existInRoot = !root.existInRoot(node.id);
-    if (root.id == nodeTargetId && existInRoot) {
-      if (node is CompositeTreeNode && node.isNotEmpty) {
-        node.formatChildLevels(null, 0);
+
+    bool existInRoot = root.existInRoot(node.id);
+    if (root.id == nodeTargetId && !existInRoot) {
+      if (node is NodeContainer && node.isNotEmpty) {
+        node.redepthChildren(0);
       }
-      root.add(node.copyWith(nodeParent: root.id, node: node.node.copyWith(level: 0)));
-      notifyListeners();
+      Node newNodeState = node.copyWith(
+          details: node.details.copyWith(
+        level: 0,
+        owner: root.id,
+      ));
+      root.add(newNodeState);
+      if (selectedNode?.id == node.id) {
+        selectNode(newNodeState);
+      }
     } else {
       for (int i = 0; i < root.length; i++) {
-        final rootNode = root.elementAt(i);
-        if (rootNode.id == nodeTargetId) {
-          if (rootNode is! CompositeTreeNode) {
+        Node nodeAtRootPoint = root.elementAt(i);
+        if (nodeAtRootPoint.id == nodeTargetId) {
+          if (nodeAtRootPoint is! NodeContainer) {
             throw InvalidTypeRef(
               message:
-                  'The node [${rootNode.runtimeType}-$nodeTargetId] is not a valid target to insert the ${node.runtimeType} into it. Please, ensure of the target node is a CompositeTreeNode to allow insert nodes into itself correctly',
-              data: rootNode,
+                  'The node [${nodeAtRootPoint.runtimeType}-$nodeTargetId] is not a '
+                  'valid target to insert the ${node.runtimeType} into it. '
+                  'Please, ensure of the target node is a NodeContainer to '
+                  'allow insert nodes into itself correctly',
+              data: nodeAtRootPoint,
               time: DateTime.now(),
               targetFail: nodeTargetId,
             );
           }
-          if (!rootNode.existInRoot(node.id)) {
-            if (node is CompositeTreeNode) {
-              node.formatChildLevels();
+          if (!nodeAtRootPoint.existInRoot(node.id)) {
+            if (node is NodeContainer) {
+              node.redepthChildren();
             }
+            Node validStateToNode = node.copyWith(
+                details: node.details.copyWith(
+              level: nodeAtRootPoint.level + 1,
+              owner: nodeAtRootPoint.id,
+            ));
             root.addNewChange(
-              [node],
+              <Node>[validStateToNode],
               TreeOperation.insert,
-              null,
-              rootNode,
+              nodeAtRootPoint,
             );
-            rootNode
-                .add(node.copyWith(nodeParent: rootNode.id, node: node.node.copyWith(level: rootNode.level + 1)));
-            root[i] = rootNode.copyWith(isExpanded: true);
-            notifyListeners();
+            if (selectedNode?.id == node.id) {
+              selectNode(
+                validStateToNode,
+              );
+            }
+            nodeAtRootPoint
+              ..add(validStateToNode)
+              ..openOrClose(forceOpen: true);
             return;
           } else {
             // is already inserted and doesn't need to be searched more
             return;
           }
-        } else if (rootNode is CompositeTreeNode && rootNode.isNotEmpty) {
-          final inserted = insertNodeInSubComposite(rootNode, node, nodeTargetId);
+        } else if (nodeAtRootPoint is NodeContainer &&
+            nodeAtRootPoint.isNotEmpty) {
+          bool inserted =
+              insertNodeInSubContainer(nodeAtRootPoint, node, nodeTargetId);
           if (inserted) {
-            notifyListeners();
             return;
           }
         }
@@ -78,18 +108,22 @@ class TreeController extends BaseTreeController {
   }
 
   @override
-  void insertAtRoot(TreeNode node, {bool removeIfNeeded = false}) {
-    if (removeIfNeeded) removeAt(node.id, verifyDuplicates: true);
-    insertAt(node, root.node.id);
-    logger.writeLog(
-      level: LogLevel.fine,
-      message: 'Inserted node in Root level. [Root => ${root.level}]',
+  void insertAtRoot(Node node, {bool removeIfNeeded = false}) {
+    if (removeIfNeeded)
+      removeAt(node.id, verifyDuplicates: true, ignoreNotify: true);
+    insertAt(node, root.details.id, removeIfNeeded: !removeIfNeeded);
+    TreeLogger.root.debug(
+      '${node.runtimeType}(id: ${node.id.substring(0, 6)}) was inserted into Root path',
     );
   }
 
   @override
-  void insertAbove(TreeNode node, String childBelowId, {bool removeIfNeeded = true}) {
-    if (!existNode(childBelowId)) {
+  void insertAbove(
+    Node node,
+    String childBelowId, {
+    bool removeIfNeeded = true,
+  }) {
+    if (!root.existNode(childBelowId)) {
       throw NodeNotExistInTree(
         message:
             'The node $childBelowId not exist into the tree currently. Please, ensure first if the node was removed before insert any node',
@@ -99,60 +133,216 @@ class TreeController extends BaseTreeController {
     if (removeIfNeeded) {
       // removes the node from the tree
       // insert the node at the position
-      removeWhere((element) => element.node.id == node.node.id, verifyDuplicates: true);
+      removeWhere(
+        (Node element) => element.details.id == node.details.id,
+        verifyDuplicates: true,
+        ignoreNotify: true,
+      );
     }
     for (int i = 0; i < root.length; i++) {
-      final belowNode = root.elementAt(i);
-      if (belowNode.node.id == childBelowId) {
-        final beforeIndex = (i - 1) == -1 ? 0 : i;
-        if (node is CompositeTreeNode) {
-          node.formatChildLevels();
+      Node belowNode = root.elementAt(i);
+      if (belowNode.details.id == childBelowId) {
+        int beforeIndex = (i - 1) == -1 ? 0 : i;
+        if (node is NodeContainer) {
+          node.redepthChildren();
         }
-        root.addNewChange([node], TreeOperation.insertAbove, null, root);
+        Node validStateToNode = node.copyWith(
+            details: node.details.copyWith(
+          level: belowNode.level,
+          owner: root.id,
+        ));
+
+        root.addNewChange(
+          <Node>[validStateToNode],
+          TreeOperation.insertAbove,
+          root,
+        );
+        if (selectedNode?.id == node.id) {
+          selectNode(validStateToNode);
+        }
         root.insert(
-            beforeIndex, node.copyWith(nodeParent: root.id, node: node.node.copyWith(level: belowNode.level)));
+          beforeIndex,
+          validStateToNode,
+        );
         break;
-      } else if (belowNode is CompositeTreeNode && belowNode.isNotEmpty) {
-        final inserted = insertAboveNodeInSubComposite(belowNode, node, childBelowId);
+      } else if (belowNode is NodeContainer && belowNode.isNotEmpty) {
+        bool inserted =
+            insertAboveNodeInSubComposite(belowNode, node, childBelowId);
         if (inserted) break;
       }
     }
-    notifyListeners();
   }
 
   @override
-  void clearRoot() {
-    verifyState();
-    root.addNewChange([], TreeOperation.clearRoot);
-    root = root.copyWith(children: []);
-    logger.writeLog(
-      level: LogLevel.info,
-      message: 'Root of the project was cleared. [Root => ${root.length}]',
-    );
-    notifyListeners();
+  void insertAtWithCallback(String? parentId, Node Function() callback,
+      {bool removeIfNeeded = false}) {
+    bool insertInRoot = parentId == null || parentId == id;
+    Node node = callback();
+    if (removeIfNeeded) {
+      removeWhere((Node element) => element.id == node.id,
+          verifyDuplicates: true);
+    }
+    if (insertInRoot) {
+      Node nodeToRoot = node.copyWith(
+          details: node.details.copyWith(
+        level: 0,
+        owner: root.id,
+      ));
+      root.add(nodeToRoot);
+      // notify the tree and the new selection
+      selectNode(
+        nodeToRoot,
+      );
+      return;
+    }
+    for (int i = 0; i < root.length; i++) {
+      Node nodeAtRootPoint = root.elementAt(i);
+      if (nodeAtRootPoint is NodeContainer) {
+        if (nodeAtRootPoint.id == parentId) {
+          if (node is NodeContainer) {
+            node.redepthChildren();
+          }
+          Node validStateToNewNode = node.copyWith(
+              details: node.details.copyWith(
+            level: nodeAtRootPoint.level + 1,
+            owner: nodeAtRootPoint.id,
+          ));
+          root.addNewChange(
+            <Node>[node, validStateToNewNode],
+            TreeOperation.insert,
+            nodeAtRootPoint,
+          );
+          nodeAtRootPoint.add(validStateToNewNode);
+          if (selectedNode?.id == node.id) {
+            // avoid notify listeners multiple times unnecesarily
+            // setting [shouldNotifyListeners] to [true]
+            selectNode(
+              validStateToNewNode,
+            );
+            return;
+          }
+        } else if (nodeAtRootPoint.isNotEmpty) {
+          bool inserted = insertAtInSubCompositeWithCallback(
+              nodeAtRootPoint, callback, parentId);
+          if (inserted) {
+            nodeAtRootPoint.openOrClose(forceOpen: true);
+            break;
+          }
+        }
+      }
+    }
   }
 
   @override
-  bool openUntilNode(TreeNode targetNode, {bool openTargetIfNeeded = false}) {
+  void insertAllAt(
+    List<Node> nodes,
+    String nodeTargetId, {
+    bool removeIfNeeded = false,
+    bool verifyDuplicates = false,
+  }) {
+    for (Node node in nodes) {
+      // removes if is necessary
+      removeWhere(
+        (Node element) => element.details.id == node.details.id,
+        verifyDuplicates: verifyDuplicates,
+      );
+      insertAt(node, nodeTargetId);
+    }
+  }
+
+  @override
+  void insertAboveWithCallback(Node Function() callback, String childBelowId,
+      {bool removeIfNeeded = false}) {
+    if (!root.existNode(childBelowId)) {
+      throw NodeNotExistInTree(
+        message:
+            'The node $childBelowId not exist into the tree currently. Please, ensure first if the node was removed before insert any node',
+        node: childBelowId,
+      );
+    }
+    Node node = callback();
+    if (removeIfNeeded) {
+      // removes the node from the tree
+      // insert the node at the position
+      removeWhere((Node element) => element.details.id == node.details.id,
+          verifyDuplicates: true);
+    }
+    for (int i = 0; i < root.length; i++) {
+      Node belowNode = root.elementAt(i);
+      if (belowNode.details.id == childBelowId) {
+        int beforeIndex = (i - 1) == -1 ? 0 : i;
+        if (node is NodeContainer) {
+          node.redepthChildren();
+        }
+        Node validStateToNode = node.copyWith(
+            details: node.details.copyWith(
+          level: 0,
+          owner: root.id,
+        ));
+        root.addNewChange(
+          <Node>[node],
+          TreeOperation.insertAbove,
+          (root.clone())
+            ..insert(
+              beforeIndex,
+              validStateToNode,
+            ),
+        );
+        if (selectedNode?.id == node.id) {
+          selectNode(validStateToNode);
+        }
+        root.insert(beforeIndex, validStateToNode);
+        break;
+      } else if (belowNode is NodeContainer && belowNode.isNotEmpty) {
+        bool inserted =
+            insertAboveNodeInSubComposite(belowNode, node, childBelowId);
+        if (inserted) break;
+      }
+    }
+  }
+
+  @override
+  void insertAllAbove(List<Node> nodes, String childBelowId,
+      {bool removeIfNeeded = false, bool verifyDuplicates = false}) {
+    for (Node node in nodes) {
+      // removes if is necessary
+      insertAbove(node, childBelowId, removeIfNeeded: true);
+    }
+  }
+
+  @override
+  bool expandAllUntilTarget(Node targetNode,
+      {bool openTargetIfNeeded = false}) {
     assert(targetNode.level >= 0);
     bool ignoreBecauseIsSubNode = false;
-    CompositeTreeNode? compositeTreeNode;
+    NodeContainer? compositeTreeNode;
 
-    Future<bool> openWhen(List<TreeNode> tree, {bool ignoreBySubNode = false}) async {
+    Future<bool> expandNodeWhen(List<Node> tree,
+        {bool ignoreBySubNode = false}) async {
       ignoreBecauseIsSubNode = ignoreBySubNode;
       for (int i = 0; i < tree.length; i++) {
-        final TreeNode node = tree.elementAt(i);
+        Node node = tree.elementAt(i);
         // the target was founded
-        if (node is CompositeTreeNode && node.id == targetNode.id && openTargetIfNeeded && node.node.level == 0) {
-          compositeTreeNode = node.copyWith(isExpanded: true);
+        if (node is NodeContainer &&
+            node.id == targetNode.id &&
+            openTargetIfNeeded &&
+            node.details.level == 0) {
+          compositeTreeNode = node..openOrClose(forceOpen: true);
         }
-        if (node is CompositeTreeNode && node.id == targetNode.id && openTargetIfNeeded) {
-          tree[i] = node.copyWith(isExpanded: true);
-          notifyListeners();
+        if (node is NodeContainer &&
+            node.id == targetNode.id &&
+            openTargetIfNeeded) {
+          node.openOrClose(forceOpen: true);
         }
-        if (node.id == targetNode.id) return true;
-        if (node is CompositeTreeNode && node.isNotEmpty) {
-          bool founded = await openWhen(node.children, ignoreBySubNode: true);
+        if (node.id == targetNode.id) {
+          TreeLogger.internalNodes.debug(
+            '${node.runtimeType}(id: ${node.id.substring(0, 6)}) forced to be opened by user interaction',
+          );
+          return true;
+        }
+        if (node is NodeContainer && node.isNotEmpty) {
+          bool founded =
+              await expandNodeWhen(node.children, ignoreBySubNode: true);
           if (founded) {
             return true;
           }
@@ -161,46 +351,42 @@ class TreeController extends BaseTreeController {
       return false;
     }
 
-    openWhen(root.children);
+    expandNodeWhen(root.children);
     if (compositeTreeNode == null && !ignoreBecauseIsSubNode) {
-      throw NodeNotExistInTree(
-          message:
-              'The node that we assume that need open parents until it, its id is: ${targetNode.id} was not founded',
-          node: targetNode.id);
-    } else if (compositeTreeNode != null) {
-      updateNodeAt(compositeTreeNode!, compositeTreeNode!.id);
+      TreeLogger.internalNodes.warn(
+        '${targetNode.runtimeType}(${targetNode.id}) was not founded into the tree',
+      );
     }
-    notifyListeners();
     return true;
   }
 
   @override
-  bool updateNodeAt(TreeNode targetNode, String nodeId) {
+  bool updateNodeAt(Node targetNode, String nodeId) {
     for (int i = 0; i < root.length; i++) {
-      final node = root.elementAt(i);
+      Node node = root.elementAt(i);
       if (node.id == nodeId) {
-        if (targetNode.node != node.node || targetNode.id != node.id) {
-          throw InvalidNodeUpdate(
-              message:
-                  'Invalid custom node builded $targetNode. Please, ensure of create a TreeNode valid with the same Node of the passed as the argument',
-              originalVersionNode: node,
-              newNodeVersion: targetNode,
-              reason: 'The Node of the TreeNode cannot be different than the original');
-        }
+        Reason isInvalidUpdatedOp = Reason.solveInvalidUpdate(node, targetNode);
+        if (isInvalidUpdatedOp.reason != UNPROCESSED_REASON)
+          throw InvalidNodeUpdate(reason: isInvalidUpdatedOp);
         root.addNewChange(
-          [targetNode],
+          <Node>[targetNode],
           TreeOperation.update,
-          null,
           node,
         );
+
         root[i] = targetNode;
-        notifyListeners();
+        TreeLogger.root.debug(
+            '${targetNode.runtimeType}(id: ${targetNode.id.substring(0, 6)}) was updated with a new state');
+        String? selectedNodeId = selectedNode?.id;
+        if (selectedNodeId == null || selectedNodeId != targetNode.id) {
+          return true;
+        }
+        selectNode(targetNode);
         return true;
-      } else if (node is CompositeTreeNode && node.isNotEmpty) {
-        final wasUpdated = updateSubNodes(node.children, targetNode, nodeId);
+      } else if (node is NodeContainer && node.isNotEmpty) {
+        bool wasUpdated = updateSubNodes(node.children, targetNode, nodeId);
         if (wasUpdated) {
           root[i] = node;
-          notifyListeners();
           return true;
         }
       }
@@ -209,39 +395,137 @@ class TreeController extends BaseTreeController {
   }
 
   @override
-  TreeNode? removeAt(String nodeId, {bool ignoreRoot = false, bool verifyDuplicates = false}) {
-    if (existInRoot(nodeId)) {
-      root.removeWhere((element) => element.id == nodeId);
-      notifyListeners();
-      logger.writeLog(
-        level: LogLevel.fine,
-        message: 'Removed in Root level. [Root change => ${root.level}]',
+  void clearTree() {
+    verifyState();
+    root.addNewChange(<Node>[], TreeOperation.clearChildren);
+    root.clear();
+    TreeLogger.root.debug(
+      'Root of the project was cleared',
+    );
+  }
+
+  @override
+  Node? removeWhere(
+    bool Function(Node node) predicate, {
+    bool ignoreRoot = false,
+    bool verifyDuplicates = false,
+    bool ignoreNotify = false,
+  }) {
+    for (int i = 0; i < root.length; i++) {
+      Node node = root.elementAt(i);
+      if (predicate(node) && !ignoreRoot) {
+        root.addNewChange(
+          <Node>[node],
+          TreeOperation.delete,
+        );
+        root.remove(node);
+        if (selectedNode?.id == node.id && !ignoreNotify) {
+          invalidateSelection();
+        }
+        if (!verifyDuplicates) return node;
+      } else if (node is NodeContainer && node.isNotEmpty) {
+        bool isFounded = removeChild(
+          node,
+          null,
+          predicate,
+          verifyDuplicates,
+          ignoreNotify,
+        );
+        if (isFounded) {
+          return node;
+        }
+      }
+    }
+    return null;
+  }
+
+  // when return true the parent need override the root parent of this composite
+  @protected
+  bool removeChild(
+    NodeContainer containerNode,
+    NodeDetails? target, [
+    bool Function(Node)? predicate,
+    bool verifyDuplicates = false,
+    bool ignoreNotify = false,
+  ]) {
+    if (target == null && predicate == null) {
+      throw const InvalidOperation(
+          message:
+              'target param and predicate cannot be null at the same time. '
+              'Please, provide one of them to continue with the '
+              'expected behavior of this method.',
+          typeOp: 'Delete');
+    }
+    for (int i = 0; i < containerNode.length; i++) {
+      Node node = containerNode.elementAt(i);
+      if (node.details.id == target?.id || predicate?.call(node) == true) {
+        root.addNewChange(
+          <Node>[node],
+          TreeOperation.delete,
+          (containerNode.clone())..remove(node),
+        );
+        containerNode.remove(node);
+        if (selectedNode?.id == node.id && !ignoreNotify) {
+          invalidateSelection();
+        }
+        TreeLogger.internalNodes.debug(
+          '${node.runtimeType}(id: ${node.id.substring(0, 6)}) was removed from '
+          '${containerNode.runtimeType}(id: ${containerNode.id.substring(0, 6)}) at level: ${containerNode.level}, in index: $i',
+        );
+        if (!verifyDuplicates) return true;
+      } else if (node is NodeContainer && node.isNotEmpty) {
+        bool foundedNode = removeChild(
+          node,
+          target,
+          predicate,
+          verifyDuplicates,
+          ignoreNotify,
+        );
+        if (foundedNode) return true;
+      }
+    }
+    return false;
+  }
+
+  @override
+  Node? removeAt(
+    String nodeId, {
+    bool ignoreRoot = false,
+    bool verifyDuplicates = false,
+    bool ignoreNotify = false,
+  }) {
+    if (root.existInRoot(nodeId)) {
+      int index = root.indexWhere((Node element) => element.id == nodeId);
+      Node removedNode = root.removeAt(index);
+      TreeLogger.root.debug(
+        '${removedNode.runtimeType}(id: ${removedNode.id.substring(0, 6)}) was removed from the Root path',
       );
       if (!verifyDuplicates) return null;
     }
     for (int i = 0; i < root.length; i++) {
-      final node = root.elementAt(i);
+      Node node = root.elementAt(i);
       if (node.id == nodeId && !ignoreRoot) {
         root.addNewChange(
-          [node],
+          <Node>[node],
           TreeOperation.delete,
         );
         root.remove(node);
-        logger.writeLog(
-          level: LogLevel.fine,
-          message: 'Removed ${node.runtimeType}(id: ${node.id}) in Root level. [Root change => ${root.level}]',
+        if (selectedNode?.id == node.id && !ignoreNotify) {
+          selectNode(null);
+        }
+        TreeLogger.root.debug(
+          '${node.runtimeType}(id: ${node.id.substring(0, 6)}) was removed from the Root path',
         );
-        notifyListeners();
         return node;
-      } else if (node is CompositeTreeNode && node.isNotEmpty) {
-        final isFounded = removeChild(node, Node.base(nodeId), null);
+      } else if (node is NodeContainer && node.isNotEmpty) {
+        bool isFounded = removeChild(
+          node,
+          NodeDetails.base(nodeId),
+          null,
+          false,
+          ignoreNotify,
+        );
         if (isFounded) {
-          root[i] = node;
-          logger.writeLog(
-            level: LogLevel.fine,
-            message: 'Removed sub ${node.runtimeType}(id: ${node.id}) node. [Root change => ${root.level}]',
-          );
-          notifyListeners();
           return node;
         }
       }

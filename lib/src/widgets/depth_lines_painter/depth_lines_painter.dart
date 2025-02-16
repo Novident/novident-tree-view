@@ -1,17 +1,26 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import '../../entities/tree_node/composite_tree_node.dart';
-import '../../entities/tree_node/leaf_tree_node.dart';
-import '../../utils/compute_padding_by_level.dart';
-import '../../entities/tree_node/tree_node.dart';
+import 'package:flutter_tree_view/flutter_tree_view.dart';
+import '../../entities/node/node.dart';
 import '../tree/config/tree_configuration.dart';
+
+// These multiplier are using by Platform
+// since the screen size is minor than the desktop
+// screens, so, we need to adjust the draw offset
+// to make more easy for mobiles adapt to their parents
+// without go out of them easily
+const double _desktopIndentMultiplier = 27.5;
+const double _androidIndentMultiplier = 24.5;
 
 /// This is the painter that has the encharge
 /// to paint the [CompositeTreeNode] limit lines
 /// that makes more easy to the easy understand
 /// where ends and where starts a [CompositeTreeNode]
 class DepthLinesPainter extends CustomPainter {
-  final TreeNode node;
-  final TreeNode? lastChild;
+  final Node node;
+  final Node? lastChild;
+  final double indent;
   final double height;
   final double? customOffsetX;
   final Paint? customPainter;
@@ -26,40 +35,46 @@ class DepthLinesPainter extends CustomPainter {
     this.lastChild,
     this.customPainter,
     this.configuration,
+    this.indent,
   );
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (!shouldPaint || node is LeafTreeNode) return;
-    final isExpanded = (node as CompositeTreeNode).isExpanded;
-    final hasNoChildren = (node as CompositeTreeNode).hasNoChildren;
+    if (!shouldPaint || node is LeafNode) return;
+    final isExpanded = (node as NodeContainer).isExpanded;
+    final hasNoChildren = (node as NodeContainer).hasNoChildren;
     if (!isExpanded || (hasNoChildren && isExpanded)) return;
     final paint = customPainter ?? Paint()
       ..color = Colors.grey
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
-    final indent = configuration.compositeConfiguration.showExpandableButton ||
-            configuration.compositeConfiguration.expandableIconConfiguration
-                    ?.customExpandableWidget !=
-                null
-        ? computePaddingForComposite(node.level)
-        : configuration.customComputeNodeIndentByLevel?.call(node) ??
-            computePaddingForCompositeWithoutExpandable(node.level);
-    final x = customOffsetX ?? indent + 27.5;
+    final x = customOffsetX ?? indent + _getCorrectMultiplierByPlatform;
+    final endLineEffectivedy = (lastChild is NodeContainer
+        ? 2
+        : lastChild is LeafNode
+            ? 3
+            : 0);
     canvas.drawLine(
-      Offset(x, height), // empieza en el nivel del nodo
+      Offset(x, height), // start of the node
       Offset(
         x,
-        size.height.floorToDouble() -
-            (lastChild is CompositeTreeNode
-                ? 2
-                : lastChild is LeafTreeNode
-                    ? 3
-                    : 0),
-      ), // termina al final del nodo
+        size.height.floorToDouble() - endLineEffectivedy,
+      ), // end of the node
       paint,
     );
+    /*
+    canvas.drawLine(
+      Offset(x, size.height.floorToDouble() - endLineEffectivedy), // end of the node
+      Offset(x + 10, 0), // end of the node
+      paint,
+    );
+    */
   }
+
+  double get _getCorrectMultiplierByPlatform =>
+      Platform.isIOS || Platform.isAndroid || Platform.isFuchsia
+          ? _androidIndentMultiplier
+          : _desktopIndentMultiplier;
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {

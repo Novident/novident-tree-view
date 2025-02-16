@@ -6,13 +6,11 @@ import 'package:vector_math/vector_math_64.dart';
 
 extension GlobalPaintBounds on BuildContext {
   /// Get the global offset of a widget
-  Offset? get globalPaintBounds {
-    final RenderObject? renderObject = findRenderObject();
-    final Vector3? translation =
-        renderObject?.getTransformTo(null).getTranslation();
+  (Offset, RenderObject)? get globalOffsetOfWidget {
+    RenderObject? renderObject = findRenderObject();
+    Vector3? translation = renderObject?.getTransformTo(null).getTranslation();
     if (translation != null && renderObject?.paintBounds != null) {
-      final Offset offset = Offset(translation.x, translation.y);
-      return offset;
+      return (Offset(translation.x, translation.y), renderObject!);
     } else {
       return null;
     }
@@ -21,8 +19,7 @@ extension GlobalPaintBounds on BuildContext {
 
 extension PlatformGlobalUtil on BuildContext {
   bool isDesktop({bool supportedWeb = false}) {
-    final isDesktop =
-        Platform.isLinux || Platform.isMacOS || Platform.isWindows;
+    bool isDesktop = Platform.isLinux || Platform.isMacOS || Platform.isWindows;
     if (supportedWeb) {
       return kIsWeb || isDesktop;
     }
@@ -30,7 +27,7 @@ extension PlatformGlobalUtil on BuildContext {
   }
 
   bool isMobile({bool supportedWeb = false}) {
-    final isMobile = Platform.isIOS || Platform.isAndroid;
+    bool isMobile = Platform.isIOS || Platform.isAndroid;
     if (supportedWeb) {
       return kIsWeb || isMobile;
     }

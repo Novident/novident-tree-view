@@ -1,11 +1,11 @@
-import '../entities/tree_node/tree_node.dart';
+import '../entities/node/node.dart';
 
 /// An simple interfaces that gives to the Nodes
 /// the ability to be dragged and dropped in some
 /// node parents
-mixin Draggable {
+mixin MakeDraggable {
   /// Decides if the user can drag the
   /// item to drop on another side
-  bool canDrag({bool isSelectingModeActive = false});
-  bool canDrop({required TreeNode target});
+  bool canDrag();
+  bool canDrop({required Node target});
 }

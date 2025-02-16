@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../entities/tree_node/leaf_tree_node.dart';
-import '../../../entities/tree_node/tree_node.dart';
+import 'package:flutter_tree_view/flutter_tree_view.dart';
 
-typedef CustomLeafDecorationBuilder = BoxDecoration Function(
-  LeafTreeNode node,
-  bool isSelected,
-  bool isDraggedObjectAboveThisNode,
+typedef LeafDecorationBuilder = BoxDecoration Function(
+  LeafNode node,
 );
 
 @immutable
@@ -22,34 +19,37 @@ class LeafConfiguration {
   /// This doesn't affect the default implementation
   /// where on tap an item this will be selected
   /// using TreeController
-  final void Function(TreeNode node, BuildContext context)? onTap;
-  final void Function(TreeNode node, BuildContext context)? onDoubleTap;
-  final void Function(TreeNode node, BuildContext context)? onSecundaryTap;
-  final void Function(TreeNode node, bool isHovered, BuildContext context)?
-      onHover;
-  final MouseCursor? mouseCursor;
-  final CustomLeafDecorationBuilder leafBoxDecoration;
+  final void Function(Node node, BuildContext context)? onTap;
+  final void Function(Node node, BuildContext context)? onDoubleTap;
+  final void Function(Node node, BuildContext context)? onSecundaryTap;
+  final void Function(Node node, bool isHovered, BuildContext context)? onHover;
+  final MouseCursor? cursor;
+  final LeafDecorationBuilder boxDecoration;
   // widgets
-  final Widget Function(LeafTreeNode node, double indent, BuildContext context)
+  final Widget Function(LeafNode node, double indent, BuildContext context)
       leading;
-  final Widget Function(LeafTreeNode node, double indent, BuildContext context)
+  final Widget Function(LeafNode node, double indent, BuildContext context)
       content;
-  final Widget? Function(
-      LeafTreeNode node, double indent, BuildContext context)? trailing;
-  /// Wrap the Leaf item into your custom widget 
+  final Widget? Function(LeafNode node, double indent, BuildContext context)?
+      trailing;
+
+  /// Wrap the Leaf item into your custom widget
   /// to add more features to it
   final Widget Function(Widget leafWidget)? wrapper;
 
+  final NodeDragGestures? dragGestures;
+
   const LeafConfiguration({
-    required this.leafBoxDecoration,
+    required this.boxDecoration,
     required this.padding,
     required this.height,
     required this.leading,
     required this.content,
+    this.dragGestures,
     this.wrapper,
     this.onTap,
     this.onSecundaryTap,
-    this.mouseCursor,
+    this.cursor,
     this.onHover,
     this.onDoubleTap,
     this.splashFactory,

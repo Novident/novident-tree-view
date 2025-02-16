@@ -1,19 +1,16 @@
-import '../node/node.dart';
-import '../tree_node/tree_node.dart';
+import '../tree_node/root_node.dart';
 
 /// Represents a simple state
 /// of the tree
 class TreeState {
-  final Node node;
-  final List<TreeNode> children;
+  final Root root;
 
   TreeState({
-    required this.node,
-    required this.children,
+    required this.root,
   });
 
   @override
   String toString() {
-    return 'TreeState: $node | Children: $children';
+    return 'TreeState: ${root.details} | Children: ${root.children}';
   }
 }

@@ -1,90 +1,117 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_tree_view/flutter_tree_view.dart';
+import 'package:flutter_tree_view/src/entities/node/node_details.dart';
 
 import '../../interfaces/draggable_node.dart';
 import '../node/node.dart';
-import 'selectable_tree_node.dart';
-import 'tree_node.dart';
 
-/// [CompositeTreeNode] represents a node that can contains all
+/// [NodeContainer] represents a node that can contains all
 /// types of Nodes as its children
 ///
 /// You can take this implementation as a directory from your
 /// local storage that can contains a wide variety of file types
-abstract class CompositeTreeNode<T extends TreeNode> extends SelectableTreeNode
-    implements Draggable {
+abstract class NodeContainer<T extends Node> extends Node
+    implements MakeDraggable {
   final List<T> children;
-  /// If expanded is true the [CompositeTreeNode]
+
+  /// If expanded is true the [NodeContainer]
   /// should show the children into it
-  final bool isExpanded;
+  bool _isExpanded;
 
-  CompositeTreeNode({
+  NodeContainer({
     required this.children,
-    required super.node,
-    required super.nodeParent,
-    this.isExpanded = false,
-  });
+    required super.details,
+    bool isExpanded = false,
+  }) : _isExpanded = isExpanded;
 
   @override
-  CompositeTreeNode<T> copyWith(
-      {Node? node, List<T>? children, bool? isExpanded, String? nodeParent});
+  NodeContainer<T> copyWith(
+      {NodeDetails? details, List<T>? children, bool? isExpanded});
 
   @override
-  CompositeTreeNode<T> clone();
+  NodeContainer<T> clone();
 
   @override
   String toString() {
-    return 'CompositeTreeNode(Node: $node, parent: $nodeParent, isOpen: $isExpanded, $children)';
+    return 'NodeContainer(details: $details, isOpen: $isExpanded, $children)';
   }
 
-  /// Fix an issue where the nodes of the children
-  /// when a composite is moved to another part of the tree
-  /// are not updated correctly
-  void formatChildLevels(
-      [List<TreeNode>? unformattedChildren, int? currentLevel]) {
-    unformattedChildren ??= children;
-    currentLevel ??= level;
-    for (int i = 0; i < unformattedChildren.length; i++) {
-      final node = unformattedChildren.elementAt(i);
-      unformattedChildren[i] =
-          node.copyWith(node: node.node.copyWith(level: currentLevel + 1));
-      if (node is CompositeTreeNode && node.isNotEmpty) {
-        formatChildLevels(node.children, currentLevel + 1);
+  bool get isExpanded => _isExpanded;
+
+  set isExpanded(bool expand) {
+    _isExpanded = expand;
+    notify();
+  }
+
+  void openOrClose({bool forceOpen = false}) {
+    isExpanded = forceOpen ? true : !isExpanded;
+    TreeLogger.internalNodes.info(
+      '$runtimeType(id: ${id.substring(0, 6)}) ${forceOpen ? 'forced to be ' : ''}opened/closed by user interaction',
+    );
+    notify();
+  }
+
+  /// adjust the depth level of the children
+  void redepthChildren([int? currentLevel]) {
+    assert(level >= 0);
+    void redepth(List<Node> unformattedChildren, int currentLevel) {
+      currentLevel = level;
+      for (int i = 0; i < unformattedChildren.length; i++) {
+        final node = unformattedChildren.elementAt(i);
+        unformattedChildren[i] = node.copyWith(
+            details: node.details.copyWith(level: currentLevel + 1));
+        if (node is NodeContainer && node.isNotEmpty) {
+          redepth(node.children, currentLevel + 1);
+        }
       }
     }
+
+    redepth(
+      children,
+      currentLevel ?? level,
+    );
+    notify();
   }
 
   /// Update the id of the parent of the children
   void updateInternalNodesByParentId(String newParentNode,
-      [List<TreeNode>? nodes]) {
+      [List<Node>? nodes, bool shouldNotify = true]) {
     nodes ??= children;
     for (int i = 0; i < nodes.length; i++) {
       final node = nodes.elementAt(i);
-      nodes[i] = node.copyWith(nodeParent: newParentNode);
-      if (node is CompositeTreeNode && node.isNotEmpty) {
-        updateInternalNodesByParentId(newParentNode, node.children);
+      nodes[i] =
+          node.copyWith(details: node.details.copyWith(owner: newParentNode));
+      if (node is NodeContainer && node.isNotEmpty) {
+        updateInternalNodesByParentId(newParentNode, node.children, false);
       }
+    }
+    if (shouldNotify) {
+      notify();
     }
   }
 
   /// Check if the id of the node exist in the root
-  /// of the [CompositeTreeNode] without checking into its children
+  /// of the [NodeContainer] without checking into its children
   bool existInRoot(String nodeId) {
     for (int i = 0; i < length; i++)
-      if (elementAt(i).node.id == nodeId) return true;
+      if (elementAt(i).details.id == nodeId) return true;
     return false;
   }
 
-  /// Check if the id of the node exist into the [CompositeTreeNode]
+  /// Check if the id of the node exist into the [NodeContainer]
   /// checking in its children without limitations
   ///
   /// This opertion could be heavy based on the deep of the nodes
-  /// into the [CompositeTreeNode]
+  /// into the [NodeContainer]
   bool existNode(String nodeId) {
     for (int i = 0; i < length; i++) {
       final node = elementAt(i);
-      if (node.node.id == nodeId) {
+      if (node.details.id == nodeId) {
         return true;
-      } else if (node is CompositeTreeNode && node.isNotEmpty) {
+      } else if (node is NodeContainer && node.isNotEmpty) {
         final foundedNode = node.existNode(nodeId);
         if (foundedNode) return true;
       }
@@ -92,19 +119,19 @@ abstract class CompositeTreeNode<T extends TreeNode> extends SelectableTreeNode
     return false;
   }
 
-  /// Check if the id of the node exist into the [CompositeTreeNode]
+  /// Check if the id of the node exist into the [NodeContainer]
   /// checking in its children using a custom predicate passed by the dev
   ///
   /// This opertion could be heavy based on the deep of the nodes
-  /// into the [CompositeTreeNode]
-  bool existNodeWhere(bool Function(TreeNode node) predicate,
-      [List<TreeNode>? subChildren]) {
+  /// into the [NodeContainer]
+  bool existNodeWhere(bool Function(Node node) predicate,
+      [List<Node>? subChildren]) {
     final currentChildren = subChildren;
     for (int i = 0; i < (currentChildren ?? this.children).length; i++) {
       final node = (currentChildren ?? this.children).elementAt(i);
       if (predicate(node)) {
         return true;
-      } else if (node is CompositeTreeNode && node.isNotEmpty) {
+      } else if (node is NodeContainer && node.isNotEmpty) {
         final foundedNode = existNodeWhere(predicate, node.children);
         if (foundedNode) return true;
       }
@@ -112,7 +139,8 @@ abstract class CompositeTreeNode<T extends TreeNode> extends SelectableTreeNode
     return false;
   }
 
-  TreeNode? backChild(Node node, bool alsoInChildren, [int? indexNode]) {
+  Node? childBeforeThis(NodeDetails node, bool alsoInChildren,
+      [int? indexNode]) {
     if (indexNode != null) {
       final element = elementAtOrNull(indexNode);
       if (element != null) {
@@ -122,20 +150,22 @@ abstract class CompositeTreeNode<T extends TreeNode> extends SelectableTreeNode
     }
     for (int i = 0; i < length; i++) {
       final treeNode = elementAt(i);
-      if (treeNode.node.id == node.id) {
+      if (treeNode.details.id == node.id) {
         if (i - 1 == -1) return null;
         return elementAt(i - 1);
-      } else if (treeNode is CompositeTreeNode &&
+      } else if (treeNode is NodeContainer &&
           treeNode.isNotEmpty &&
           alsoInChildren) {
-        final backNode = treeNode.backChild(node, alsoInChildren, indexNode);
+        final backNode =
+            treeNode.childBeforeThis(node, alsoInChildren, indexNode);
         if (backNode != null) return backNode;
       }
     }
     return null;
   }
 
-  TreeNode? nextChild(Node node, bool alsoInChildren, [int? indexNode]) {
+  Node? childAfterThis(NodeDetails node, bool alsoInChildren,
+      [int? indexNode]) {
     if (indexNode != null) {
       final element = elementAtOrNull(indexNode);
       if (element != null) {
@@ -145,13 +175,14 @@ abstract class CompositeTreeNode<T extends TreeNode> extends SelectableTreeNode
     }
     for (int i = 0; i < length; i++) {
       final treeNode = elementAt(i);
-      if (treeNode.node.id == node.id) {
+      if (treeNode.details.id == node.id) {
         if (i + 1 >= length) return null;
         return elementAt(i + 1);
-      } else if (treeNode is CompositeTreeNode &&
+      } else if (treeNode is NodeContainer &&
           treeNode.isNotEmpty &&
           alsoInChildren) {
-        final nextChild = treeNode.nextChild(node, alsoInChildren, indexNode);
+        final nextChild =
+            treeNode.childAfterThis(node, alsoInChildren, indexNode);
         if (nextChild != null) return nextChild;
       }
     }
@@ -204,53 +235,55 @@ abstract class CompositeTreeNode<T extends TreeNode> extends SelectableTreeNode
 
   void add(T element) {
     children.add(element);
+    notify();
   }
 
   void addAll(Iterable<T> children) {
     this.children.addAll(children);
+    notify();
   }
 
   void insert(int index, T element) {
     children.insert(index, element);
+    notify();
   }
 
   void clear() {
     children.clear();
+    notify();
   }
 
   bool remove(T element) {
-    return children.remove(element);
+    final removed = children.remove(element);
+    notify();
+    return removed;
   }
 
   T removeLast() {
-    return children.removeLast();
+    final T value = children.removeLast();
+    notify();
+    return value;
   }
 
   void removeWhere(bool Function(T) callback) {
     children.removeWhere(callback);
+    notify();
   }
 
   T removeAt(int index) {
-    return children.removeAt(index);
+    final T value = children.removeAt(index);
+    notify();
+    return value;
   }
 
   void operator []=(int index, T format) {
     if (index < 0) return;
     children[index] = format;
+    notify();
   }
 
   T operator [](int index) {
     return children[index];
-  }
-
-  @override
-  bool canBePressed() {
-    return true;
-  }
-
-  @override
-  bool canBeSelected({bool isDraggingModeActive = false}) {
-    return !isDraggingModeActive;
   }
 
   @override
@@ -259,7 +292,16 @@ abstract class CompositeTreeNode<T extends TreeNode> extends SelectableTreeNode
   }
 
   @override
-  bool canDrop({required TreeNode target}) {
-    return target is Draggable && target is CompositeTreeNode<T>;
+  bool canDrop({required Node target}) {
+    return target is MakeDraggable && target is NodeContainer<T>;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    for (var e in children) {
+      ChangeNotifier.debugAssertNotDisposed(this);
+      e.dispose();
+    }
   }
 }

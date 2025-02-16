@@ -11,10 +11,12 @@ enum TreeOperation {
   // When the user override all nodes into the root
   // without using common operations
   replace,
-  // When the user clear some CompositeTreeNode
-  clearComposite,
-  clearRoot,
+  replace_all_tree_children,
+  // When the user clear some container
+  clearChildren,
   // When the user update the internal state of the node
   // Note: should be called always on custom or default implementations
   update,
+  // When the user update the internal state of the id of the [Root] node
+  update_nodes_by_new_tree_id,
 }
