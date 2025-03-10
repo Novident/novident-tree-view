@@ -404,416 +404,18 @@ class _NodeContainerExpandableTileState
               builder: (BuildContext context, List<Node?> candidateData,
                   List<dynamic> rejectedData) {
                 return ValueListenableBuilder(
-                    valueListenable: provider.selection,
-                    builder: (BuildContext ctx, Node? value, _) {
-                      bool isSelected = widget.nodeContainer.id == value?.id;
-                      Widget expandableButton = !showExpandableButton
-                          ? const SizedBox.shrink()
-                          : InkWell(
-                              customBorder: widget
-                                      .configuration
-                                      .containerConfiguration
-                                      .expandableIconConfiguration
-                                      ?.customSplashShape ??
-                                  const RoundedRectangleBorder(
-                                    side: BorderSide(
-                                        style: BorderStyle.none,
-                                        color: Colors.red),
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(5),
-                                    ),
-                                  ),
-                              onTap: () {
-                                widget.configuration.containerConfiguration
-                                    .expandableIconConfiguration?.onIconTap
-                                    ?.call(
-                                  widget.nodeContainer,
-                                  context,
-                                );
-                                if (widget
-                                        .configuration
-                                        .containerConfiguration
-                                        .expandableIconConfiguration
-                                        ?.onIconTap ==
-                                    null) {
-                                  _tryOpenOrCloseContainer();
-                                }
-                              },
-                              hoverColor: widget
-                                  .configuration
-                                  .containerConfiguration
-                                  .expandableIconConfiguration
-                                  ?.hoverColor,
-                              splashColor: widget
-                                  .configuration
-                                  .containerConfiguration
-                                  .expandableIconConfiguration
-                                  ?.tapSplashColor,
-                              splashFactory: widget
-                                  .configuration
-                                  .containerConfiguration
-                                  .expandableIconConfiguration
-                                  ?.splashFactory,
-                              borderRadius: widget
-                                  .configuration
-                                  .containerConfiguration
-                                  .expandableIconConfiguration
-                                  ?.splashBorderRadius,
-                              canRequestFocus: false,
-                              autofocus: false,
-                              mouseCursor: widget
-                                  .configuration
-                                  .containerConfiguration
-                                  .expandableButtonCursor,
-                              child: widget.configuration.containerConfiguration
-                                      .expandableIconConfiguration?.iconBuilder
-                                      ?.call(widget.nodeContainer, context) ??
-                                  SizedBox(
-                                    height: widget.configuration
-                                            .containerConfiguration.height -
-                                        20,
-                                    width: 33,
-                                    child: widget
-                                            .configuration
-                                            .containerConfiguration
-                                            .expandableIconConfiguration
-                                            ?.iconBuilder
-                                            ?.call(
-                                          widget.nodeContainer,
-                                          context,
-                                        ) ??
-                                        Icon(
-                                          widget.nodeContainer.isExpanded
-                                              ? Icons.arrow_drop_down_rounded
-                                              : Icons.arrow_right_rounded,
-                                          color: isSelected &&
-                                                  widget
-                                                      .nodeContainer.isExpanded
-                                              ? Colors.white
-                                              : null,
-                                          size: 25,
-                                        ),
-                                  ),
-                            );
-                      Widget child = SizedBox(
-                        height:
-                            widget.configuration.containerConfiguration.height,
-                        child: Padding(
-                          padding: widget
-                              .configuration.containerConfiguration.padding,
-                          child: MouseRegion(
-                            cursor: widget
-                                .configuration.containerConfiguration.cursor,
-                            child: InkWell(
-                              splashColor: widget.configuration
-                                  .containerConfiguration.tapSplashColor,
-                              enableFeedback: false,
-                              autofocus: false,
-                              splashFactory: widget.configuration
-                                  .containerConfiguration.splashFactory,
-                              canRequestFocus: false,
-                              borderRadius: widget
-                                      .configuration
-                                      .containerConfiguration
-                                      .splashBorderRadius ??
-                                  BorderRadius.circular(10),
-                              customBorder: widget.configuration
-                                  .containerConfiguration.customSplashShape,
-                              onSecondaryTap: widget
-                                          .configuration
-                                          .containerConfiguration
-                                          .onSecondaryTap ==
-                                      null
-                                  ? null
-                                  : () => widget.configuration
-                                      .containerConfiguration.onSecondaryTap
-                                      ?.call(widget.nodeContainer, context),
-                              onDoubleTap: widget.configuration
-                                          .containerConfiguration.onDoubleTap ==
-                                      null
-                                  ? null
-                                  : () => widget.configuration
-                                      .containerConfiguration.onDoubleTap
-                                      ?.call(widget.nodeContainer, context),
-                              hoverColor: widget.configuration
-                                  .containerConfiguration.hoverColor,
-                              onTap: () {
-                                if (widget.configuration.containerConfiguration
-                                        .onTap !=
-                                    null) {
-                                  widget.configuration.containerConfiguration
-                                      .onTap
-                                      ?.call(
-                                    widget.nodeContainer,
-                                    context,
-                                  );
-                                  return;
-                                }
-                                if (widget.configuration.containerConfiguration
-                                        .onTap ==
-                                    null) {
-                                  context
-                                      .readTree()
-                                      .selectNode(widget.nodeContainer);
-                                }
-                              },
-                              child: Container(
-                                decoration: widget.configuration
-                                    .containerConfiguration.boxDecoration
-                                    .call(
-                                  widget.nodeContainer,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: Container(
-                                        padding:
-                                            const EdgeInsets.only(right: 3),
-                                        width: size.width * 0.70,
-                                        child: Row(
-                                          children: <Widget>[
-                                            // left indent
-                                            // and expandable button
-                                            if (customExpandableButton == null)
-                                              Padding(
-                                                padding: EdgeInsets.only(
-                                                    left: indent, right: 5),
-                                                child: customExpandableButton ??
-                                                    expandableButton,
-                                              ),
-                                            if (!showExpandableButton &&
-                                                customExpandableButton != null)
-                                              Padding(
-                                                padding: EdgeInsets.only(
-                                                  left: indent + 1,
-                                                  right: 5,
-                                                ),
-                                                child: customExpandableButton,
-                                              ),
-                                            // leading
-                                            widget.configuration
-                                                .containerConfiguration.leading
-                                                .call(
-                                              widget.nodeContainer,
-                                              indent,
-                                              context,
-                                            ),
-                                            // content child => center
-                                            widget.configuration
-                                                .containerConfiguration.content
-                                                .call(
-                                              widget.nodeContainer,
-                                              indent,
-                                              context,
-                                            ),
-                                            // trailing
-                                            if (trailing != null) trailing
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    // trailing
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-
-                      if (widget.configuration.containerConfiguration.wrapper !=
-                          null) {
-                        child = widget
-                            .configuration.containerConfiguration.wrapper!
-                            .call(child);
-                      }
-
-                      if (!widget.nodeContainer.canDrag() ||
-                          !widget.configuration.activateDragAndDropFeature) {
-                        return child;
-                      }
-
-                      Widget feedback = widget.configuration
-                          .buildDragFeedbackWidget(widget.nodeContainer);
-                      if (!widget.configuration.preferLongPressDraggable) {
-                        return Draggable(
-                          feedback: feedback,
-                          maxSimultaneousDrags: 1,
-                          data: widget.nodeContainer,
-                          onDragStarted: () {
-                            ref
-                                .read(dragControllerProviderState.notifier)
-                                .update((
-                              DragNodeController controller,
-                            ) {
-                              controller..setDraggedNode = widget.nodeContainer;
-                              return DragNodeController.byController(
-                                  controller: controller);
-                            });
-                            ref.read(isDraggingANodeProvider.notifier).state =
-                                true;
-                          },
-                          onDragUpdate: (DragUpdateDetails details) {
-                            ref
-                                .read(dragControllerProviderState.notifier)
-                                .update((DragNodeController controller) {
-                              controller
-                                ..setOffset = details.globalPosition
-                                ..setDraggedNode = widget.nodeContainer;
-                              return DragNodeController.byController(
-                                  controller: controller);
-                            });
-                            ref.read(isDraggingANodeProvider.notifier).state =
-                                true;
-                          },
-                          onDragEnd: (DraggableDetails details) {
-                            ref
-                                .read(dragControllerProviderState.notifier)
-                                .update((DragNodeController controller) {
-                              controller
-                                ..setOffset = null
-                                ..setTargetNode = null
-                                ..setDraggedNode = null;
-                              return DragNodeController.byController(
-                                  controller: controller);
-                            });
-                            ref.read(isDraggingANodeProvider.notifier).state =
-                                false;
-                          },
-                          onDragCompleted: () {
-                            ref
-                                .read(dragControllerProviderState.notifier)
-                                .update((DragNodeController controller) {
-                              controller
-                                ..setOffset = null
-                                ..setTargetNode = null
-                                ..setDraggedNode = null;
-                              return DragNodeController.byController(
-                                  controller: controller);
-                            });
-                            ref.read(isDraggingANodeProvider.notifier).state =
-                                false;
-                          },
-                          childWhenDragging: widget
-                              .configuration.buildDraggingChildWidget
-                              ?.call(
-                            widget.nodeContainer,
-                          ),
-                          onDraggableCanceled:
-                              (Velocity velocity, Offset offset) {
-                            ref
-                                .read<StateController<bool>>(
-                                    isDraggingANodeProvider.notifier)
-                                .state = false;
-                            ref
-                                .read<StateController<DragNodeController>>(
-                                    dragControllerProviderState.notifier)
-                                .update((
-                              DragNodeController controller,
-                            ) {
-                              controller
-                                ..setOffset = null
-                                ..setTargetNode = null
-                                ..setDraggedNode = null;
-                              return DragNodeController.byController(
-                                  controller: controller);
-                            });
-                          },
-                          child: child,
-                        );
-                      }
-                      // if preferLongPressDraggable is true, then will builder this version
-                      // of the drag
-                      return LongPressDraggable<Node>(
-                        data: widget.nodeContainer,
-                        onDragStarted: () {
-                          ref
-                              .read(dragControllerProviderState.notifier)
-                              .update((
-                            DragNodeController controller,
-                          ) {
-                            controller..setDraggedNode = widget.nodeContainer;
-                            return DragNodeController.byController(
-                                controller: controller);
-                          });
-                          ref.read(isDraggingANodeProvider.notifier).state =
-                              true;
-                        },
-                        onDragUpdate: (DragUpdateDetails details) {
-                          ref
-                              .read(dragControllerProviderState.notifier)
-                              .update((
-                            DragNodeController controller,
-                          ) {
-                            controller
-                              ..setOffset = details.globalPosition
-                              ..setDraggedNode = widget.nodeContainer;
-                            return DragNodeController.byController(
-                                controller: controller);
-                          });
-                          ref.read(isDraggingANodeProvider.notifier).state =
-                              true;
-                        },
-                        onDragEnd: (DraggableDetails details) {
-                          ref
-                              .read(dragControllerProviderState.notifier)
-                              .update((
-                            DragNodeController controller,
-                          ) {
-                            controller
-                              ..setOffset = null
-                              ..setTargetNode = null
-                              ..setDraggedNode = null;
-                            return DragNodeController.byController(
-                                controller: controller);
-                          });
-                          ref.read(isDraggingANodeProvider.notifier).state =
-                              false;
-                        },
-                        onDragCompleted: () {
-                          ref
-                              .read(dragControllerProviderState.notifier)
-                              .update((
-                            DragNodeController controller,
-                          ) {
-                            controller
-                              ..setOffset = null
-                              ..setTargetNode = null
-                              ..setDraggedNode = null;
-                            return DragNodeController.byController(
-                                controller: controller);
-                          });
-                          ref.read(isDraggingANodeProvider.notifier).state =
-                              false;
-                        },
-                        onDraggableCanceled:
-                            (Velocity velocity, Offset offset) {
-                          ref.read(isDraggingANodeProvider.notifier).state =
-                              false;
-                          ref
-                              .read(dragControllerProviderState.notifier)
-                              .update((
-                            DragNodeController controller,
-                          ) {
-                            controller
-                              ..setOffset = null
-                              ..setTargetNode = null
-                              ..setDraggedNode = null;
-                            return DragNodeController.byController(
-                                controller: controller);
-                          });
-                        },
-                        childWhenDragging: widget
-                            .configuration.buildDraggingChildWidget
-                            ?.call(widget.nodeContainer),
-                        maxSimultaneousDrags: 1,
-                        feedback: feedback,
-                        child: child,
-                      );
-                    });
+                  valueListenable: provider.selection,
+                  builder: (BuildContext ctx, Node? node, Widget? _) =>
+                      _buildTile(
+                    ctx: ctx,
+                    size: size,
+                    value: node,
+                    indent: indent,
+                    trailing: trailing,
+                    showExpandableButton: showExpandableButton,
+                    customExpandableButton: customExpandableButton,
+                  ),
+                );
               },
             ),
             // we will need to avoid pass objects that can be modified during build
@@ -857,6 +459,340 @@ class _NodeContainerExpandableTileState
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTile({
+    required BuildContext ctx,
+    required Node? value,
+    required bool showExpandableButton,
+    required Size size,
+    required Widget? customExpandableButton,
+    required double indent,
+    required Widget? trailing,
+  }) {
+    bool isSelected = widget.nodeContainer.id == value?.id;
+    Widget expandableButton = !showExpandableButton
+        ? const SizedBox.shrink()
+        : InkWell(
+            customBorder: widget.configuration.containerConfiguration
+                    .expandableIconConfiguration?.customSplashShape ??
+                const RoundedRectangleBorder(
+                  side: BorderSide(style: BorderStyle.none, color: Colors.red),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(5),
+                  ),
+                ),
+            onTap: () {
+              widget.configuration.containerConfiguration
+                  .expandableIconConfiguration?.onIconTap
+                  ?.call(
+                widget.nodeContainer,
+                context,
+              );
+              if (widget.configuration.containerConfiguration
+                      .expandableIconConfiguration?.onIconTap ==
+                  null) {
+                _tryOpenOrCloseContainer();
+              }
+            },
+            hoverColor: widget.configuration.containerConfiguration
+                .expandableIconConfiguration?.hoverColor,
+            splashColor: widget.configuration.containerConfiguration
+                .expandableIconConfiguration?.tapSplashColor,
+            splashFactory: widget.configuration.containerConfiguration
+                .expandableIconConfiguration?.splashFactory,
+            borderRadius: widget.configuration.containerConfiguration
+                .expandableIconConfiguration?.splashBorderRadius,
+            canRequestFocus: false,
+            autofocus: false,
+            mouseCursor: widget
+                .configuration.containerConfiguration.expandableButtonCursor,
+            child: widget.configuration.containerConfiguration
+                    .expandableIconConfiguration?.iconBuilder
+                    ?.call(widget.nodeContainer, context) ??
+                SizedBox(
+                  height:
+                      widget.configuration.containerConfiguration.height - 20,
+                  width: 33,
+                  child: widget.configuration.containerConfiguration
+                          .expandableIconConfiguration?.iconBuilder
+                          ?.call(
+                        widget.nodeContainer,
+                        context,
+                      ) ??
+                      Icon(
+                        widget.nodeContainer.isExpanded
+                            ? Icons.arrow_drop_down_rounded
+                            : Icons.arrow_right_rounded,
+                        color: isSelected && widget.nodeContainer.isExpanded
+                            ? Colors.white
+                            : null,
+                        size: 25,
+                      ),
+                ),
+          );
+    Widget child = SizedBox(
+      height: widget.configuration.containerConfiguration.height,
+      child: Padding(
+        padding: widget.configuration.containerConfiguration.padding,
+        child: MouseRegion(
+          cursor: widget.configuration.containerConfiguration.cursor,
+          child: InkWell(
+            splashColor:
+                widget.configuration.containerConfiguration.tapSplashColor,
+            enableFeedback: false,
+            autofocus: false,
+            splashFactory:
+                widget.configuration.containerConfiguration.splashFactory,
+            canRequestFocus: false,
+            borderRadius: widget
+                    .configuration.containerConfiguration.splashBorderRadius ??
+                BorderRadius.circular(10),
+            customBorder:
+                widget.configuration.containerConfiguration.customSplashShape,
+            onSecondaryTap:
+                widget.configuration.containerConfiguration.onSecondaryTap ==
+                        null
+                    ? null
+                    : () => widget
+                            .configuration.containerConfiguration.onSecondaryTap
+                            ?.call(
+                          widget.nodeContainer,
+                          context,
+                        ),
+            onDoubleTap:
+                widget.configuration.containerConfiguration.onDoubleTap == null
+                    ? null
+                    : () => widget
+                            .configuration.containerConfiguration.onDoubleTap
+                            ?.call(
+                          widget.nodeContainer,
+                          context,
+                        ),
+            hoverColor: widget.configuration.containerConfiguration.hoverColor,
+            onTap: () {
+              widget.configuration.containerConfiguration.onTap?.call(
+                widget.nodeContainer,
+                context,
+              );
+              if (widget.configuration.containerConfiguration.onTap == null) {
+                context.readTree().selectNode(widget.nodeContainer);
+              }
+            },
+            child: Container(
+              decoration: widget
+                  .configuration.containerConfiguration.boxDecoration
+                  .call(
+                widget.nodeContainer,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.only(right: 3),
+                      width: size.width * 0.70,
+                      child: Row(
+                        children: <Widget>[
+                          // left indent
+                          // and expandable button
+                          if (customExpandableButton == null)
+                            Padding(
+                              padding: EdgeInsets.only(
+                                left: indent,
+                                right: 5,
+                              ),
+                              child: customExpandableButton ?? expandableButton,
+                            ),
+                          if (!showExpandableButton &&
+                              customExpandableButton != null)
+                            Padding(
+                              padding: EdgeInsets.only(
+                                left: indent + 1,
+                                right: 5,
+                              ),
+                              child: customExpandableButton,
+                            ),
+                          // leading
+                          widget.configuration.containerConfiguration.leading
+                              .call(
+                            widget.nodeContainer,
+                            indent,
+                            context,
+                          ),
+                          // content child => center
+                          widget.configuration.containerConfiguration.content
+                              .call(
+                            widget.nodeContainer,
+                            indent,
+                            context,
+                          ),
+                          // trailing
+                          if (trailing != null) trailing
+                        ],
+                      ),
+                    ),
+                  ),
+                  // trailing
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (widget.configuration.containerConfiguration.wrapper != null) {
+      child = widget.configuration.containerConfiguration.wrapper!.call(child);
+    }
+
+    if (!widget.nodeContainer.canDrag() ||
+        !widget.configuration.activateDragAndDropFeature) {
+      return child;
+    }
+
+    Widget feedback =
+        widget.configuration.buildDragFeedbackWidget(widget.nodeContainer);
+    if (!widget.configuration.preferLongPressDraggable) {
+      return Draggable(
+        feedback: feedback,
+        maxSimultaneousDrags: 1,
+        data: widget.nodeContainer,
+        onDragStarted: () {
+          ref.read(dragControllerProviderState.notifier).update((
+            DragNodeController controller,
+          ) {
+            controller..setDraggedNode = widget.nodeContainer;
+            return DragNodeController.byController(controller: controller);
+          });
+          ref.read(isDraggingANodeProvider.notifier).state = true;
+        },
+        onDragUpdate: (DragUpdateDetails details) {
+          ref
+              .read(dragControllerProviderState.notifier)
+              .update((DragNodeController controller) {
+            controller
+              ..setOffset = details.globalPosition
+              ..setDraggedNode = widget.nodeContainer;
+            return DragNodeController.byController(controller: controller);
+          });
+          ref.read(isDraggingANodeProvider.notifier).state = true;
+        },
+        onDragEnd: (DraggableDetails details) {
+          ref
+              .read(dragControllerProviderState.notifier)
+              .update((DragNodeController controller) {
+            controller
+              ..setOffset = null
+              ..setTargetNode = null
+              ..setDraggedNode = null;
+            return DragNodeController.byController(controller: controller);
+          });
+          ref.read(isDraggingANodeProvider.notifier).state = false;
+        },
+        onDragCompleted: () {
+          ref
+              .read(dragControllerProviderState.notifier)
+              .update((DragNodeController controller) {
+            controller
+              ..setOffset = null
+              ..setTargetNode = null
+              ..setDraggedNode = null;
+            return DragNodeController.byController(controller: controller);
+          });
+          ref.read(isDraggingANodeProvider.notifier).state = false;
+        },
+        childWhenDragging: widget.configuration.buildDraggingChildWidget?.call(
+          widget.nodeContainer,
+        ),
+        onDraggableCanceled: (Velocity velocity, Offset offset) {
+          ref
+              .read<StateController<bool>>(isDraggingANodeProvider.notifier)
+              .state = false;
+          ref
+              .read<StateController<DragNodeController>>(
+                  dragControllerProviderState.notifier)
+              .update((
+            DragNodeController controller,
+          ) {
+            controller
+              ..setOffset = null
+              ..setTargetNode = null
+              ..setDraggedNode = null;
+            return DragNodeController.byController(controller: controller);
+          });
+        },
+        child: child,
+      );
+    }
+    // if preferLongPressDraggable is true, then will builder this version
+    // of the drag
+    return LongPressDraggable<Node>(
+      data: widget.nodeContainer,
+      onDragStarted: () {
+        ref.read(dragControllerProviderState.notifier).update((
+          DragNodeController controller,
+        ) {
+          controller..setDraggedNode = widget.nodeContainer;
+          return DragNodeController.byController(controller: controller);
+        });
+        ref.read(isDraggingANodeProvider.notifier).state = true;
+      },
+      onDragUpdate: (DragUpdateDetails details) {
+        ref.read(dragControllerProviderState.notifier).update((
+          DragNodeController controller,
+        ) {
+          controller
+            ..setOffset = details.globalPosition
+            ..setDraggedNode = widget.nodeContainer;
+          return DragNodeController.byController(controller: controller);
+        });
+        ref.read(isDraggingANodeProvider.notifier).state = true;
+      },
+      onDragEnd: (DraggableDetails details) {
+        ref.read(dragControllerProviderState.notifier).update((
+          DragNodeController controller,
+        ) {
+          controller
+            ..setOffset = null
+            ..setTargetNode = null
+            ..setDraggedNode = null;
+          return DragNodeController.byController(controller: controller);
+        });
+        ref.read(isDraggingANodeProvider.notifier).state = false;
+      },
+      onDragCompleted: () {
+        ref.read(dragControllerProviderState.notifier).update((
+          DragNodeController controller,
+        ) {
+          controller
+            ..setOffset = null
+            ..setTargetNode = null
+            ..setDraggedNode = null;
+          return DragNodeController.byController(controller: controller);
+        });
+        ref.read(isDraggingANodeProvider.notifier).state = false;
+      },
+      onDraggableCanceled: (Velocity velocity, Offset offset) {
+        ref.read(isDraggingANodeProvider.notifier).state = false;
+        ref.read(dragControllerProviderState.notifier).update((
+          DragNodeController controller,
+        ) {
+          controller
+            ..setOffset = null
+            ..setTargetNode = null
+            ..setDraggedNode = null;
+          return DragNodeController.byController(controller: controller);
+        });
+      },
+      childWhenDragging: widget.configuration.buildDraggingChildWidget
+          ?.call(widget.nodeContainer),
+      maxSimultaneousDrags: 1,
+      feedback: feedback,
+      child: child,
     );
   }
 
