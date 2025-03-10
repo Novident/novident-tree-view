@@ -30,10 +30,15 @@ class DragArgs {
 /// inserting, building custom nodes
 @immutable
 class TreeConfiguration {
-  /// Decide if should show the amount
-  /// of the nodes into the CompositeTreeNode
-  /// item
-  final bool showNodesDeeperAmount;
+  /// Determines whether to display the number of child nodes within a [NodeContainer].
+  ///
+  /// When enabled, the count of child nodes (if any) is visually displayed
+  /// in the [NodeContainer] item. This can be useful for providing a quick
+  /// overview of the hierarchy or structure of the nodes.
+  ///
+  /// - Set to `true` to show the count of child nodes.
+  /// - Set to `false` to hide the count.
+  final bool shouldDisplayNodeChildrenCount;
 
   /// If this is false, then drag and drop feature
   /// wont work
@@ -50,24 +55,48 @@ class TreeConfiguration {
   /// the tree
   final bool useRootSection;
 
-  /// Decides if the limiter lines in every [CompositeTreeNode]
-  /// must be showed or removed
+  /// Determines whether to display visual hierarchy lines for each [NodeContainer].
   ///
-  /// These lines are used to make more easy to the users
-  /// know the limit of that [CompositeTreeNode] from the other nodes
+  /// When enabled, lines (e.g., node line `|` or end line `|-`) are drawn to represent the hierarchical
+  /// structure of the nodes, helping users visually understand the relationships
+  /// and levels within the tree.
   ///
-  /// _Just works with default implementation_
-  final bool paintItemLines;
+  /// - Set to `true` to enable the hierarchy lines.
+  /// - Set to `false` to disable them.
+  ///
+  /// **Note**: This only works with the default implementation.
+  final bool shouldPaintHierarchyLines;
 
-  /// Decides how will be the **style** when draw the implementation of lines painter
+  /// Defines the style used to paint the hierarchy lines of a [NodeContainer].
   ///
-  /// _Just works with default implementation_
-  final Paint? customPaint;
+  /// This allows customization of the appearance of the hierarchy lines, such as
+  /// color, stroke width, or other [Paint] properties. If not provided, the
+  /// default style will be used.
+  ///
+  /// Example:
+  /// ```dart
+  /// hierarchyLineStyle: Paint()
+  ///   ..color = Colors.grey
+  ///   ..strokeWidth = 1.5,
+  /// ```
+  ///
+  /// **Note**: This only works with the default implementation.
+  final Paint Function(Node node, {double? leftIndent})? hierarchyLineStyle;
 
-  /// Compute where will be painted (in horizontal direction) the default line
-  /// node implementation
+  /// Computes the horizontal offset for painting the default node lines.
+  ///
+  /// This method determines the position (in the horizontal axis) where the
+  /// lines connecting nodes will be drawn. It allows customization of the
+  /// line alignment based on the node's indentation and properties.
+  ///
+  /// - [nodeIndent]: The current indentation level of the node.
+  /// - [node]: The node for which the line offset is being calculated.
+  ///
+  /// Returns the horizontal offset where the line should be painted.
+  ///
+  /// **Note**: If not provided, the default implementation will be used.
   final double Function(double nodeIndent, Node node)?
-      customComputelinesPainterOffsetX;
+      computeHierarchyLinePainterHorizontalOffset;
   final CustomLinesPainterBuilder? customLinesPainter;
 
   /// let us add a new way to compute the indent of the nodes
@@ -81,27 +110,53 @@ class TreeConfiguration {
   /// unnecessarily
   final PageStorageKey<String>? Function(Node node)? leafWidgetKey;
 
-  /// A basic builder for the feedback that is used by [Draggable] and [LongPressDraggable] widgets
-  final Widget Function(Node node) buildFeedback;
-  final Widget Function(Node node, DragArgs object)? buildSectionBetweenNodes;
-  final Widget Function(Node node)? buildChildWhileDragging;
+  /// Constructs the visual feedback widget displayed during a drag operation.
+  ///
+  /// This builder is used by [Draggable] and [LongPressDraggable] widgets to
+  /// create a visual representation of the dragged node. The feedback widget
+  /// is typically shown under the user's finger or cursor while dragging.
+  ///
+  /// - [node]: The node that is being dragged.
+  /// - Returns: A widget that represents the visual feedback during the drag operation.
+  final Widget Function(Node node) buildDragFeedbackWidget;
+
+  /// Constructs a widget that appears when a node is dragged over another node.
+  ///
+  /// This widget is typically displayed during a drag operation to indicate
+  /// where the dragged node can be inserted. When the dragged node is dropped
+  /// onto this widget, it triggers the insertion of the dragged node into
+  /// the corresponding position in the tree structure.
+  ///
+  /// - [node]: The target node over which the dragged node is hovering.
+  /// - [object]: The drag-related data (e.g., the dragged node and its position).
+  ///
+  /// Returns a widget representing the insertion point or placeholder.
+  final Widget Function(Node node, DragArgs object)? nodeSectionBuilder;
+
+  /// Constructs a widget that represents the child node during a drag event.
+  ///
+  /// This widget is typically used to visually indicate the child node being
+  /// dragged. It can customize the appearance of the node while it is being
+  /// moved, such as adding a shadow, changing opacity, or applying a preview style.
+  final Widget Function(Node node)? buildDraggingChildWidget;
   final Widget Function(NodeContainer? parent, List<Node> children)?
       buildCustomChildren;
 
-  /// Contains all necessary configs to the CompositeTreeNode widget
+  /// Contains all necessary configs to the NodeContainer widget
   final ContainerConfiguration containerConfiguration;
   final LeafConfiguration leafConfiguration;
   final Widget? onDetectEmptyRoot;
 
-  /// If the user have his dragged node
-  /// above a [CompositeTreeNode] then
-  /// a timer will start to know if the
-  /// [CompositeTreeNode] should be expanded
-  /// and this defines the delay
+  /// Defines the delay before automatically expanding a [NodeContainer] when a node is dragged over it.
   ///
-  /// By default the delay is computed
-  /// by [milliseconds] and is [625]
-  final int autoExpandOnDragAboveNodeDelay;
+  /// When a user drags a node over a [NodeContainer], a timer starts to determine
+  /// if the container should be expanded to reveal its children. This property
+  /// specifies the duration of that delay in milliseconds.
+  ///
+  /// - Default value: `625` milliseconds.
+  ///
+  /// **Note**: This behavior only applies when the dragged node is held over the [NodeContainer].
+  final int dragOverNodeAutoExpandDelay;
 
   /// This section is drawed when the user drags the node
   /// outside of other nodes (like outside of the tree)
@@ -114,20 +169,20 @@ class TreeConfiguration {
   const TreeConfiguration({
     required this.leafConfiguration,
     required this.containerConfiguration,
-    required this.buildFeedback,
-    required this.buildSectionBetweenNodes,
-    required this.useRootSection,
+    required this.buildDragFeedbackWidget,
+    required this.nodeSectionBuilder,
     required this.preferLongPressDraggable,
     required this.activateDragAndDropFeature,
-    required this.paintItemLines,
+    required this.shouldPaintHierarchyLines,
+    this.useRootSection = false,
+    this.shouldDisplayNodeChildrenCount = false,
     this.rootGestures,
-    this.autoExpandOnDragAboveNodeDelay = kDefaultExpandDelay,
-    this.showNodesDeeperAmount = false,
+    this.dragOverNodeAutoExpandDelay = kDefaultExpandDelay,
     this.customComputeNodeIndentByLevel,
     this.customLinesPainter,
-    this.customComputelinesPainterOffsetX,
-    this.customPaint,
-    this.buildChildWhileDragging,
+    this.computeHierarchyLinePainterHorizontalOffset,
+    this.hierarchyLineStyle,
+    this.buildDraggingChildWidget,
     this.rootTargetToDropSection,
     this.physics,
     this.buildCustomChildren,

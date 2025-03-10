@@ -71,7 +71,7 @@ class _LeafNodeTileState extends ConsumerState<LeafNodeTile> {
         builder: (BuildContext ctx, _) => Column(
           children: <Widget>[
             // above logic
-            if (widget.configuration.buildSectionBetweenNodes != null)
+            if (widget.configuration.nodeSectionBuilder != null)
               Consumer(
                 builder: (BuildContext context, WidgetRef ref, Widget? child) {
                   DragNodeController dragNodeController =
@@ -149,7 +149,7 @@ class _LeafNodeTileState extends ConsumerState<LeafNodeTile> {
                         },
                         builder: (BuildContext context, List<Node?> accepted,
                                 List<dynamic> rejected) =>
-                            widget.configuration.buildSectionBetweenNodes!.call(
+                            widget.configuration.nodeSectionBuilder!.call(
                               widget.singleNode,
                               DragArgs(
                                 offset: dragNodeController.offset,
@@ -229,16 +229,19 @@ class _LeafNodeTileState extends ConsumerState<LeafNodeTile> {
                         controller: controller);
                   });
                 },
-                childWhenDragging: widget.configuration.buildChildWhileDragging
-                    ?.call(widget.singleNode),
-                feedback: widget.configuration.buildFeedback(widget.singleNode),
+                childWhenDragging:
+                    widget.configuration.buildDraggingChildWidget?.call(
+                  widget.singleNode,
+                ),
+                feedback: widget.configuration
+                    .buildDragFeedbackWidget(widget.singleNode),
                 child: child,
               ),
             if (widget.configuration.preferLongPressDraggable &&
                 widget.configuration.activateDragAndDropFeature)
               LongPressDraggable<LeafNode>(
                 data: widget.singleNode,
-                childWhenDragging: widget.configuration.buildChildWhileDragging
+                childWhenDragging: widget.configuration.buildDraggingChildWidget
                     ?.call(widget.singleNode),
                 onDragStarted: () {
                   ref
@@ -301,7 +304,8 @@ class _LeafNodeTileState extends ConsumerState<LeafNodeTile> {
                         controller: controller);
                   });
                 },
-                feedback: widget.configuration.buildFeedback(widget.singleNode),
+                feedback: widget.configuration
+                    .buildDragFeedbackWidget(widget.singleNode),
                 child: child,
               ),
           ],
@@ -387,21 +391,21 @@ class _SingleNodeItem extends StatelessWidget {
           child: InkWell(
             enableFeedback: false,
             autofocus: false,
-            splashColor: configuration.leafConfiguration.onTapSplashColor,
+            splashColor: configuration.leafConfiguration.tapSplashColor,
             splashFactory: configuration.leafConfiguration.splashFactory,
-            borderRadius: configuration.leafConfiguration.borderSplashRadius ??
+            borderRadius: configuration.leafConfiguration.splashBorderRadius ??
                 BorderRadius.circular(10),
-            customBorder: configuration.leafConfiguration.customSplashBorder,
+            customBorder: configuration.leafConfiguration.customSplashShape,
             onSecondaryTap:
-                configuration.leafConfiguration.onSecundaryTap == null
+                configuration.leafConfiguration.onSecondaryTap == null
                     ? null
-                    : () => configuration.leafConfiguration.onSecundaryTap
+                    : () => configuration.leafConfiguration.onSecondaryTap
                         ?.call(singleNode, context),
             onDoubleTap: configuration.leafConfiguration.onDoubleTap == null
                 ? null
                 : () => configuration.leafConfiguration.onDoubleTap
                     ?.call(singleNode, context),
-            hoverColor: configuration.leafConfiguration.onHoverColor,
+            hoverColor: configuration.leafConfiguration.hoverColor,
             canRequestFocus: false,
             mouseCursor: configuration.leafConfiguration.cursor,
             onHover: (bool onHover) => configuration.leafConfiguration.onHover
@@ -425,7 +429,6 @@ class _SingleNodeItem extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      textDirection: Directionality.of(context),
                       children: <Widget>[
                         LeafNodeTileHeader(
                           singleNode: singleNode,

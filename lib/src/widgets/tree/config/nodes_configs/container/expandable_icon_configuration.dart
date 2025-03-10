@@ -5,43 +5,58 @@ typedef IconBuilder = Widget? Function(NodeContainer node, BuildContext);
 
 @immutable
 class ExpandableIconConfiguration {
+  /// Builder for customizing the expand/collapse icon.
   final IconBuilder? iconBuilder;
-  final Color? onTapSplashColor;
-  final Color? onHoverColor;
-  final Color? onExistHoverColor;
+
+  /// The splash color applied when tapping the expand/collapse icon.
+  final Color? tapSplashColor;
+
+  /// The color applied when hovering over the expand/collapse icon.
+  final Color? hoverColor;
+
+  /// The factory used to create the splash effect when tapping the expand/collapse icon.
   final InteractiveInkFeatureFactory? splashFactory;
-  final int defaultExpandableAnimationDuration;
-  final ShapeBorder? customSplashBorder;
-  final BorderRadius? borderRadius;
-  final void Function(NodeContainer node, BuildContext)? onTap;
-  final Widget Function(NodeContainer node, void Function() onPressed)?
-      customExpandableWidget;
+
+  /// A custom shape border for the splash effect of the expand/collapse icon.
+  final ShapeBorder? customSplashShape;
+
+  /// The border radius applied to the expand/collapse icon's splash effect.
+  final BorderRadius? splashBorderRadius;
+
+  /// Callback triggered when the expand/collapse icon is tapped.
+  final void Function(NodeContainer node, BuildContext)? onIconTap;
+
+  /// Builder for a completely custom expand/collapse widget.
+  ///
+  /// This allows replacing the default icon with a custom widget, while still
+  /// providing the `onPressed` callback to handle the expand/collapse logic.
+  final Widget Function(
+    NodeContainer node,
+    void Function() onPressed,
+  )? customExpandableWidget;
 
   const ExpandableIconConfiguration({
     required this.iconBuilder,
-    required this.defaultExpandableAnimationDuration,
-    required this.onTapSplashColor,
+    required this.tapSplashColor,
     required this.splashFactory,
-    required this.borderRadius,
+    required this.splashBorderRadius,
     required this.customExpandableWidget,
-    required this.onHoverColor,
-    required this.onExistHoverColor,
-    required this.customSplashBorder,
-    required this.onTap,
+    required this.hoverColor,
+    required this.customSplashShape,
+    required this.onIconTap,
   });
 
-  factory ExpandableIconConfiguration.base() {
-    return const ExpandableIconConfiguration(
-      defaultExpandableAnimationDuration: 800,
-      iconBuilder: null,
-      onTapSplashColor: null,
-      splashFactory: null,
-      borderRadius: null,
-      customExpandableWidget: null,
-      onHoverColor: null,
-      onExistHoverColor: null,
-      customSplashBorder: null,
-      onTap: null,
-    );
-  }
+  /// Creates a base configuration with default values.
+  ///
+  /// This factory provides a starting point with default values for all properties,
+  /// which can be overridden as needed.
+  const ExpandableIconConfiguration.base()
+      : iconBuilder = null,
+        tapSplashColor = null,
+        splashFactory = null,
+        splashBorderRadius = null,
+        customExpandableWidget = null,
+        hoverColor = null,
+        customSplashShape = null,
+        onIconTap = null;
 }

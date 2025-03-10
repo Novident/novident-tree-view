@@ -1,17 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_tree_view/flutter_tree_view.dart';
-import '../../entities/node/node.dart';
-import '../tree/config/tree_configuration.dart';
-
-// These multiplier are using by Platform
-// since the screen size is minor than the desktop
-// screens, so, we need to adjust the draw offset
-// to make more easy for mobiles adapt to their parents
-// without go out of them easily
-const double _desktopIndentMultiplier = 27.5;
-const double _androidIndentMultiplier = 24.5;
+import 'package:flutter_tree_view/src/utils/platforms_utils.dart';
 
 /// This is the painter that has the encharge
 /// to paint the [CompositeTreeNode] limit lines
@@ -23,33 +12,34 @@ class DepthLinesPainter extends CustomPainter {
   final double indent;
   final double height;
   final double? customOffsetX;
-  final Paint? customPainter;
-  final bool shouldPaint;
+  final Paint? hierarchyLinePainter;
+  final bool shouldPaintHierarchyLines;
   final TreeConfiguration configuration;
 
-  DepthLinesPainter(
-    this.node,
-    this.height,
+  DepthLinesPainter({
+    required this.node,
+    required this.height,
+    required this.shouldPaintHierarchyLines,
+    required this.configuration,
+    required this.indent,
     this.customOffsetX,
-    this.shouldPaint,
     this.lastChild,
-    this.customPainter,
-    this.configuration,
-    this.indent,
-  );
+    this.hierarchyLinePainter,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (!shouldPaint || node is LeafNode) return;
-    final isExpanded = (node as NodeContainer).isExpanded;
-    final hasNoChildren = (node as NodeContainer).hasNoChildren;
+    if (!shouldPaintHierarchyLines || node is LeafNode) return;
+    final bool isExpanded = (node as NodeContainer).isExpanded;
+    final bool hasNoChildren = (node as NodeContainer).hasNoChildren;
     if (!isExpanded || (hasNoChildren && isExpanded)) return;
-    final paint = customPainter ?? Paint()
-      ..color = Colors.grey
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke;
-    final x = customOffsetX ?? indent + _getCorrectMultiplierByPlatform;
-    final endLineEffectivedy = (lastChild is NodeContainer
+    final Paint paint = hierarchyLinePainter ??
+        (Paint()
+          ..color = Colors.grey
+          ..strokeWidth = 1.0
+          ..style = PaintingStyle.stroke);
+    final double x = customOffsetX ?? indent + getCorrectMultiplierByPlatform;
+    final int endLineEffectivedy = (lastChild is NodeContainer
         ? 2
         : lastChild is LeafNode
             ? 3
@@ -71,13 +61,8 @@ class DepthLinesPainter extends CustomPainter {
     */
   }
 
-  double get _getCorrectMultiplierByPlatform =>
-      Platform.isIOS || Platform.isAndroid || Platform.isFuchsia
-          ? _androidIndentMultiplier
-          : _desktopIndentMultiplier;
-
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return shouldPaint;
+    return shouldPaintHierarchyLines;
   }
 }

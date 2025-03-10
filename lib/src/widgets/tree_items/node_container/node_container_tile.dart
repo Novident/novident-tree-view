@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tree_view/flutter_tree_view.dart';
 import 'package:flutter_tree_view/src/controller/drag_node_controller.dart';
+import 'package:flutter_tree_view/src/utils/platforms_utils.dart';
 import '../../tree/provider/drag_provider.dart';
 
 /// Represents the [NodeContainer] into the Tree
@@ -63,7 +64,7 @@ class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
           return Column(
             children: <Widget>[
               // above dropable section
-              if (widget.configuration.buildSectionBetweenNodes != null)
+              if (widget.configuration.nodeSectionBuilder != null)
                 Consumer(
                   builder:
                       (BuildContext context, WidgetRef ref, Widget? child) {
@@ -149,8 +150,7 @@ class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
                           },
                           builder: (BuildContext context, List<Node?> accepted,
                                   List<dynamic> rejected) =>
-                              widget.configuration.buildSectionBetweenNodes!
-                                  .call(
+                              widget.configuration.nodeSectionBuilder!.call(
                                 widget.nodeContainer,
                                 DragArgs(
                                   offset: dragController.offset,
@@ -163,7 +163,7 @@ class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
                   },
                 ),
               _NodeContainerExpandableTile(
-                key: Key("composite-util-key ${widget.nodeContainer.id}"),
+                key: Key("container-key ${widget.nodeContainer.id}"),
                 files: widget.nodeContainer.children,
                 extraLeftIndent: widget.extraLeftIndent,
                 nodeContainer: widget.nodeContainer,
@@ -241,7 +241,7 @@ class _NodeContainerExpandableTileState
     if (timer == null || (isActive != null && !isActive)) {
       timer = Timer(
         Duration(
-            milliseconds: widget.configuration.autoExpandOnDragAboveNodeDelay),
+            milliseconds: widget.configuration.dragOverNodeAutoExpandDelay),
         () {
           widget.nodeContainer.openOrClose(forceOpen: true);
         },
@@ -252,41 +252,61 @@ class _NodeContainerExpandableTileState
   @override
   Widget build(BuildContext context) {
     (Offset, RenderObject)? result = context.globalOffsetOfWidget;
-    Offset? offset = result?.$1;
-    Size size = MediaQuery.sizeOf(context);
-    TreeController provider = context.readTree();
-    bool showExpandableButton =
+    final Offset? offset = result?.$1;
+    final Size size = MediaQuery.sizeOf(context);
+    final TreeController provider = context.readTree();
+    final bool showExpandableButton =
         widget.configuration.containerConfiguration.showDefaultExpandableButton;
-    Widget? customExpandableButton = widget.configuration.containerConfiguration
-        .expandableIconConfiguration?.customExpandableWidget
+    final Widget? customExpandableButton = widget
+        .configuration
+        .containerConfiguration
+        .expandableIconConfiguration
+        ?.customExpandableWidget
         ?.call(
       widget.nodeContainer,
       _tryOpenOrCloseContainer,
     );
-    double indent = widget.configuration.customComputeNodeIndentByLevel
+    final double indent = (widget.configuration.customComputeNodeIndentByLevel
             ?.call(widget.nodeContainer) ??
         (showExpandableButton
-            ? computePaddingForContainer(widget.nodeContainer.level)
-            : computePaddingForContainerWithoutExpandable(
-                widget.nodeContainer.level));
-    indent = indent + widget.extraLeftIndent;
-    Widget? trailing = widget.configuration.containerConfiguration.trailing
+                ? computePaddingForContainer(widget.nodeContainer.level)
+                : computePaddingForContainerWithoutExpandable(
+                    widget.nodeContainer.level,
+                  )) +
+            widget.extraLeftIndent);
+    final Widget? trailing = widget
+        .configuration.containerConfiguration.trailing
         ?.call(widget.nodeContainer, indent, context);
     return Container(
       key: PageStorageKey<String>(
           '${widget.nodeContainer.runtimeType}-key ${widget.nodeContainer.id}'),
       child: CustomPaint(
-        painter: DepthLinesPainter(
-          widget.nodeContainer,
-          widget.configuration.containerConfiguration.height,
-          widget.configuration.customComputelinesPainterOffsetX
-              ?.call(indent, widget.nodeContainer),
-          widget.configuration.paintItemLines,
-          widget.nodeContainer.lastOrNull,
-          widget.configuration.customPaint,
-          widget.configuration,
-          indent,
-        ),
+        painter: widget.configuration.customLinesPainter?.call(
+              widget.nodeContainer,
+              widget.nodeContainer.lastOrNull,
+              widget.configuration.containerConfiguration.height,
+              indent + getCorrectMultiplierByPlatform,
+            ) ??
+            DepthLinesPainter(
+              node: widget.nodeContainer,
+              height: widget.configuration.containerConfiguration.height,
+              customOffsetX: widget
+                  .configuration.computeHierarchyLinePainterHorizontalOffset
+                  ?.call(
+                indent,
+                widget.nodeContainer,
+              ),
+              shouldPaintHierarchyLines:
+                  widget.configuration.shouldPaintHierarchyLines,
+              lastChild: widget.owner?.lastOrNull,
+              hierarchyLinePainter:
+                  widget.configuration.hierarchyLineStyle?.call(
+                widget.nodeContainer,
+                leftIndent: widget.extraLeftIndent,
+              ),
+              configuration: widget.configuration,
+              indent: indent,
+            ),
         isComplex: true,
         child: Column(
           children: <Widget>[
@@ -359,9 +379,9 @@ class _NodeContainerExpandableTileState
                   return;
                 }
                 if (offset != null) {
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
+                  ref.read(dragControllerProviderState.notifier).update((
+                    DragNodeController controller,
+                  ) {
                     controller
                       ..setDraggedNode = details.data
                       ..setTargetNode = widget.nodeContainer;
@@ -370,9 +390,9 @@ class _NodeContainerExpandableTileState
                   });
                   return;
                 }
-                ref
-                    .read(dragControllerProviderState.notifier)
-                    .update((DragNodeController controller) {
+                ref.read(dragControllerProviderState.notifier).update((
+                  DragNodeController controller,
+                ) {
                   controller
                     ..setDraggedNode = null
                     ..setOffset = null
@@ -390,16 +410,61 @@ class _NodeContainerExpandableTileState
                       Widget expandableButton = !showExpandableButton
                           ? const SizedBox.shrink()
                           : InkWell(
-                              customBorder: const RoundedRectangleBorder(
-                                side: BorderSide(
-                                    style: BorderStyle.none, color: Colors.red),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(5),
-                                ),
-                              ),
-                              onTap: _tryOpenOrCloseContainer,
-                              mouseCursor: widget.configuration
-                                  .containerConfiguration.expandableMouseCursor,
+                              customBorder: widget
+                                      .configuration
+                                      .containerConfiguration
+                                      .expandableIconConfiguration
+                                      ?.customSplashShape ??
+                                  const RoundedRectangleBorder(
+                                    side: BorderSide(
+                                        style: BorderStyle.none,
+                                        color: Colors.red),
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(5),
+                                    ),
+                                  ),
+                              onTap: () {
+                                widget.configuration.containerConfiguration
+                                    .expandableIconConfiguration?.onIconTap
+                                    ?.call(
+                                  widget.nodeContainer,
+                                  context,
+                                );
+                                if (widget
+                                        .configuration
+                                        .containerConfiguration
+                                        .expandableIconConfiguration
+                                        ?.onIconTap ==
+                                    null) {
+                                  _tryOpenOrCloseContainer();
+                                }
+                              },
+                              hoverColor: widget
+                                  .configuration
+                                  .containerConfiguration
+                                  .expandableIconConfiguration
+                                  ?.hoverColor,
+                              splashColor: widget
+                                  .configuration
+                                  .containerConfiguration
+                                  .expandableIconConfiguration
+                                  ?.tapSplashColor,
+                              splashFactory: widget
+                                  .configuration
+                                  .containerConfiguration
+                                  .expandableIconConfiguration
+                                  ?.splashFactory,
+                              borderRadius: widget
+                                  .configuration
+                                  .containerConfiguration
+                                  .expandableIconConfiguration
+                                  ?.splashBorderRadius,
+                              canRequestFocus: false,
+                              autofocus: false,
+                              mouseCursor: widget
+                                  .configuration
+                                  .containerConfiguration
+                                  .expandableButtonCursor,
                               child: widget.configuration.containerConfiguration
                                       .expandableIconConfiguration?.iconBuilder
                                       ?.call(widget.nodeContainer, context) ??
@@ -408,16 +473,26 @@ class _NodeContainerExpandableTileState
                                             .containerConfiguration.height -
                                         20,
                                     width: 33,
-                                    child: Icon(
-                                      widget.nodeContainer.isExpanded
-                                          ? Icons.arrow_drop_down_rounded
-                                          : Icons.arrow_right_rounded,
-                                      color: isSelected &&
-                                              widget.nodeContainer.isExpanded
-                                          ? Colors.white
-                                          : null,
-                                      size: 25,
-                                    ),
+                                    child: widget
+                                            .configuration
+                                            .containerConfiguration
+                                            .expandableIconConfiguration
+                                            ?.iconBuilder
+                                            ?.call(
+                                          widget.nodeContainer,
+                                          context,
+                                        ) ??
+                                        Icon(
+                                          widget.nodeContainer.isExpanded
+                                              ? Icons.arrow_drop_down_rounded
+                                              : Icons.arrow_right_rounded,
+                                          color: isSelected &&
+                                                  widget
+                                                      .nodeContainer.isExpanded
+                                              ? Colors.white
+                                              : null,
+                                          size: 25,
+                                        ),
                                   ),
                             );
                       Widget child = SizedBox(
@@ -431,7 +506,7 @@ class _NodeContainerExpandableTileState
                                 .configuration.containerConfiguration.cursor,
                             child: InkWell(
                               splashColor: widget.configuration
-                                  .containerConfiguration.onTapSplashColor,
+                                  .containerConfiguration.tapSplashColor,
                               enableFeedback: false,
                               autofocus: false,
                               splashFactory: widget.configuration
@@ -440,18 +515,18 @@ class _NodeContainerExpandableTileState
                               borderRadius: widget
                                       .configuration
                                       .containerConfiguration
-                                      .borderSplashRadius ??
+                                      .splashBorderRadius ??
                                   BorderRadius.circular(10),
                               customBorder: widget.configuration
-                                  .containerConfiguration.customSplashBorder,
+                                  .containerConfiguration.customSplashShape,
                               onSecondaryTap: widget
                                           .configuration
                                           .containerConfiguration
-                                          .onSecundaryTap ==
+                                          .onSecondaryTap ==
                                       null
                                   ? null
                                   : () => widget.configuration
-                                      .containerConfiguration.onSecundaryTap
+                                      .containerConfiguration.onSecondaryTap
                                       ?.call(widget.nodeContainer, context),
                               onDoubleTap: widget.configuration
                                           .containerConfiguration.onDoubleTap ==
@@ -461,11 +536,19 @@ class _NodeContainerExpandableTileState
                                       .containerConfiguration.onDoubleTap
                                       ?.call(widget.nodeContainer, context),
                               hoverColor: widget.configuration
-                                  .containerConfiguration.onHoverColor,
+                                  .containerConfiguration.hoverColor,
                               onTap: () {
-                                widget
-                                    .configuration.containerConfiguration.onTap
-                                    ?.call(widget.nodeContainer, context);
+                                if (widget.configuration.containerConfiguration
+                                        .onTap !=
+                                    null) {
+                                  widget.configuration.containerConfiguration
+                                      .onTap
+                                      ?.call(
+                                    widget.nodeContainer,
+                                    context,
+                                  );
+                                  return;
+                                }
                                 if (widget.configuration.containerConfiguration
                                         .onTap ==
                                     null) {
@@ -477,8 +560,13 @@ class _NodeContainerExpandableTileState
                               child: Container(
                                 decoration: widget.configuration
                                     .containerConfiguration.boxDecoration
-                                    .call(widget.nodeContainer),
+                                    .call(
+                                  widget.nodeContainer,
+                                ),
                                 child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
                                   children: <Widget>[
                                     Expanded(
                                       child: Container(
@@ -500,19 +588,27 @@ class _NodeContainerExpandableTileState
                                                 customExpandableButton != null)
                                               Padding(
                                                 padding: EdgeInsets.only(
-                                                    left: indent + 1, right: 5),
+                                                  left: indent + 1,
+                                                  right: 5,
+                                                ),
                                                 child: customExpandableButton,
                                               ),
                                             // leading
                                             widget.configuration
                                                 .containerConfiguration.leading
-                                                .call(widget.nodeContainer,
-                                                    indent, context),
+                                                .call(
+                                              widget.nodeContainer,
+                                              indent,
+                                              context,
+                                            ),
                                             // content child => center
                                             widget.configuration
                                                 .containerConfiguration.content
-                                                .call(widget.nodeContainer,
-                                                    indent, context),
+                                                .call(
+                                              widget.nodeContainer,
+                                              indent,
+                                              context,
+                                            ),
                                             // trailing
                                             if (trailing != null) trailing
                                           ],
@@ -541,7 +637,7 @@ class _NodeContainerExpandableTileState
                       }
 
                       Widget feedback = widget.configuration
-                          .buildFeedback(widget.nodeContainer);
+                          .buildDragFeedbackWidget(widget.nodeContainer);
                       if (!widget.configuration.preferLongPressDraggable) {
                         return Draggable(
                           feedback: feedback,
@@ -602,8 +698,10 @@ class _NodeContainerExpandableTileState
                                 false;
                           },
                           childWhenDragging: widget
-                              .configuration.buildChildWhileDragging
-                              ?.call(widget.nodeContainer),
+                              .configuration.buildDraggingChildWidget
+                              ?.call(
+                            widget.nodeContainer,
+                          ),
                           onDraggableCanceled:
                               (Velocity velocity, Offset offset) {
                             ref
@@ -634,7 +732,9 @@ class _NodeContainerExpandableTileState
                         onDragStarted: () {
                           ref
                               .read(dragControllerProviderState.notifier)
-                              .update((DragNodeController controller) {
+                              .update((
+                            DragNodeController controller,
+                          ) {
                             controller..setDraggedNode = widget.nodeContainer;
                             return DragNodeController.byController(
                                 controller: controller);
@@ -645,7 +745,9 @@ class _NodeContainerExpandableTileState
                         onDragUpdate: (DragUpdateDetails details) {
                           ref
                               .read(dragControllerProviderState.notifier)
-                              .update((DragNodeController controller) {
+                              .update((
+                            DragNodeController controller,
+                          ) {
                             controller
                               ..setOffset = details.globalPosition
                               ..setDraggedNode = widget.nodeContainer;
@@ -658,7 +760,9 @@ class _NodeContainerExpandableTileState
                         onDragEnd: (DraggableDetails details) {
                           ref
                               .read(dragControllerProviderState.notifier)
-                              .update((DragNodeController controller) {
+                              .update((
+                            DragNodeController controller,
+                          ) {
                             controller
                               ..setOffset = null
                               ..setTargetNode = null
@@ -672,7 +776,9 @@ class _NodeContainerExpandableTileState
                         onDragCompleted: () {
                           ref
                               .read(dragControllerProviderState.notifier)
-                              .update((DragNodeController controller) {
+                              .update((
+                            DragNodeController controller,
+                          ) {
                             controller
                               ..setOffset = null
                               ..setTargetNode = null
@@ -689,7 +795,9 @@ class _NodeContainerExpandableTileState
                               false;
                           ref
                               .read(dragControllerProviderState.notifier)
-                              .update((DragNodeController controller) {
+                              .update((
+                            DragNodeController controller,
+                          ) {
                             controller
                               ..setOffset = null
                               ..setTargetNode = null
@@ -699,7 +807,7 @@ class _NodeContainerExpandableTileState
                           });
                         },
                         childWhenDragging: widget
-                            .configuration.buildChildWhileDragging
+                            .configuration.buildDraggingChildWidget
                             ?.call(widget.nodeContainer),
                         maxSimultaneousDrags: 1,
                         feedback: feedback,

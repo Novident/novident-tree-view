@@ -19,8 +19,9 @@ class LeafNodeTileHeader extends StatelessWidget {
             configuration.containerConfiguration.expandableIconConfiguration
                     ?.customExpandableWidget !=
                 null;
-    double indent = (configuration.customComputeNodeIndentByLevel
-            ?.call(singleNode) ??
+    double indent = (configuration.customComputeNodeIndentByLevel?.call(
+          singleNode,
+        ) ??
         (configuration.customComputeNodeIndentByLevel != null
             ? configuration.customComputeNodeIndentByLevel?.call(singleNode)
             : existExpandableButton
