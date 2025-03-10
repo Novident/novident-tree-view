@@ -21,7 +21,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    _controller.activateLogger();
+    _controller.setHandlerToLogger(callback: debugPrint);
     super.initState();
   }
 
@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
   void dispose() {
     _controller
       ..dispose()
-      ..deactivateLogger();
+      ..setHandlerToLogger(callback: null, logLevel: TreeLogLevel.off);
     super.dispose();
   }
 

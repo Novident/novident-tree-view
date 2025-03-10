@@ -46,18 +46,11 @@ abstract class BaseTreeController extends ChangeNotifier
   /// with this variable.
   TreeLoggerConfiguration get logConfiguration => TreeLoggerConfiguration();
 
-  @experimental
-  void activateLogger([TreeLogLevel? level]) {
+  void setHandlerToLogger(
+      {required void Function(String)? callback, TreeLogLevel? logLevel}) {
     logConfiguration
-      ..handler = debugPrint
-      ..level = level ?? TreeLogLevel.all;
-  }
-
-  @experimental
-  void deactivateLogger() {
-    logConfiguration
-      ..handler = null
-      ..level = TreeLogLevel.off;
+      ..handler = callback
+      ..level = logLevel ?? TreeLogLevel.all;
   }
 
   /// Get all nodes contained into the [Root]
