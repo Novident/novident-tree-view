@@ -19,10 +19,6 @@ class ContainerConfiguration {
   final Color? onExistHoverColor;
   final Color? onTapSplashColor;
 
-  /// If a node is dragged above this and will
-  /// be inserted into this [NodeContainer] then this is
-  /// be called to paint
-  final Color Function(Node node)? onDetectDraggingAboveNode;
   final EdgeInsets padding;
   final double childrenLeftIndent;
 
@@ -76,7 +72,6 @@ class ContainerConfiguration {
     this.onTapSplashColor,
     this.borderSplashRadius,
     this.customSplashBorder,
-    this.onDetectDraggingAboveNode,
     this.expandableIconConfiguration,
     this.splashFactory,
     this.onDoubleTap,

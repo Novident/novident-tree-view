@@ -14,7 +14,7 @@ class LeafConfiguration {
   final BorderRadius? borderSplashRadius;
   final ShapeBorder? customSplashBorder;
   final EdgeInsets padding;
-  final double height;
+  final double? height;
 
   /// This doesn't affect the default implementation
   /// where on tap an item this will be selected

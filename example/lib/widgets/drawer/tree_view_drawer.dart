@@ -120,7 +120,6 @@ class TreeViewDrawer extends HookWidget {
                     ),
                     containerConfiguration: ContainerConfiguration(
                       showDefaultExpandableButton: false,
-                      onDetectDraggingAboveNode: null,
                       onTap: (NodeContainer node, context) {
                         node.openOrClose();
                       },

@@ -417,12 +417,13 @@ class _SingleNodeItem extends StatelessWidget {
                 builder: (BuildContext context, Node? node, Widget? child) {
                   return Container(
                     key: configuration.leafWidgetKey?.call(singleNode),
-                    decoration: configuration.leafConfiguration
-                        .boxDecoration(singleNode),
+                    decoration: configuration.leafConfiguration.boxDecoration(
+                      singleNode,
+                    ),
                     height: configuration.leafConfiguration.height,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       textDirection: Directionality.of(context),
                       children: <Widget>[
