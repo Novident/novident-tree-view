@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tree_view/flutter_tree_view.dart';
 import 'package:flutter_tree_view/src/controller/drag_node_controller.dart';
+import 'package:flutter_tree_view/src/extensions/num_extensions.dart';
 import 'package:flutter_tree_view/src/utils/platforms_utils.dart';
 import 'package:flutter_tree_view/src/widgets/hierarchy_painter/hierarchy_painter.dart';
 import '../../tree/provider/drag_provider.dart';
@@ -282,33 +283,34 @@ class _NodeContainerExpandableTileState
       key: PageStorageKey<String>(
           '${widget.nodeContainer.runtimeType}-key ${widget.nodeContainer.id}'),
       child: CustomPaint(
-        painter: widget.configuration.customLinesPainter?.call(
-              widget.nodeContainer,
-              widget.nodeContainer.lastOrNull,
-              widget.configuration.containerConfiguration.height,
-              indent + getCorrectMultiplierByPlatform,
-            ) ??
-            HierarchyLinePainter(
-              nodeContainer: widget.nodeContainer,
-              height: widget.configuration.containerConfiguration.height,
-              customOffsetX: widget
-                  .configuration.computeHierarchyLinePainterHorizontalOffset
-                  ?.call(
-                indent,
-                widget.nodeContainer,
-              ),
-              shouldPaintHierarchyLines:
-                  widget.configuration.shouldPaintHierarchyLines,
-              lastChild: widget.nodeContainer.lastOrNull,
-              hierarchyLinePainter:
-                  widget.configuration.hierarchyLineStyle?.call(
-                widget.nodeContainer,
-                leftIndent: widget.extraLeftIndent,
-              ),
-              configuration: widget.configuration,
-              indent: indent,
-            ),
-        isComplex: true,
+        painter: !widget.configuration.shouldPaintHierarchyLines
+            ? null
+            : widget.configuration.customLinesPainter?.call(
+                  widget.nodeContainer,
+                  widget.nodeContainer.lastOrNull,
+                  indent + getCorrectMultiplierByPlatform,
+                ) ??
+                HierarchyLinePainter(
+                  nodeContainer: widget.nodeContainer,
+                  customOffsetX: widget
+                      .configuration.computeHierarchyLinePainterHorizontalOffset
+                      ?.call(
+                    indent,
+                    widget.nodeContainer,
+                  ),
+                  shouldPaintHierarchyLines:
+                      widget.configuration.shouldPaintHierarchyLines,
+                  lastChild: widget.nodeContainer.lastOrNull,
+                  hierarchyLinePainter:
+                      widget.configuration.hierarchyLineStyle?.call(
+                    widget.nodeContainer,
+                    leftIndent: widget.extraLeftIndent,
+                  ),
+                  configuration: widget.configuration,
+                  indent: indent,
+                ),
+        isComplex: false,
+        willChange: false,
         child: Column(
           children: <Widget>[
             DragTarget<Node>(
@@ -513,8 +515,11 @@ class _NodeContainerExpandableTileState
                     .expandableIconConfiguration?.iconBuilder
                     ?.call(widget.nodeContainer, context) ??
                 SizedBox(
-                  height:
-                      widget.configuration.containerConfiguration.height - 20,
+                  height: (widget.configuration.containerConfiguration
+                              .widgetHeight ??
+                          0 - 20)
+                      .nullableNegative
+                      ?.toDouble(),
                   width: 33,
                   child: widget.configuration.containerConfiguration
                           .expandableIconConfiguration?.iconBuilder
@@ -534,9 +539,12 @@ class _NodeContainerExpandableTileState
                 ),
           );
     Widget child = SizedBox(
-      height: widget.configuration.containerConfiguration.height,
+      height: widget
+          .configuration.containerConfiguration.widgetHeight?.nullableNegative
+          ?.toDouble(),
       child: Padding(
-        padding: widget.configuration.containerConfiguration.padding,
+        padding: widget.configuration.containerConfiguration.padding ??
+            EdgeInsets.zero,
         child: MouseRegion(
           cursor: widget.configuration.containerConfiguration.cursor,
           child: InkWell(
@@ -584,7 +592,7 @@ class _NodeContainerExpandableTileState
             child: Container(
               decoration: widget
                   .configuration.containerConfiguration.boxDecoration
-                  .call(
+                  ?.call(
                 widget.nodeContainer,
               ),
               child: Row(

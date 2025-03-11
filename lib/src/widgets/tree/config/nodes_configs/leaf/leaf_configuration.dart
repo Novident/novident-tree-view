@@ -26,10 +26,10 @@ class LeafConfiguration {
   final ShapeBorder? customSplashShape;
 
   /// The padding applied to the [LeafNode].
-  final EdgeInsets padding;
+  final EdgeInsets? padding;
 
   /// The height of the [LeafNode] widget.
-  final double height;
+  final double? widgetHeight;
 
   /// Callback triggered when the [LeafNode] is tapped.
   ///
@@ -50,19 +50,16 @@ class LeafConfiguration {
   final MouseCursor? cursor;
 
   /// Builder for customizing the decoration of the [LeafNode].
-  final LeafDecorationBuilder boxDecoration;
+  final LeafDecorationBuilder? boxDecoration;
 
   /// Builder for the leading widget of the [LeafNode].
-  final Widget Function(LeafNode node, double indent, BuildContext context)
-      leading;
+  final Widget Function(LeafNode node, BuildContext context) leading;
 
   /// Builder for the main content widget of the [LeafNode].
-  final Widget Function(LeafNode node, double indent, BuildContext context)
-      content;
+  final Widget Function(LeafNode node, BuildContext context) content;
 
   /// Builder for the trailing widget of the [LeafNode].
-  final Widget? Function(LeafNode node, double indent, BuildContext context)?
-      trailing;
+  final Widget? Function(LeafNode node, BuildContext context)? trailing;
 
   /// Wraps the [LeafNode] widget with a custom widget to add additional features.
   final Widget Function(Widget leafWidget)? wrapper;
@@ -71,11 +68,11 @@ class LeafConfiguration {
   final NodeDragGestures? dragGestures;
 
   const LeafConfiguration({
-    required this.boxDecoration,
-    required this.padding,
     required this.leading,
     required this.content,
-    required this.height,
+    this.boxDecoration,
+    this.padding,
+    this.widgetHeight,
     this.dragGestures,
     this.wrapper,
     this.onTap,

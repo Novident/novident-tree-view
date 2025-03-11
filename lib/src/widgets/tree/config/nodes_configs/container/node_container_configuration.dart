@@ -25,13 +25,13 @@ class ContainerConfiguration {
   final Color? tapSplashColor;
 
   /// The padding applied to the [NodeContainer].
-  final EdgeInsets padding;
+  final EdgeInsets? padding;
 
   /// The indentation applied to the children of the [NodeContainer].
   final double childrenLeftIndent;
 
   /// The height of the [NodeContainer] widget.
-  final double height;
+  final double? widgetHeight;
 
   /// The factory used to create the splash effect when tapping the [NodeContainer].
   final InteractiveInkFeatureFactory? splashFactory;
@@ -56,7 +56,7 @@ class ContainerConfiguration {
       onHover;
 
   /// Builder for customizing the decoration of the [NodeContainer].
-  final ContainerDecorationBuilder boxDecoration;
+  final ContainerDecorationBuilder? boxDecoration;
 
   /// The mouse cursor displayed when hovering over the expand/collapse button.
   final MouseCursor? expandableButtonCursor;
@@ -65,16 +65,13 @@ class ContainerConfiguration {
   final MouseCursor cursor;
 
   /// Builder for the leading widget of the [NodeContainer].
-  final Widget Function(NodeContainer node, double indent, BuildContext context)
-      leading;
+  final Widget Function(NodeContainer node, BuildContext context) leading;
 
   /// Builder for the main content widget of the [NodeContainer].
-  final Widget Function(NodeContainer node, double indent, BuildContext context)
-      content;
+  final Widget Function(NodeContainer node, BuildContext context) content;
 
   /// Builder for the trailing widget of the [NodeContainer].
-  final Widget? Function(
-      NodeContainer node, double indent, BuildContext context)? trailing;
+  final Widget? Function(NodeContainer node, BuildContext context)? trailing;
 
   /// Configuration for the expand/collapse icon.
   final ExpandableIconConfiguration? expandableIconConfiguration;
@@ -86,11 +83,11 @@ class ContainerConfiguration {
   final NodeDragGestures? dragGestures;
 
   const ContainerConfiguration({
-    required this.boxDecoration,
-    required this.padding,
     required this.leading,
     required this.content,
-    required this.height,
+    this.padding,
+    this.boxDecoration,
+    this.widgetHeight,
     this.dragGestures,
     this.wrapper,
     this.onTap,

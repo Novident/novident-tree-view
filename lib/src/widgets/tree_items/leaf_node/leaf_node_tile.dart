@@ -1,9 +1,12 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/diagnostics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tree_view/src/controller/tree_controller.dart';
 import 'package:flutter_tree_view/src/entities/tree_node/leaf_node.dart';
 import 'package:flutter_tree_view/src/entities/tree_node/node_container.dart';
+import 'package:flutter_tree_view/src/extensions/num_extensions.dart';
 import 'package:flutter_tree_view/src/widgets/tree/config/gestures/node_drag_gestures.dart';
 import 'package:flutter_tree_view/src/widgets/tree/provider/drag_provider.dart';
 import '../../../controller/drag_node_controller.dart';
@@ -387,7 +390,7 @@ class _SingleNodeItem extends StatelessWidget {
               List<dynamic> rejectedData) =>
           Builder(builder: (context) {
         return Padding(
-          padding: configuration.leafConfiguration.padding,
+          padding: configuration.leafConfiguration.padding ?? EdgeInsets.zero,
           child: InkWell(
             enableFeedback: false,
             autofocus: false,
@@ -421,10 +424,13 @@ class _SingleNodeItem extends StatelessWidget {
                 builder: (BuildContext context, Node? node, Widget? child) {
                   return Container(
                     key: configuration.leafWidgetKey?.call(singleNode),
-                    decoration: configuration.leafConfiguration.boxDecoration(
+                    decoration:
+                        configuration.leafConfiguration.boxDecoration?.call(
                       singleNode,
                     ),
-                    height: configuration.leafConfiguration.height,
+                    height: configuration
+                        .leafConfiguration.widgetHeight?.nullableNegative
+                        ?.toDouble(),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,

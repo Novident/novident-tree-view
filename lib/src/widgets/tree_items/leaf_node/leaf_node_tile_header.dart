@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tree_view/flutter_tree_view.dart';
 
 class LeafNodeTileHeader extends StatelessWidget {
-  final LeafNode singleNode;
+  final LeafNode leafNode;
   final TreeConfiguration configuration;
   final double extraLeftIndent;
   const LeafNodeTileHeader({
-    required this.singleNode,
+    required this.leafNode,
     required this.configuration,
     required this.extraLeftIndent,
     super.key,
@@ -19,23 +19,33 @@ class LeafNodeTileHeader extends StatelessWidget {
             configuration.containerConfiguration.expandableIconConfiguration
                     ?.customExpandableWidget !=
                 null;
-    double indent = (configuration.customComputeNodeIndentByLevel?.call(
-          singleNode,
+    double indent = configuration.customComputeNodeIndentByLevel?.call(
+          leafNode,
         ) ??
-        (configuration.customComputeNodeIndentByLevel != null
-            ? configuration.customComputeNodeIndentByLevel?.call(singleNode)
-            : existExpandableButton
-                ? computePaddingForLeaf(singleNode.level)
-                : computePaddingForLeafWithoutExpandable(singleNode.level)))!;
+        defaultComputePadding(existExpandableButton)!;
     indent = indent + extraLeftIndent;
-    Widget? trailing = configuration.leafConfiguration.trailing
-        ?.call(singleNode, indent, context);
+    final Widget? trailing =
+        configuration.leafConfiguration.trailing?.call(leafNode, context);
     return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        configuration.leafConfiguration.leading(singleNode, indent, context),
-        configuration.leafConfiguration.content(singleNode, indent, context),
+        Padding(
+          padding: EdgeInsets.only(left: indent),
+          child: configuration.leafConfiguration.leading(leafNode, context),
+        ),
+        configuration.leafConfiguration.content(leafNode, context),
         if (trailing != null) trailing,
       ],
     );
+  }
+
+  double? defaultComputePadding(bool existExpandableButton) {
+    return configuration.customComputeNodeIndentByLevel != null
+        ? configuration.customComputeNodeIndentByLevel?.call(leafNode)
+        : existExpandableButton
+            ? computePaddingForLeaf(leafNode.level)
+            : computePaddingForLeafWithoutExpandable(leafNode.level)!;
   }
 }

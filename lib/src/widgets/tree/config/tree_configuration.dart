@@ -4,7 +4,6 @@ import 'package:flutter_tree_view/flutter_tree_view.dart';
 typedef CustomLinesPainterBuilder = CustomPainter Function(
   Node node,
   Node? lastChild,
-  double heightWidget,
   double? offsetX,
 );
 

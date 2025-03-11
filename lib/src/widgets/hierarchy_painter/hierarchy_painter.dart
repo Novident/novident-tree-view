@@ -20,7 +20,6 @@ class HierarchyLinePainter extends CustomPainter {
   final NodeContainer nodeContainer;
   final Node? lastChild;
   final double indent;
-  final double height;
   final double? customOffsetX;
   final Paint? hierarchyLinePainter;
   final bool shouldPaintHierarchyLines;
@@ -28,7 +27,6 @@ class HierarchyLinePainter extends CustomPainter {
 
   HierarchyLinePainter({
     required this.nodeContainer,
-    required this.height,
     required this.shouldPaintHierarchyLines,
     required this.configuration,
     required this.indent,

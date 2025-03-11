@@ -19,9 +19,8 @@ LeafConfiguration kDefaultLeafConfiguration(
         borderRadius: BorderRadius.circular(10),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      height: size.height * 0.070,
-      leading: (LeafNode leaf, double indent, BuildContext context) => Padding(
-        padding: EdgeInsets.only(left: indent, right: 5),
+      leading: (LeafNode leaf, BuildContext context) => Padding(
+        padding: const EdgeInsets.only(right: 5),
         child: Icon(
           (leaf as File).content.isEmpty
               ? CupertinoIcons.doc_text
@@ -29,7 +28,7 @@ LeafConfiguration kDefaultLeafConfiguration(
           size: isAndroid ? 20 : null,
         ),
       ),
-      content: (LeafNode leaf, double indent, BuildContext context) {
+      content: (LeafNode leaf, BuildContext context) {
         return Expanded(
           child: Padding(
             padding: const EdgeInsets.only(right: 5),
@@ -44,7 +43,7 @@ LeafConfiguration kDefaultLeafConfiguration(
           ),
         );
       },
-      trailing: (LeafNode node, double indent, BuildContext context) {
+      trailing: (LeafNode node, BuildContext context) {
         return TrailingMenu(
           menuChildren: [
             MenuItemButton(
@@ -73,9 +72,8 @@ ContainerConfiguration kDefaultContainerConfiguration(
       borderRadius: BorderRadius.circular(10),
     ),
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1.5),
-    height: size.height * 0.070,
-    leading: (NodeContainer node, double indent, BuildContext context) =>
-        Padding(
+    widgetHeight: size.height * 0.070,
+    leading: (NodeContainer node, BuildContext context) => Padding(
       padding: const EdgeInsets.only(right: 10),
       child: Icon(
         node.isExpanded && node.isEmpty
@@ -84,8 +82,7 @@ ContainerConfiguration kDefaultContainerConfiguration(
         size: isAndroid ? 20 : null,
       ),
     ),
-    content: (NodeContainer node, double indent, BuildContext context) =>
-        Expanded(
+    content: (NodeContainer node, BuildContext context) => Expanded(
       child: Text(
         (node as Directory).name,
         maxLines: 1,
@@ -93,7 +90,7 @@ ContainerConfiguration kDefaultContainerConfiguration(
         overflow: TextOverflow.fade,
       ),
     ),
-    trailing: (Node node, double indent, BuildContext context) {
+    trailing: (Node node, BuildContext context) {
       return TrailingMenu(
         menuChildren: [
           MenuItemButton(
