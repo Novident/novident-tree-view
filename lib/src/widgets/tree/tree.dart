@@ -17,7 +17,6 @@ class TreeView extends StatefulWidget {
   final FocusNode? focusNode;
   final double bottomInsets;
   const TreeView({
-    super.key,
     required this.controller,
     required this.configuration,
     this.bottomInsets = 30,
@@ -26,6 +25,7 @@ class TreeView extends StatefulWidget {
     this.primary,
     this.clipBehavior,
     this.focusNode,
+    super.key,
   });
 
   @override
@@ -64,6 +64,8 @@ class _TreeViewState extends State<TreeView> {
                 primary: false,
                 itemCount: widget.controller.children.length,
                 hitTestBehavior: HitTestBehavior.translucent,
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 itemBuilder: (BuildContext context, int index) {
                   Node file = widget.controller.children.elementAt(index);
                   if (file is LeafNode) {

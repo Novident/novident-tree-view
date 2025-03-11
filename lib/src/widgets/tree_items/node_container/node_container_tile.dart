@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tree_view/flutter_tree_view.dart';
 import 'package:flutter_tree_view/src/controller/drag_node_controller.dart';
 import 'package:flutter_tree_view/src/utils/platforms_utils.dart';
+import 'package:flutter_tree_view/src/widgets/hierarchy_painter/hierarchy_painter.dart';
 import '../../tree/provider/drag_provider.dart';
 
 /// Represents the [NodeContainer] into the Tree
@@ -287,8 +288,8 @@ class _NodeContainerExpandableTileState
               widget.configuration.containerConfiguration.height,
               indent + getCorrectMultiplierByPlatform,
             ) ??
-            DepthLinesPainter(
-              node: widget.nodeContainer,
+            HierarchyLinePainter(
+              nodeContainer: widget.nodeContainer,
               height: widget.configuration.containerConfiguration.height,
               customOffsetX: widget
                   .configuration.computeHierarchyLinePainterHorizontalOffset
@@ -298,7 +299,7 @@ class _NodeContainerExpandableTileState
               ),
               shouldPaintHierarchyLines:
                   widget.configuration.shouldPaintHierarchyLines,
-              lastChild: widget.owner?.lastOrNull,
+              lastChild: widget.nodeContainer.lastOrNull,
               hierarchyLinePainter:
                   widget.configuration.hierarchyLineStyle?.call(
                 widget.nodeContainer,

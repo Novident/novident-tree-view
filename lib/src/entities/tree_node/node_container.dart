@@ -3,10 +3,6 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tree_view/flutter_tree_view.dart';
-import 'package:flutter_tree_view/src/entities/node/node_details.dart';
-
-import '../../interfaces/draggable_node.dart';
-import '../node/node.dart';
 
 /// [NodeContainer] represents a node that can contains all
 /// types of Nodes as its children

@@ -37,7 +37,7 @@ export 'src/widgets/tree/provider/tree_notifier_provider.dart';
 export 'src/widgets/tree/tree.dart';
 export 'src/widgets/tree_items/leaf_node/leaf_node_tile.dart';
 export 'src/widgets/tree_items/node_container/node_container_tile.dart';
-export 'src/widgets/depth_lines_painter/depth_lines_painter.dart';
+export 'src/widgets/hierarchy_painter/hierarchy_painter.dart';
 // tree state
 export 'src/entities/tree/tree_state.dart';
 export 'src/entities/tree/tree_changes.dart';

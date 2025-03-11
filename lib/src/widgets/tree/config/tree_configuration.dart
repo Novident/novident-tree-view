@@ -40,6 +40,8 @@ class TreeConfiguration {
   /// - Set to `false` to hide the count.
   final bool shouldDisplayNodeChildrenCount;
 
+  final bool shouldUseSliverListInstead;
+
   /// If this is false, then drag and drop feature
   /// wont work
   final bool activateDragAndDropFeature;
@@ -174,6 +176,7 @@ class TreeConfiguration {
     required this.preferLongPressDraggable,
     required this.activateDragAndDropFeature,
     required this.shouldPaintHierarchyLines,
+    this.shouldUseSliverListInstead = false,
     this.useRootSection = false,
     this.shouldDisplayNodeChildrenCount = false,
     this.rootGestures,
