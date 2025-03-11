@@ -51,7 +51,7 @@ class HierarchyLinePainter extends CustomPainter {
 
     // Draw the vertical line
     _drawVerticalLine(
-        canvas, x, height * _verticalLineEndOffset, verticalLineEndY, paint);
+        canvas, x, size.height * _verticalLineEndOffset, verticalLineEndY, paint);
 
     // Draw the horizontal end line
     //
