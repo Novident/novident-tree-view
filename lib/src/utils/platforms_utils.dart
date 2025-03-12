@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter_tree_view/src/utils/platform_utils.dart';
+
 // These multiplier are using by Platform
 // since the screen size is minor than the desktop
 // screens, so, we need to adjust the draw offset
@@ -9,6 +11,4 @@ const double _desktopIndentMultiplier = 27.5;
 const double _androidIndentMultiplier = 24.5;
 
 double get getCorrectMultiplierByPlatform =>
-    Platform.isIOS || Platform.isAndroid || Platform.isFuchsia
-        ? _androidIndentMultiplier
-        : _desktopIndentMultiplier;
+    isMobile ? _androidIndentMultiplier : _desktopIndentMultiplier;

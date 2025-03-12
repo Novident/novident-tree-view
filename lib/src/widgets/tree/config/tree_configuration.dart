@@ -119,7 +119,7 @@ class TreeConfiguration {
   ///
   /// - [node]: The node that is being dragged.
   /// - Returns: A widget that represents the visual feedback during the drag operation.
-  final Widget Function(Node node) buildDragFeedbackWidget;
+  final Widget Function(Node node)? buildDragFeedbackWidget;
 
   /// Constructs a widget that appears when a node is dragged over another node.
   ///
@@ -170,11 +170,11 @@ class TreeConfiguration {
   const TreeConfiguration({
     required this.leafConfiguration,
     required this.containerConfiguration,
-    required this.buildDragFeedbackWidget,
     required this.nodeSectionBuilder,
     required this.preferLongPressDraggable,
     required this.activateDragAndDropFeature,
     required this.shouldPaintHierarchyLines,
+    this.buildDragFeedbackWidget,
     this.shouldUseSliverListInstead = false,
     this.useRootSection = false,
     this.shouldDisplayNodeChildrenCount = false,
@@ -191,5 +191,9 @@ class TreeConfiguration {
     this.onDetectEmptyRoot,
     this.containerWidgetKey,
     this.leafWidgetKey,
-  });
+  }) : assert(
+            !activateDragAndDropFeature ||
+                activateDragAndDropFeature && buildDragFeedbackWidget != null,
+            'when activateDragAndDropFeature is true, '
+            'buildDragFeedbackWidget cannot be nullable');
 }

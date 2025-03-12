@@ -50,8 +50,8 @@ class HierarchyLinePainter extends CustomPainter {
     final double verticalLineEndY = _calculateVerticalLineEndY(size);
 
     // Draw the vertical line
-    _drawVerticalLine(
-        canvas, x, size.height * _verticalLineEndOffset, verticalLineEndY, paint);
+    _drawVerticalLine(canvas, x, size.height * _verticalLineEndOffset,
+        verticalLineEndY, paint);
 
     // Draw the horizontal end line
     //

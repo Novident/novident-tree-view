@@ -66,7 +66,8 @@ class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
           return Column(
             children: <Widget>[
               // above dropable section
-              if (widget.configuration.nodeSectionBuilder != null)
+              if (widget.configuration.nodeSectionBuilder != null &&
+                  widget.configuration.activateDragAndDropFeature)
                 Consumer(
                   builder:
                       (BuildContext context, WidgetRef ref, Widget? child) {
@@ -278,7 +279,7 @@ class _NodeContainerExpandableTileState
             widget.extraLeftIndent);
     final Widget? trailing = widget
         .configuration.containerConfiguration.trailing
-        ?.call(widget.nodeContainer, indent, context);
+        ?.call(widget.nodeContainer, context);
     return Container(
       key: PageStorageKey<String>(
           '${widget.nodeContainer.runtimeType}-key ${widget.nodeContainer.id}'),
@@ -629,14 +630,12 @@ class _NodeContainerExpandableTileState
                           widget.configuration.containerConfiguration.leading
                               .call(
                             widget.nodeContainer,
-                            indent,
                             context,
                           ),
                           // content child => center
                           widget.configuration.containerConfiguration.content
                               .call(
                             widget.nodeContainer,
-                            indent,
                             context,
                           ),
                           // trailing
@@ -659,12 +658,13 @@ class _NodeContainerExpandableTileState
     }
 
     if (!widget.nodeContainer.canDrag() ||
-        !widget.configuration.activateDragAndDropFeature) {
+        !widget.configuration.activateDragAndDropFeature ||
+        widget.configuration.buildDragFeedbackWidget == null) {
       return child;
     }
 
-    Widget feedback =
-        widget.configuration.buildDragFeedbackWidget(widget.nodeContainer);
+    Widget feedback = widget.configuration.buildDragFeedbackWidget!
+        .call(widget.nodeContainer);
     if (!widget.configuration.preferLongPressDraggable) {
       return Draggable(
         feedback: feedback,

@@ -1,5 +1,3 @@
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/diagnostics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -164,153 +162,164 @@ class _LeafNodeTileState extends ConsumerState<LeafNodeTile> {
                   return const SizedBox.shrink();
                 },
               ),
-            if (!widget.singleNode.canDrag() ||
-                !widget.configuration.activateDragAndDropFeature)
-              child,
-            if (!widget.configuration.preferLongPressDraggable &&
-                widget.configuration.activateDragAndDropFeature)
-              Draggable<LeafNode>(
-                data: widget.singleNode,
-                onDragStarted: () {
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller..setDraggedNode = widget.singleNode;
-                    return DragNodeController.byController(
-                        controller: controller);
-                  });
-                  ref.read(isDraggingANodeProvider.notifier).state = true;
-                },
-                onDragUpdate: (DragUpdateDetails details) {
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller
-                      ..setOffset = details.globalPosition
-                      ..setDraggedNode = widget.singleNode;
-                    return DragNodeController.byController(
-                        controller: controller);
-                  });
-                  ref.read(isDraggingANodeProvider.notifier).state = true;
-                },
-                onDragEnd: (DraggableDetails details) {
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller
-                      ..setOffset = null
-                      ..setTargetNode = null
-                      ..setDraggedNode = null;
-                    return DragNodeController.byController(
-                        controller: controller);
-                  });
-                  ref.read(isDraggingANodeProvider.notifier).state = false;
-                },
-                onDragCompleted: () {
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller
-                      ..setOffset = null
-                      ..setDraggedNode = null
-                      ..setTargetNode = null;
-                    return DragNodeController.byController(
-                        controller: controller);
-                  });
-                  ref.read(isDraggingANodeProvider.notifier).state = false;
-                },
-                onDraggableCanceled: (Velocity velocity, Offset offset) {
-                  ref.read(isDraggingANodeProvider.notifier).state = false;
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller
-                      ..setOffset = null
-                      ..setDraggedNode = null
-                      ..setTargetNode = null;
-                    return DragNodeController.byController(
-                        controller: controller);
-                  });
-                },
-                childWhenDragging:
-                    widget.configuration.buildDraggingChildWidget?.call(
-                  widget.singleNode,
-                ),
-                feedback: widget.configuration
-                    .buildDragFeedbackWidget(widget.singleNode),
-                child: child,
-              ),
-            if (widget.configuration.preferLongPressDraggable &&
-                widget.configuration.activateDragAndDropFeature)
-              LongPressDraggable<LeafNode>(
-                data: widget.singleNode,
-                childWhenDragging: widget.configuration.buildDraggingChildWidget
-                    ?.call(widget.singleNode),
-                onDragStarted: () {
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller..setDraggedNode = widget.singleNode;
-                    return DragNodeController.byController(
-                        controller: controller);
-                  });
-                  ref.read(isDraggingANodeProvider.notifier).state = true;
-                },
-                onDragUpdate: (DragUpdateDetails details) {
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller
-                      ..setOffset = details.globalPosition
-                      ..setDraggedNode = widget.singleNode;
-                    return DragNodeController.byController(
-                        controller: controller);
-                  });
-                  ref.read(isDraggingANodeProvider.notifier).state = true;
-                },
-                onDragEnd: (DraggableDetails details) {
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller
-                      ..setOffset = null
-                      ..setTargetNode = null
-                      ..setDraggedNode = null;
-                    return DragNodeController.byController(
-                        controller: controller);
-                  });
-                  ref.read(isDraggingANodeProvider.notifier).state = false;
-                },
-                onDragCompleted: () {
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller
-                      ..setOffset = null
-                      ..setTargetNode = null
-                      ..setDraggedNode = null;
-                    return DragNodeController.byController(
-                        controller: controller);
-                  });
-                  ref.read(isDraggingANodeProvider.notifier).state = false;
-                },
-                onDraggableCanceled: (Velocity velocity, Offset offset) {
-                  ref.read(isDraggingANodeProvider.notifier).state = false;
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller
-                      ..setOffset = null
-                      ..setDraggedNode = null
-                      ..setTargetNode = null;
-                    return DragNodeController.byController(
-                        controller: controller);
-                  });
-                },
-                feedback: widget.configuration
-                    .buildDragFeedbackWidget(widget.singleNode),
-                child: child,
-              ),
+            Builder(
+              builder: (context) {
+                if (!widget.singleNode.canDrag() ||
+                    !widget.configuration.activateDragAndDropFeature ||
+                    widget.configuration.buildDragFeedbackWidget == null) {
+                  return child;
+                }
+                if (!widget.configuration.preferLongPressDraggable &&
+                    widget.configuration.activateDragAndDropFeature) {
+                  return Draggable<LeafNode>(
+                    data: widget.singleNode,
+                    onDragStarted: () {
+                      ref
+                          .read(dragControllerProviderState.notifier)
+                          .update((DragNodeController controller) {
+                        controller..setDraggedNode = widget.singleNode;
+                        return DragNodeController.byController(
+                            controller: controller);
+                      });
+                      ref.read(isDraggingANodeProvider.notifier).state = true;
+                    },
+                    onDragUpdate: (DragUpdateDetails details) {
+                      ref
+                          .read(dragControllerProviderState.notifier)
+                          .update((DragNodeController controller) {
+                        controller
+                          ..setOffset = details.globalPosition
+                          ..setDraggedNode = widget.singleNode;
+                        return DragNodeController.byController(
+                            controller: controller);
+                      });
+                      ref.read(isDraggingANodeProvider.notifier).state = true;
+                    },
+                    onDragEnd: (DraggableDetails details) {
+                      ref
+                          .read(dragControllerProviderState.notifier)
+                          .update((DragNodeController controller) {
+                        controller
+                          ..setOffset = null
+                          ..setTargetNode = null
+                          ..setDraggedNode = null;
+                        return DragNodeController.byController(
+                            controller: controller);
+                      });
+                      ref.read(isDraggingANodeProvider.notifier).state = false;
+                    },
+                    onDragCompleted: () {
+                      ref
+                          .read(dragControllerProviderState.notifier)
+                          .update((DragNodeController controller) {
+                        controller
+                          ..setOffset = null
+                          ..setDraggedNode = null
+                          ..setTargetNode = null;
+                        return DragNodeController.byController(
+                            controller: controller);
+                      });
+                      ref.read(isDraggingANodeProvider.notifier).state = false;
+                    },
+                    onDraggableCanceled: (Velocity velocity, Offset offset) {
+                      ref.read(isDraggingANodeProvider.notifier).state = false;
+                      ref
+                          .read(dragControllerProviderState.notifier)
+                          .update((DragNodeController controller) {
+                        controller
+                          ..setOffset = null
+                          ..setDraggedNode = null
+                          ..setTargetNode = null;
+                        return DragNodeController.byController(
+                            controller: controller);
+                      });
+                    },
+                    childWhenDragging:
+                        widget.configuration.buildDraggingChildWidget?.call(
+                      widget.singleNode,
+                    ),
+                    feedback: widget.configuration
+                        .buildDragFeedbackWidget!(widget.singleNode),
+                    child: child,
+                  );
+                }
+                if (widget.configuration.preferLongPressDraggable &&
+                    widget.configuration.activateDragAndDropFeature)
+                  return LongPressDraggable<LeafNode>(
+                    data: widget.singleNode,
+                    childWhenDragging: widget
+                        .configuration.buildDraggingChildWidget
+                        ?.call(widget.singleNode),
+                    onDragStarted: () {
+                      ref.read(dragControllerProviderState.notifier).update((
+                        DragNodeController controller,
+                      ) {
+                        controller..setDraggedNode = widget.singleNode;
+                        return DragNodeController.byController(
+                            controller: controller);
+                      });
+                      ref.read(isDraggingANodeProvider.notifier).state = true;
+                    },
+                    onDragUpdate: (DragUpdateDetails details) {
+                      ref.read(dragControllerProviderState.notifier).update((
+                        DragNodeController controller,
+                      ) {
+                        controller
+                          ..setOffset = details.globalPosition
+                          ..setDraggedNode = widget.singleNode;
+                        return DragNodeController.byController(
+                            controller: controller);
+                      });
+                      ref.read(isDraggingANodeProvider.notifier).state = true;
+                    },
+                    onDragEnd: (DraggableDetails details) {
+                      ref.read(dragControllerProviderState.notifier).update((
+                        DragNodeController controller,
+                      ) {
+                        controller
+                          ..setOffset = null
+                          ..setTargetNode = null
+                          ..setDraggedNode = null;
+                        return DragNodeController.byController(
+                            controller: controller);
+                      });
+                      ref.read(isDraggingANodeProvider.notifier).state = false;
+                    },
+                    onDragCompleted: () {
+                      ref.read(dragControllerProviderState.notifier).update((
+                        DragNodeController controller,
+                      ) {
+                        controller
+                          ..setOffset = null
+                          ..setTargetNode = null
+                          ..setDraggedNode = null;
+                        return DragNodeController.byController(
+                            controller: controller);
+                      });
+                      ref.read(isDraggingANodeProvider.notifier).state = false;
+                    },
+                    onDraggableCanceled: (Velocity velocity, Offset offset) {
+                      ref.read(isDraggingANodeProvider.notifier).state = false;
+                      ref.read(dragControllerProviderState.notifier).update((
+                        DragNodeController controller,
+                      ) {
+                        controller
+                          ..setOffset = null
+                          ..setDraggedNode = null
+                          ..setTargetNode = null;
+                        return DragNodeController.byController(
+                          controller: controller,
+                        );
+                      });
+                    },
+                    feedback: widget.configuration.buildDragFeedbackWidget!(
+                      widget.singleNode,
+                    ),
+                    child: child,
+                  );
+                return child;
+              },
+            ),
           ],
         ),
       ),
@@ -437,7 +446,7 @@ class _SingleNodeItem extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         LeafNodeTileHeader(
-                          singleNode: singleNode,
+                          leafNode: singleNode,
                           extraLeftIndent: extraLeftIndent,
                           configuration: configuration,
                         ),

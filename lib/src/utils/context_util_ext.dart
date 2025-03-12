@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tree_view/flutter_tree_view.dart';
 import 'package:meta/meta.dart';
 import 'package:vector_math/vector_math_64.dart';
 
@@ -24,23 +25,5 @@ extension GlobalPaintBounds on BuildContext {
     } else {
       return null;
     }
-  }
-}
-
-extension PlatformGlobalUtil on BuildContext {
-  bool isDesktop({bool supportedWeb = false}) {
-    bool isDesktop = Platform.isLinux || Platform.isMacOS || Platform.isWindows;
-    if (supportedWeb) {
-      return kIsWeb || isDesktop;
-    }
-    return isDesktop;
-  }
-
-  bool isMobile({bool supportedWeb = false}) {
-    bool isMobile = Platform.isIOS || Platform.isAndroid;
-    if (supportedWeb) {
-      return kIsWeb || isMobile;
-    }
-    return isMobile;
   }
 }
