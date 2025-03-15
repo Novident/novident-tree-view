@@ -67,28 +67,8 @@ bool get isAppleOS =>
 @pragma('vm:platform-const-if', !kDebugMode)
 bool get isAppleOSApp => !kIsWeb && isAppleOS;
 
-// Keyboard
-
-@pragma('vm:platform-const-if', !kDebugMode)
-bool get isKeyboardOS =>
-    isDesktop || defaultTargetPlatform == TargetPlatform.fuchsia;
-
 extension PlatformThemeCheckExtension on ThemeData {
   bool get isMaterial => !isCupertino;
   bool get isCupertino =>
       {TargetPlatform.iOS, TargetPlatform.macOS}.contains(platform);
-}
-
-/// Should check if [kIsWeb] is `false` before checking if
-/// this is a test.
-bool get isFlutterTest {
-  assert(() {
-    if (kIsWeb) {
-      throw FlutterError(
-        'The getter `isFlutterTest` should not be used in web',
-      );
-    }
-    return true;
-  }());
-  return Platform.environment.containsKey('FLUTTER_TEST');
 }
