@@ -1,47 +1,6 @@
 import 'package:logging/logging.dart';
 
-enum TreeLogLevel {
-  off,
-  error,
-  warn,
-  info,
-  debug,
-  all,
-}
-
-typedef TreeLogHandler = void Function(String message);
-
-/// Manages log service for [Tree]
-///
-/// Set the log level and config the handler depending on your need.
-class TreeLoggerConfiguration {
-  TreeLoggerConfiguration._() {
-    Logger.root.onRecord.listen((record) {
-      if (handler != null) {
-        handler!(
-          '[${record.level.toLogLevel().name}][${record.loggerName}]: ${record.time}: ${record.message}',
-        );
-      }
-    });
-  }
-
-  factory TreeLoggerConfiguration() => _logConfiguration;
-
-  static final TreeLoggerConfiguration _logConfiguration =
-      TreeLoggerConfiguration._();
-
-  TreeLogHandler? handler;
-
-  TreeLogLevel _level = TreeLogLevel.off;
-
-  TreeLogLevel get level => _level;
-  set level(TreeLogLevel level) {
-    _level = level;
-    Logger.root.level = level.toLevel();
-  }
-}
-
-/// For logging message in AppFlowyEditor
+/// For logging message in Flutter Tree View 
 class TreeLogger {
   TreeLogger._({
     required this.name,
@@ -117,5 +76,45 @@ extension on Level {
       return TreeLogLevel.debug;
     }
     return TreeLogLevel.off;
+  }
+}
+
+enum TreeLogLevel {
+  off,
+  error,
+  warn,
+  info,
+  debug,
+  all,
+}
+
+typedef TreeLogHandler = void Function(String message);
+
+/// Manages log service for [Tree]
+///
+/// Set the log level and config the handler depending on your need.
+class TreeLoggerConfiguration {
+  TreeLoggerConfiguration._() {
+    Logger.root.onRecord.listen((record) {
+      if (handler != null) {
+        handler!(
+          '[${record.level.toLogLevel().name}][${record.loggerName}]: ${record.time}: ${record.message}',
+        );
+      }
+    });
+  }
+
+  factory TreeLoggerConfiguration() => _logConfiguration;
+
+  static final TreeLoggerConfiguration _logConfiguration = TreeLoggerConfiguration._();
+
+  TreeLogHandler? handler;
+
+  TreeLogLevel _level = TreeLogLevel.off;
+
+  TreeLogLevel get level => _level;
+  set level(TreeLogLevel level) {
+    _level = level;
+    Logger.root.level = level.toLevel();
   }
 }
