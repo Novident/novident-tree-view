@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tree_view/flutter_tree_view.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
+
+const int kDefaultExpandDelay = 625;
 
 typedef CustomLinesPainterBuilder = CustomPainter Function(
   Node node,
   Node? lastChild,
   double? offsetX,
 );
-
-const int kDefaultExpandDelay = 625;
 
 /// Contains all the common arguments used
 /// by the [DragNodeController] during dragging gestures
@@ -29,17 +29,9 @@ class DragArgs {
 /// inserting, building custom nodes
 @immutable
 class TreeConfiguration {
-  /// Determines whether to display the number of child nodes within a [NodeContainer].
-  ///
-  /// When enabled, the count of child nodes (if any) is visually displayed
-  /// in the [NodeContainer] item. This can be useful for providing a quick
-  /// overview of the hierarchy or structure of the nodes.
-  ///
-  /// - Set to `true` to show the count of child nodes.
-  /// - Set to `false` to hide the count.
-  final bool shouldDisplayNodeChildrenCount;
-
-  final bool shouldUseSliverListInstead;
+  final Widget Function(Node node, double indentForLevel) nodeBuilder;
+  final double Function(Node node) nodeHeight;
+  final void Function(NodeContainer node) onTryOpen;
 
   /// If this is false, then drag and drop feature
   /// wont work
@@ -101,15 +93,11 @@ class TreeConfiguration {
   final CustomLinesPainterBuilder? customLinesPainter;
 
   /// let us add a new way to compute the indent of the nodes
-  final double Function(Node node)? customComputeNodeIndentByLevel;
-
-  /// This key is used to avoid rebuild or remove the state of the NodeContainer
-  /// unnecessarily
-  final PageStorageKey<String>? Function(Node node)? containerWidgetKey;
+  final double Function(Node node) leftNodeIndent;
 
   /// This key is used to avoid rebuild or remove the state of the LeafNode
   /// unnecessarily
-  final PageStorageKey<String>? Function(Node node)? leafWidgetKey;
+  final PageStorageKey<String>? Function(Node node)? nodeKey;
 
   /// Constructs the visual feedback widget displayed during a drag operation.
   ///
@@ -119,7 +107,7 @@ class TreeConfiguration {
   ///
   /// - [node]: The node that is being dragged.
   /// - Returns: A widget that represents the visual feedback during the drag operation.
-  final Widget Function(Node node)? buildDragFeedbackWidget;
+  final Widget Function(Node node) buildDragFeedbackWidget;
 
   /// Constructs a widget that appears when a node is dragged over another node.
   ///
@@ -132,7 +120,7 @@ class TreeConfiguration {
   /// - [object]: The drag-related data (e.g., the dragged node and its position).
   ///
   /// Returns a widget representing the insertion point or placeholder.
-  final Widget Function(Node node, DragArgs object)? nodeSectionBuilder;
+  final Widget Function(Node node, DragArgs object) nodeSectionBuilder;
 
   /// Constructs a widget that represents the child node during a drag event.
   ///
@@ -140,12 +128,7 @@ class TreeConfiguration {
   /// dragged. It can customize the appearance of the node while it is being
   /// moved, such as adding a shadow, changing opacity, or applying a preview style.
   final Widget Function(Node node)? buildDraggingChildWidget;
-  final Widget Function(NodeContainer? parent, List<Node> children)?
-      buildCustomChildren;
 
-  /// Contains all necessary configs to the NodeContainer widget
-  final ContainerConfiguration containerConfiguration;
-  final LeafConfiguration leafConfiguration;
   final Widget? onDetectEmptyRoot;
 
   /// Defines the delay before automatically expanding a [NodeContainer] when a node is dragged over it.
@@ -165,35 +148,31 @@ class TreeConfiguration {
   final ScrollPhysics? physics;
 
   /// These are the gestures that are used just when [useRootSection] is true
-  final NodeDragGestures? rootGestures;
+  final NodeDragGestures rootGestures;
+
+  final NodeDragGestures Function(Node node) nodeGestures;
 
   const TreeConfiguration({
-    required this.leafConfiguration,
-    required this.containerConfiguration,
     required this.nodeSectionBuilder,
     required this.preferLongPressDraggable,
     required this.activateDragAndDropFeature,
     required this.shouldPaintHierarchyLines,
-    this.buildDragFeedbackWidget,
-    this.shouldUseSliverListInstead = false,
+    required this.buildDragFeedbackWidget,
+    required this.leftNodeIndent,
+    required this.nodeBuilder,
+    required this.onTryOpen,
+    required this.nodeGestures,
+    required this.nodeHeight,
+    required this.rootGestures,
     this.useRootSection = false,
-    this.shouldDisplayNodeChildrenCount = false,
-    this.rootGestures,
     this.dragOverNodeAutoExpandDelay = kDefaultExpandDelay,
-    this.customComputeNodeIndentByLevel,
     this.customLinesPainter,
     this.computeHierarchyLinePainterHorizontalOffset,
     this.hierarchyLineStyle,
     this.buildDraggingChildWidget,
     this.rootTargetToDropSection,
     this.physics,
-    this.buildCustomChildren,
     this.onDetectEmptyRoot,
-    this.containerWidgetKey,
-    this.leafWidgetKey,
-  }) : assert(
-            !activateDragAndDropFeature ||
-                activateDragAndDropFeature && buildDragFeedbackWidget != null,
-            'when activateDragAndDropFeature is true, '
-            'buildDragFeedbackWidget cannot be nullable');
+    this.nodeKey,
+  });
 }

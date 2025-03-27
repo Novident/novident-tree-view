@@ -1,8 +1,10 @@
-import 'dart:io' show Platform;
+@internal
+library;
 
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 
 // Android
 

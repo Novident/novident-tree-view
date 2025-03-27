@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tree_view/flutter_tree_view.dart';
-import 'package:flutter_tree_view/src/utils/platforms_utils.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:meta/meta.dart';
+import 'package:novident_tree_view/src/utils/platforms_utils.dart';
 
 final Paint kDefaultHierarchyStylePainter = Paint()
   ..color = Colors.grey
@@ -23,6 +23,7 @@ class HierarchyLinePainter extends CustomPainter {
   final double? customOffsetX;
   final Paint? hierarchyLinePainter;
   final bool shouldPaintHierarchyLines;
+  final double fullHeightForContainer;
   final TreeConfiguration configuration;
 
   HierarchyLinePainter({
@@ -30,6 +31,7 @@ class HierarchyLinePainter extends CustomPainter {
     required this.shouldPaintHierarchyLines,
     required this.configuration,
     required this.indent,
+    required this.fullHeightForContainer,
     this.customOffsetX,
     this.lastChild,
     this.hierarchyLinePainter,
@@ -50,8 +52,13 @@ class HierarchyLinePainter extends CustomPainter {
     final double verticalLineEndY = _calculateVerticalLineEndY(size);
 
     // Draw the vertical line
-    _drawVerticalLine(canvas, x, size.height * _verticalLineEndOffset,
-        verticalLineEndY, paint);
+    _drawVerticalLine(
+      canvas,
+      x,
+      fullHeightForContainer * _verticalLineEndOffset,
+      verticalLineEndY,
+      paint,
+    );
 
     // Draw the horizontal end line
     //
@@ -64,7 +71,7 @@ class HierarchyLinePainter extends CustomPainter {
 
     // Adjust the end position of the vertical line for the last child
     return size.height -
-        (lastChild is LeafNode ? _lastChildEndLineLength : _endLineLength);
+        (lastChild is! NodeContainer ? _lastChildEndLineLength : _endLineLength);
   }
 
   void _drawVerticalLine(
@@ -80,8 +87,7 @@ class HierarchyLinePainter extends CustomPainter {
   // ignore: unused_element
   void _drawHorizontalEndLine(Canvas canvas, double x, double y, Paint paint,
       {required bool isLastChild}) {
-    final double endLineLength =
-        isLastChild ? _lastChildEndLineLength : _endLineLength;
+    final double endLineLength = isLastChild ? _lastChildEndLineLength : _endLineLength;
     canvas.drawLine(
       Offset(x, y),
       Offset(x + endLineLength, y),

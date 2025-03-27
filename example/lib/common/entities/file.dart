@@ -1,11 +1,13 @@
-import 'package:flutter_tree_view/flutter_tree_view.dart';
+import 'package:example/common/entities/node_details.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
-class File extends LeafNode {
+class File extends Node {
   final String name;
   final String content;
   final DateTime createAt;
+  final NodeDetails details;
   File({
-    required super.details,
+    required this.details,
     required this.content,
     required this.name,
     required this.createAt,
@@ -26,7 +28,6 @@ class File extends LeafNode {
     return 'File(name: $name)';
   }
 
-  @override
   Node copyWith({
     NodeDetails? details,
     String? name,
@@ -42,20 +43,29 @@ class File extends LeafNode {
   }
 
   @override
-  List<Object?> get props => [
-        details,
-        name,
-        createAt,
-        content,
-      ];
+  bool operator ==(covariant File other) {
+    return details == other.details &&
+        content == other.content &&
+        name == other.name &&
+        createAt == other.createAt;
+  }
 
   @override
-  File clone() {
-    return File(
-      details: NodeDetails.withLevel(level),
-      content: content,
-      name: name,
-      createAt: createAt,
-    );
-  }
+  int get hashCode => Object.hashAllUnordered(
+        [
+          details,
+          content,
+          name,
+          createAt,
+        ],
+      );
+
+  @override
+  String get id => details.id;
+
+  @override
+  int get level => details.level;
+
+  @override
+  NodeContainer<Node> get owner => details.owner!;
 }

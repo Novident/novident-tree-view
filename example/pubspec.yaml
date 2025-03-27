@@ -31,14 +31,14 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_tree_view:
+  novident_tree_view:
      path: ../
   
-  flutter_quill: ^10.5.9
-  cupertino_icons: ^1.0.6
-  collection: ^1.18.0
-  equatable: ^2.0.5
-  flutter_hooks: ^0.20.5
+  flutter_quill: ^11.2.0
+  cupertino_icons: ^1.0.8
+  collection: ^1.19.1
+  equatable: ^2.0.7
+  flutter_hooks: ^0.21.2
 
 dev_dependencies:
   flutter_test:

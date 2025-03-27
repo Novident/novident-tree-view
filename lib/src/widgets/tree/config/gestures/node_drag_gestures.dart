@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tree_view/flutter_tree_view.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
 typedef CustomWillAcceptOnNode = bool Function(
   DragTargetDetails<Node> details,
   Node currentNode,
-  NodeContainer? parent,
+  Node? parent,
   DragHandlerPosition handlerPosition,
 );
 
 typedef CustomAcceptOnNode = void Function(
   DragTargetDetails<Node> details,
   Node currentNode,
-  NodeContainer? parent,
+  Node? parent,
   DragHandlerPosition handlerPosition,
 );
 
@@ -47,17 +47,17 @@ class NodeDragGestures {
   ///
   /// the unique way to know is the operation will be handled
   /// on between nodes section is if [handlerPosition] is handlerPosition.betweenNodes
-  final CustomWillAcceptOnNode? onWillAcceptWithDetails;
+  final CustomWillAcceptOnNode onWillAcceptWithDetails;
 
-  final CustomAcceptOnNode? onAcceptWithDetails;
+  final CustomAcceptOnNode onAcceptWithDetails;
 
   const NodeDragGestures({
+    required this.onWillAcceptWithDetails,
+    required this.onAcceptWithDetails,
     this.onDragStart,
     this.onDragMove,
     this.onDragEnd,
     this.onDragCanceled,
     this.onDragCompleted,
-    this.onWillAcceptWithDetails,
-    this.onAcceptWithDetails,
   });
 }

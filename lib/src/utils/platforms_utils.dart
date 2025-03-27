@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:flutter_tree_view/src/utils/platform_utils.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
 // These multiplier are using by Platform
 // since the screen size is minor than the desktop

@@ -1,28 +1,18 @@
-import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_tree_view/src/entities/node/node_details.dart';
-import 'package:flutter_tree_view/src/entities/node/node_notifier.dart';
+import 'package:flutter/widgets.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:meta/meta.dart';
 
-abstract class Node extends NodeNotifier with EquatableMixin {
-  final NodeDetails details;
-  final LayerLink layer = LayerLink();
-  Node({
-    required this.details,
-  });
+abstract class Node extends ChangeNotifier implements MakeDraggable {
+  Node();
 
-  void notify() {
-    notifyListeners();
-  }
-
-  String get id => details.id;
-  int get level => details.level;
-  String? get owner => details.owner;
-
-  Node clone();
-  Node copyWith({NodeDetails? details});
+  String get id;
+  int get level;
+  NodeContainer? get owner;
 
   @override
-  String toString() {
-    return 'Node(details: $details)';
-  }
+  @mustBeOverridden
+  bool operator ==(covariant Node other);
+  @override
+  @mustBeOverridden
+  int get hashCode;
 }

@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import '../entities/node/node.dart';
 
 /// This controller is used by the Drag and Drop
@@ -28,18 +27,18 @@ class DragNodeController {
       ..setDraggedNode = null;
   }
 
-  factory DragNodeController.values(
-      {required Node? node,
-      required Offset? offset,
-      required Node? targetNode}) {
+  factory DragNodeController.values({
+    required Node? node,
+    required Offset? offset,
+    required Node? targetNode,
+  }) {
     return DragNodeController._()
       ..setOffset = offset
       ..setTargetNode = targetNode
       ..setDraggedNode = node;
   }
 
-  factory DragNodeController.byController(
-      {required DragNodeController controller}) {
+  factory DragNodeController.byController({required DragNodeController controller}) {
     return DragNodeController._()
       ..setOffset = controller.offset
       ..setTargetNode = controller.targetNode

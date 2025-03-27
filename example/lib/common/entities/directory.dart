@@ -1,18 +1,27 @@
-import 'package:flutter_tree_view/flutter_tree_view.dart';
+import 'package:example/common/entities/node_details.dart';
+import 'package:flutter/foundation.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
 class Directory extends NodeContainer<Node> {
   final String name;
   final DateTime createAt;
+  final NodeDetails details;
+
+  bool _isExpanded;
 
   Directory({
+    required this.details,
     required super.children,
-    required super.details,
-    super.isExpanded,
     required this.name,
     required this.createAt,
-  });
+    bool isExpanded = false,
+  }) : _isExpanded = isExpanded;
 
-  @override
+  set isExpanded(bool expand) {
+    _isExpanded = expand;
+    notifyListeners();
+  }
+
   Directory copyWith({
     NodeDetails? details,
     List<Node>? children,
@@ -30,20 +39,60 @@ class Directory extends NodeContainer<Node> {
   }
 
   @override
-  List<Object?> get props => [details, children, isEmpty, name, createAt];
-
-  @override
   String toString() {
     return 'Directory(name: $name, isExpanded: $isExpanded, children: ${children.length})';
   }
 
-  @override
   Directory clone() {
     return Directory(
       children: children,
       details: NodeDetails.withLevel(level),
+      isExpanded: _isExpanded,
       name: name,
       createAt: createAt,
     );
   }
+
+  @override
+  bool operator ==(covariant Directory other) {
+    return listEquals(children, other.children) &&
+        name == other.name &&
+        details == other.details &&
+        createAt == other.createAt &&
+        _isExpanded == other._isExpanded;
+  }
+
+  @override
+  bool canDrag() {
+    return true;
+  }
+
+  @override
+  bool canDrop({required Node target}) {
+    return true;
+  }
+
+  @override
+  int get hashCode => Object.hashAllUnordered([
+        details,
+        createAt,
+        name,
+        details,
+        _isExpanded,
+      ]);
+
+  @override
+  String get id => details.id;
+
+  @override
+  bool get isEmpty => children.isEmpty;
+
+  @override
+  bool get isExpanded => _isExpanded;
+
+  @override
+  int get level => details.level;
+
+  @override
+  NodeContainer<Node> get owner => details.owner!;
 }

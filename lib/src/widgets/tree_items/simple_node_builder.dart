@@ -1,21 +1,15 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:novident_tree_view/src/controller/drag_node_controller.dart';
 import 'package:novident_tree_view/src/utils/platform_utils.dart';
-import 'package:novident_tree_view/src/utils/platforms_utils.dart';
-import 'package:novident_tree_view/src/widgets/tree_items/simple_node_builder.dart';
-import '../../tree/provider/drag_provider.dart';
+import 'package:novident_tree_view/src/widgets/tree/provider/drag_provider.dart';
 
-/// Represents the [NodeContainer] into the Tree
-/// that contains all its children and can be expanded
-/// or closed
-class NodeContainerTile extends ConsumerStatefulWidget {
-  /// The [ContainerTreeNode] item
-  final NodeContainer nodeContainer;
+/// Represents the [Node] (usually a leaf one) into the Tree
+class SimpleNodeBuilder extends ConsumerStatefulWidget {
+  /// The [Node] item
+  final Node node;
 
   /// This is a helper to the current indent for the children
   /// to make more easy for the user watch the children from
@@ -23,23 +17,22 @@ class NodeContainerTile extends ConsumerStatefulWidget {
   final double extraLeftIndent;
 
   final TreeConfiguration configuration;
-  const NodeContainerTile({
-    required this.nodeContainer,
+  const SimpleNodeBuilder({
+    required this.node,
     required this.configuration,
     super.key,
     this.extraLeftIndent = 0,
   });
 
   @override
-  ConsumerState<NodeContainerTile> createState() => _NodeContainerTileState();
+  ConsumerState<SimpleNodeBuilder> createState() => _SimpleNodeBuilderState();
 }
 
-class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
+class _SimpleNodeBuilderState extends ConsumerState<SimpleNodeBuilder> {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty('owner', widget.nodeContainer.owner));
-    properties.add(DiagnosticsProperty('container', widget.nodeContainer));
+    properties.add(DiagnosticsProperty('container', widget.node));
   }
 
   /// We use this to calculate correctly the offset where should
@@ -54,7 +47,7 @@ class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
     (Offset, RenderObject)? result = context.globalOffsetOfWidget;
     Offset? offset = result?.$1;
     return ListenableBuilder(
-      listenable: widget.nodeContainer,
+      listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
         return Column(
           children: <Widget>[
@@ -73,19 +66,20 @@ class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
                           offset.dy;
                   // check if the user is dragging the node exactly at this node
                   bool isThisNode = dragController.targetNode != null &&
-                      dragController.targetNode?.id == widget.nodeContainer.id;
+                      dragController.targetNode?.id == widget.node.id;
+                  // check if the node that is dragged by the user is not a child before of this node
                   // check if the node that is dragged by the user is not a child before of this node
                   bool draggedNodeIsNotBackChild = childBeforeThis(
-                            widget.nodeContainer.owner!,
-                            widget.nodeContainer.level,
-                            widget.nodeContainer.id,
+                            widget.node.owner!,
+                            widget.node.level,
+                            widget.node.id,
                             false,
                           )?.id !=
                           dragController.node?.id ||
                       childBeforeThis(
-                            widget.nodeContainer.owner!,
-                            widget.nodeContainer.level,
-                            widget.nodeContainer.id,
+                            widget.node.owner!,
+                            widget.node.level,
+                            widget.node.id,
                             false,
                           ) ==
                           null;
@@ -95,25 +89,23 @@ class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
                   if (shouldShowBetweenNodeSection) {
                     return DragTarget<Node>(
                         onWillAcceptWithDetails: (DragTargetDetails<Node> details) {
-                          if (widget.nodeContainer.id == details.data.id) return false;
-                          NodeDragGestures? dragGestures = widget
-                              .configuration.nodeGestures
-                              .call(widget.nodeContainer);
+                          if (widget.node.id == details.data.id) return false;
+                          NodeDragGestures? dragGestures =
+                              widget.configuration.nodeGestures.call(widget.node);
                           return dragGestures.onWillAcceptWithDetails(
                             details,
-                            widget.nodeContainer,
-                            widget.nodeContainer.owner,
+                            widget.node,
+                            widget.node.owner,
                             DragHandlerPosition.betweenNodes,
                           );
                         },
                         onAcceptWithDetails: (DragTargetDetails<Node> details) async {
-                          NodeDragGestures? dragGestures = widget
-                              .configuration.nodeGestures
-                              .call(widget.nodeContainer);
+                          NodeDragGestures? dragGestures =
+                              widget.configuration.nodeGestures.call(widget.node);
                           dragGestures.onAcceptWithDetails(
                             details,
-                            widget.nodeContainer,
-                            widget.nodeContainer.owner,
+                            widget.node,
+                            widget.node.owner,
                             DragHandlerPosition.betweenNodes,
                           );
                           return;
@@ -121,7 +113,7 @@ class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
                         builder: (BuildContext context, List<Node?> accepted,
                                 List<dynamic> rejected) =>
                             widget.configuration.nodeSectionBuilder.call(
-                              widget.nodeContainer,
+                              widget.node,
                               DragArgs(
                                 offset: dragController.offset,
                                 node: dragController.node,
@@ -132,14 +124,6 @@ class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
                   return const SizedBox.shrink();
                 },
               ),
-            _NodeContainerExpandableTile(
-              key: Key("container-key ${widget.nodeContainer.id}"),
-              files: widget.nodeContainer.children,
-              extraLeftIndent: widget.extraLeftIndent,
-              nodeContainer: widget.nodeContainer,
-              configuration: widget.configuration,
-              owner: widget.nodeContainer.owner,
-            ),
           ],
         );
       },
@@ -180,204 +164,96 @@ class _NodeContainerTileState extends ConsumerState<NodeContainerTile> {
   }
 }
 
-class _NodeContainerExpandableTile extends ConsumerStatefulWidget {
-  const _NodeContainerExpandableTile({
-    required this.nodeContainer,
-    required this.files,
+class _SimpleNodeTile extends ConsumerStatefulWidget {
+  const _SimpleNodeTile({
+    required this.node,
     required this.configuration,
     required this.extraLeftIndent,
-    super.key,
-    this.owner,
+    required this.owner,
   });
 
-  final double extraLeftIndent;
-  final TreeConfiguration configuration;
-  final NodeContainer nodeContainer;
+  final Node node;
   final NodeContainer? owner;
-  final List<Node> files;
+  final TreeConfiguration configuration;
+  final double extraLeftIndent;
 
   @override
-  ConsumerState<_NodeContainerExpandableTile> createState() =>
-      _NodeContainerExpandableTileState();
+  ConsumerState<_SimpleNodeTile> createState() => _SimpleNodeTileState();
 }
 
-class _NodeContainerExpandableTileState
-    extends ConsumerState<_NodeContainerExpandableTile> with TickerProviderStateMixin {
-  Timer? timer = null;
-
-  @override
-  void dispose() {
-    if (mounted) {
-      timer?.cancel();
-      timer = null;
-    }
-    super.dispose();
-  }
-
-  void _startTimerToExpandDir({bool cancel = false}) {
-    if (cancel) {
-      timer?.cancel();
-      timer = null;
-      return;
-    }
-    // avoid start the timer if the NodeContainer is already
-    // expanded
-    if (widget.nodeContainer.isExpanded) return;
-    bool? isActive = timer?.isActive;
-    if (timer == null || (isActive != null && !isActive)) {
-      timer = Timer(
-        Duration(milliseconds: widget.configuration.dragOverNodeAutoExpandDelay),
-        () {
-          widget.configuration.onTryOpen(widget.nodeContainer);
-        },
-      );
-    }
-  }
-
+class _SimpleNodeTileState extends ConsumerState<_SimpleNodeTile> {
   @override
   Widget build(BuildContext context) {
     (Offset, RenderObject)? result = context.globalOffsetOfWidget;
     final Offset? offset = result?.$1;
-    final double indent = widget.configuration.leftNodeIndent.call(widget.nodeContainer) +
-        widget.extraLeftIndent;
-    final Widget child = widget.configuration.nodeBuilder(widget.nodeContainer, indent);
-    final double height = widget.configuration.nodeHeight(widget.nodeContainer);
-    final NodeDragGestures dragGestures =
-        widget.configuration.nodeGestures(widget.nodeContainer);
-    return Container(
-      key: PageStorageKey<String>(
-        '${widget.nodeContainer.runtimeType}-key ${widget.nodeContainer.id}',
-      ),
-      child: CustomPaint(
-        painter: !widget.configuration.shouldPaintHierarchyLines
-            ? null
-            : widget.configuration.customLinesPainter?.call(
-                  widget.nodeContainer,
-                  widget.owner?.children.lastOrNull,
-                  indent + getCorrectMultiplierByPlatform,
-                ) ??
-                HierarchyLinePainter(
-                  nodeContainer: widget.nodeContainer,
-                  fullHeightForContainer: height,
-                  customOffsetX: widget
-                      .configuration.computeHierarchyLinePainterHorizontalOffset
-                      ?.call(
-                    indent,
-                    widget.nodeContainer,
-                  ),
-                  shouldPaintHierarchyLines:
-                      widget.configuration.shouldPaintHierarchyLines,
-                  lastChild: widget.owner?.children.lastOrNull,
-                  hierarchyLinePainter: widget.configuration.hierarchyLineStyle?.call(
-                    widget.nodeContainer,
-                    leftIndent: widget.extraLeftIndent,
-                  ),
-                  configuration: widget.configuration,
-                  indent: indent,
-                ),
-        isComplex: false,
-        willChange: false,
-        child: Column(
-          children: <Widget>[
-            DragTarget<Node>(
-              onWillAcceptWithDetails: (DragTargetDetails<Node> details) {
-                return dragGestures.onWillAcceptWithDetails(
-                  details,
-                  widget.nodeContainer,
-                  widget.owner,
-                  DragHandlerPosition.intoNode,
-                );
-              },
-              onAcceptWithDetails: (DragTargetDetails<Node> details) {
-                dragGestures.onAcceptWithDetails(
-                  details,
-                  widget.nodeContainer,
-                  widget.owner,
-                  DragHandlerPosition.intoNode,
-                );
-                return;
-              },
-              onLeave: (Node? data) {
-                _startTimerToExpandDir(cancel: true);
-              },
-              onMove: (DragTargetDetails<Node> details) {
-                _startTimerToExpandDir();
-                if (details.data.id == widget.nodeContainer.id &&
-                    details.data.runtimeType == widget.nodeContainer.runtimeType) {
-                  ref
-                      .read(dragControllerProviderState.notifier)
-                      .update((DragNodeController controller) {
-                    controller
-                      ..setDraggedNode = null
-                      ..setOffset = null
-                      ..setTargetNode = null;
-                    return DragNodeController.byController(controller: controller);
-                  });
-                  return;
-                }
-                if (offset != null) {
-                  ref.read(dragControllerProviderState.notifier).update((
-                    DragNodeController controller,
-                  ) {
-                    controller
-                      ..setDraggedNode = details.data
-                      ..setTargetNode = widget.nodeContainer;
-                    return DragNodeController.byController(controller: controller);
-                  });
-                  return;
-                }
-                ref.read(dragControllerProviderState.notifier).update((
-                  DragNodeController controller,
-                ) {
-                  controller
-                    ..setDraggedNode = null
-                    ..setOffset = null
-                    ..setTargetNode = null;
-                  return DragNodeController.byController(controller: controller);
-                });
-              },
-              builder: (
-                BuildContext context,
-                List<Node?> candidateData,
-                List<dynamic> rejectedData,
-              ) {
-                return _buildTile(
-                  ctx: context,
-                  indent: indent,
-                  child: child,
-                );
-              },
-            ),
-            // we will need to avoid pass objects that can be modified during build
-            Visibility(
-              visible: widget.nodeContainer.isExpanded,
-              maintainSize: false,
-              child: ListView.builder(
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                physics: const NeverScrollableScrollPhysics(),
-                primary: false,
-                itemCount: widget.nodeContainer.children.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final Node node = widget.nodeContainer.children.elementAt(index);
-                  if (node is! NodeContainer) {
-                    return SimpleNodeBuilder(
-                      node: node,
-                      configuration: widget.configuration,
-                      extraLeftIndent: widget.extraLeftIndent,
-                    );
-                  } else
-                    return NodeContainerTile(
-                      nodeContainer: node,
-                      configuration: widget.configuration,
-                      extraLeftIndent: widget.extraLeftIndent,
-                    );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    final double indent =
+        widget.configuration.leftNodeIndent.call(widget.node) + widget.extraLeftIndent;
+    final Widget child = widget.configuration.nodeBuilder(widget.node, indent);
+    final NodeDragGestures dragGestures = widget.configuration.nodeGestures(widget.node);
+    return DragTarget<Node>(
+      onWillAcceptWithDetails: (DragTargetDetails<Node> details) {
+        return dragGestures.onWillAcceptWithDetails(
+          details,
+          widget.node,
+          widget.owner,
+          DragHandlerPosition.intoNode,
+        );
+      },
+      onAcceptWithDetails: (DragTargetDetails<Node> details) {
+        dragGestures.onAcceptWithDetails(
+          details,
+          widget.node,
+          widget.owner,
+          DragHandlerPosition.intoNode,
+        );
+        return;
+      },
+      onMove: (DragTargetDetails<Node> details) {
+        if (details.data.id == widget.node.id &&
+            details.data.runtimeType == widget.node.runtimeType) {
+          ref
+              .read(dragControllerProviderState.notifier)
+              .update((DragNodeController controller) {
+            controller
+              ..setDraggedNode = null
+              ..setOffset = null
+              ..setTargetNode = null;
+            return DragNodeController.byController(controller: controller);
+          });
+          return;
+        }
+        if (offset != null) {
+          ref.read(dragControllerProviderState.notifier).update((
+            DragNodeController controller,
+          ) {
+            controller
+              ..setDraggedNode = details.data
+              ..setTargetNode = widget.node;
+            return DragNodeController.byController(controller: controller);
+          });
+          return;
+        }
+        ref.read(dragControllerProviderState.notifier).update((
+          DragNodeController controller,
+        ) {
+          controller
+            ..setDraggedNode = null
+            ..setOffset = null
+            ..setTargetNode = null;
+          return DragNodeController.byController(controller: controller);
+        });
+      },
+      builder: (
+        BuildContext context,
+        List<Node?> candidateData,
+        List<dynamic> rejectedData,
+      ) {
+        return _buildTile(
+          ctx: context,
+          indent: indent,
+          child: child,
+        );
+      },
     );
   }
 
@@ -386,23 +262,21 @@ class _NodeContainerExpandableTileState
     required double indent,
     required Widget child,
   }) {
-    if (!widget.nodeContainer.canDrag() ||
-        !widget.configuration.activateDragAndDropFeature) {
+    if (!widget.node.canDrag() || !widget.configuration.activateDragAndDropFeature) {
       return child;
     }
 
-    Widget feedback =
-        widget.configuration.buildDragFeedbackWidget.call(widget.nodeContainer);
+    Widget feedback = widget.configuration.buildDragFeedbackWidget.call(widget.node);
     if (!widget.configuration.preferLongPressDraggable) {
       return Draggable(
         feedback: feedback,
         maxSimultaneousDrags: 1,
-        data: widget.nodeContainer,
+        data: widget.node,
         onDragStarted: () {
           ref.read(dragControllerProviderState.notifier).update((
             DragNodeController controller,
           ) {
-            controller..setDraggedNode = widget.nodeContainer;
+            controller..setDraggedNode = widget.node;
             return DragNodeController.byController(controller: controller);
           });
           ref.read(isDraggingANodeProvider.notifier).state = true;
@@ -413,7 +287,7 @@ class _NodeContainerExpandableTileState
               .update((DragNodeController controller) {
             controller
               ..setOffset = details.globalPosition
-              ..setDraggedNode = widget.nodeContainer;
+              ..setDraggedNode = widget.node;
             return DragNodeController.byController(controller: controller);
           });
           ref.read(isDraggingANodeProvider.notifier).state = true;
@@ -443,7 +317,7 @@ class _NodeContainerExpandableTileState
           ref.read(isDraggingANodeProvider.notifier).state = false;
         },
         childWhenDragging: widget.configuration.buildDraggingChildWidget?.call(
-          widget.nodeContainer,
+          widget.node,
         ),
         onDraggableCanceled: (Velocity velocity, Offset offset) {
           ref.read<StateController<bool>>(isDraggingANodeProvider.notifier).state = false;
@@ -466,12 +340,12 @@ class _NodeContainerExpandableTileState
     // if preferLongPressDraggable is true, then will builder this version
     // of the drag
     return LongPressDraggable<Node>(
-      data: widget.nodeContainer,
+      data: widget.node,
       onDragStarted: () {
         ref.read(dragControllerProviderState.notifier).update((
           DragNodeController controller,
         ) {
-          controller..setDraggedNode = widget.nodeContainer;
+          controller..setDraggedNode = widget.node;
           return DragNodeController.byController(controller: controller);
         });
         ref.read(isDraggingANodeProvider.notifier).state = true;
@@ -482,7 +356,7 @@ class _NodeContainerExpandableTileState
         ) {
           controller
             ..setOffset = details.globalPosition
-            ..setDraggedNode = widget.nodeContainer;
+            ..setDraggedNode = widget.node;
           return DragNodeController.byController(controller: controller);
         });
         ref.read(isDraggingANodeProvider.notifier).state = true;
@@ -523,9 +397,9 @@ class _NodeContainerExpandableTileState
           return DragNodeController.byController(controller: controller);
         });
       },
-      childWhenDragging:
-          widget.configuration.buildDraggingChildWidget?.call(widget.nodeContainer),
+      childWhenDragging: widget.configuration.buildDraggingChildWidget?.call(widget.node),
       maxSimultaneousDrags: 1,
+      rootOverlay: true,
       feedback: feedback,
       child: child,
     );

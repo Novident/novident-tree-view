@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:example/common/default_nodes_demo.dart';
+import 'package:example/common/entities/root.dart';
 import 'package:example/widgets/views/android_view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tree_view/flutter_tree_view.dart';
 import 'widgets/views/desktop_view.dart';
 
 void main() {
@@ -17,21 +17,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final TreeController _controller = TreeController(defaultNodes);
-
-  @override
-  void initState() {
-    _controller.setHandlerToLogger(callback: debugPrint);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _controller
-      ..dispose()
-      ..setHandlerToLogger(callback: null, logLevel: TreeLogLevel.off);
-    super.dispose();
-  }
+  final Root _controller = Root(children: defaultNodes);
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +35,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class MiddlewareView extends StatelessWidget {
-  final TreeController controller;
+  final Root controller;
   const MiddlewareView({
     super.key,
     required this.controller,
