@@ -72,6 +72,7 @@ class LeafNode extends Node {
   @override
   NodeContainer? get owner => parent;
 
+  @override
   set owner(NodeContainer? owner) {
     parent = owner;
     notifyListeners();
@@ -139,6 +140,7 @@ class NodeContainerModel extends NodeContainer<Node> {
   @override
   NodeContainer? get owner => parent;
 
+  @override
   set owner(NodeContainer? owner) {
     parent = owner;
     notifyListeners();
