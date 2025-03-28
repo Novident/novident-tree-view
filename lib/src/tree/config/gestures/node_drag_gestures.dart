@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-typedef CustomWillAcceptOnNode = bool Function(
-  DragTargetDetails<Node> details,
-  Node currentNode,
-  Node? parent,
-  DragHandlerPosition handlerPosition,
+typedef NovOnWillAcceptOnNode = bool Function(
+  NovDragAndDropDetails<Node>? details,
+  DragTargetDetails<Node> dragDetails,
+  NodeContainer? parent,
 );
 
-typedef CustomAcceptOnNode = void Function(
-  DragTargetDetails<Node> details,
-  Node currentNode,
-  Node? parent,
+typedef NovOnAcceptOnNode = void Function(
+  NovDragAndDropDetails<Node> details,
+  NodeContainer? parent,
   DragHandlerPosition handlerPosition,
 );
 
@@ -19,12 +17,14 @@ typedef CustomAcceptOnNode = void Function(
 /// used drag operatons/gestures by the users
 @immutable
 class NodeDragGestures {
-  final void Function(DragArgs, Node node)? onDragStart;
+  final void Function(Node node)? onDragStart;
+
+  final void Function(DragTargetDetails<Node> details)? onDragMove;
 
   /// By default this just update [DragNodeController] updating
   /// the current dragged object, and the offset where it is
   /// using [details.globalPosition]
-  final void Function(DragUpdateDetails details, Node node)? onDragMove;
+  final void Function(DragUpdateDetails details)? onDragUpdate;
 
   /// If the drag ends, then this will be called
   ///
@@ -37,25 +37,31 @@ class NodeDragGestures {
   ///
   /// by default this functions just reset the state
   /// of the [DragNodeController]
-  final void Function(DraggableDetails)? onDragCanceled;
+  final void Function(Velocity velocity, Offset point)? onDragCanceled;
+
+  /// If the target node was leaved by the dragged node
+  final void Function(Node data)? onLeave;
 
   /// by default this functions just reset the state
   /// of the [DragNodeController]
-  final void Function(Velocity velocity, Offset offset)? onDragCompleted;
+  final void Function(Node node)? onDragCompleted;
+
   // These gestures will be used on both sides
   // on insert above and into the node.
   ///
   /// the unique way to know is the operation will be handled
   /// on between nodes section is if [handlerPosition] is handlerPosition.betweenNodes
-  final CustomWillAcceptOnNode onWillAcceptWithDetails;
+  final NovOnWillAcceptOnNode onWillAcceptWithDetails;
 
-  final CustomAcceptOnNode onAcceptWithDetails;
+  final NovOnAcceptOnNode onAcceptWithDetails;
 
   const NodeDragGestures({
     required this.onWillAcceptWithDetails,
     required this.onAcceptWithDetails,
-    this.onDragStart,
     this.onDragMove,
+    this.onDragStart,
+    this.onDragUpdate,
+    this.onLeave,
     this.onDragEnd,
     this.onDragCanceled,
     this.onDragCompleted,

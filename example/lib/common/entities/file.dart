@@ -19,13 +19,24 @@ class File extends Node {
   }
 
   @override
-  bool canDrop({required Node target}) {
-    return target is NodeContainer;
+  bool canSiblingsDropInto() {
+    // TODO: implement canSiblingsDropInto
+    throw UnimplementedError();
   }
 
   @override
-  String toString() {
-    return 'File(name: $name)';
+  String get id => details.id;
+
+  @override
+  int get level => details.level;
+
+  @override
+  NodeContainer<Node> get owner => details.owner!;
+
+  @override
+  set owner(NodeContainer<Node>? owner) {
+    details.owner = owner;
+    notifyListeners();
   }
 
   Node copyWith({
@@ -61,11 +72,7 @@ class File extends Node {
       );
 
   @override
-  String get id => details.id;
-
-  @override
-  int get level => details.level;
-
-  @override
-  NodeContainer<Node> get owner => details.owner!;
+  String toString() {
+    return 'File(name: $name)';
+  }
 }

@@ -4,11 +4,15 @@ import 'package:novident_tree_view/novident_tree_view.dart';
 class Root extends NodeContainer<Node> {
   Root({
     required super.children,
-  });
+  }) {
+    for (final Node child in children) {
+      child.owner = this;
+    }
+  }
 
   @override
   bool operator ==(covariant Root other) {
-    if(identical(this, other)) return true;
+    if (identical(this, other)) return true;
     return listEquals(children, other.children);
   }
 
@@ -39,4 +43,7 @@ class Root extends NodeContainer<Node> {
   bool canDrop({required Node target}) {
     return true;
   }
+
+  @override
+  set owner(NodeContainer<Node>? owner) {}
 }

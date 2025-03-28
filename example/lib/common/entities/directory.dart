@@ -15,7 +15,11 @@ class Directory extends NodeContainer<Node> {
     required this.name,
     required this.createAt,
     bool isExpanded = false,
-  }) : _isExpanded = isExpanded;
+  }) : _isExpanded = isExpanded {
+    for(final Node child in children) {
+      child.owner = this;
+    }
+  }
 
   set isExpanded(bool expand) {
     _isExpanded = expand;
@@ -95,4 +99,10 @@ class Directory extends NodeContainer<Node> {
 
   @override
   NodeContainer<Node> get owner => details.owner!;
+
+  @override
+  set owner(NodeContainer<Node>? owner) {
+    details.owner = owner;
+    notifyListeners();
+  }
 }

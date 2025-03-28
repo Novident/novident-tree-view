@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// [NodeContainer] represents a node that can contains all
@@ -12,4 +13,15 @@ abstract class NodeContainer<T extends Node> extends Node {
 
   bool get isExpanded;
   bool get isEmpty;
+  bool get isNotEmpty;
+
+  @override
+  @mustCallSuper
+  void dispose() {
+    assert(ChangeNotifier.debugAssertNotDisposed(this));
+    super.dispose();
+    for(final child in children) {
+      child.dispose();
+    }
+  }
 }

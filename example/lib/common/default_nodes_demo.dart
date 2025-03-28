@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'package:example/common/contents.dart';
 import 'package:example/common/entities/directory.dart';
 import 'package:example/common/entities/file.dart';
-import 'package:flutter_tree_view/flutter_tree_view.dart';
+import 'package:example/common/entities/node_details.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
 final _subDirNodeBase = NodeDetails.withLevel(1);
-NodeDetails subDirNode(String? owner) => _subDirNodeBase.copyWith(owner: owner);
-final parentDirNode1 = NodeDetails.withLevel(0, 'root');
+final parentDirNode1 = NodeDetails.withLevel(0);
 
 final List<Node> defaultNodes = [
   Directory(
@@ -18,18 +18,18 @@ final List<Node> defaultNodes = [
       Directory(
         children: [
           File(
-            details: NodeDetails.withLevel(2, subDirNode(null).id),
+            details: NodeDetails.withLevel(2),
             name: 'Sub file 2',
             content: r'[{"insert":"\n"}]',
             createAt: DateTime.now(),
           ),
         ],
-        details: subDirNode(parentDirNode1.id),
+        details: NodeDetails(level: 1, id: 'id'),
         name: 'Sub directory 1',
         createAt: DateTime.now(),
       ),
       File(
-        details: NodeDetails.withLevel(1, parentDirNode1.id),
+        details: NodeDetails.withLevel(1),
         name: 'Sub file 1',
         content: r'[{"insert":"\n"}]',
         createAt: DateTime.now(),
@@ -37,13 +37,13 @@ final List<Node> defaultNodes = [
     ],
   ),
   Directory(
-    details: NodeDetails.withLevel(0, 'root'),
+    details: NodeDetails.withLevel(0),
     name: 'Directory 2',
     createAt: DateTime.now(),
     children: List.from([]),
   ),
   File(
-    details: NodeDetails.withLevel(0, 'root'),
+    details: NodeDetails.withLevel(0),
     name: 'Sub file 1.5',
     content: jsonEncode(exampleDelta.toJson()),
     createAt: DateTime.now(),

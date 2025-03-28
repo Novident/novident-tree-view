@@ -23,6 +23,18 @@ class NodeDetails implements Comparable<NodeDetails> {
   bool get hasNotOwner => owner == null;
   bool get hasOwner => !hasNotOwner;
 
+  NodeDetails copyWith({
+    int? level,
+    String? id,
+    NodeContainer? owner,
+  }) {
+    return NodeDetails(
+      level: level ?? this.level,
+      id: id ?? this.id,
+      owner: owner ?? this.owner,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'level': level,
