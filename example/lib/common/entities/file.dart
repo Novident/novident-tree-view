@@ -14,14 +14,21 @@ class File extends Node {
   });
 
   @override
-  bool canDrag() {
-    return true;
-  }
+  bool isDraggable() => true;
 
   @override
-  bool canSiblingsDropInto() {
-    // TODO: implement canSiblingsDropInto
-    throw UnimplementedError();
+  bool isDropIntoAllowed() => false;
+
+  @override
+  bool isDropPositionValid(
+    Node draggedNode,
+    DragHandlerPosition dropPosition,
+  ) =>
+      dropPosition != DragHandlerPosition.into;
+
+  @override
+  bool isDropTarget() {
+    return true;
   }
 
   @override

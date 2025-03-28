@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_tree_view/src/tree/config/gestures/node_drag_gestures.dart';
 
 const int kDefaultExpandDelay = 625;
 
@@ -94,13 +92,13 @@ class TreeConfiguration {
   const TreeConfiguration({
     required this.nodeBuilder,
     required this.activateDragAndDropFeature,
-    required this.nodeWidgetKey,
     required this.indentConfiguration,
     required this.nodeDragGestures,
     required this.onHoverContainer,
     required this.scrollConfigs,
     required this.draggableConfigurations,
     required this.keepAliveTree,
+    this.nodeWidgetKey,
     this.useRootSection = false,
     this.shouldDisplayNodeChildrenCount = false,
     this.onHoverContainerExpansionDelay = kDefaultExpandDelay,

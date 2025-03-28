@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Node;
 import 'package:flutter_quill/quill_delta.dart';
-import 'package:flutter_tree_view/flutter_tree_view.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
 import '../../common/entities/file.dart';
 import '../drawer/tree_view_drawer.dart';

@@ -1,157 +1,75 @@
-import 'package:example/common/entities/directory.dart';
-import 'package:example/common/entities/file.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:example/common/default_configurations/directory_widget.dart';
+import 'package:example/common/default_configurations/file_widget.dart';
+import 'package:example/common/extensions/node_ext.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tree_view/flutter_tree_view.dart';
+import 'package:flutter_quill/internal.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
-LeafConfiguration kDefaultLeafConfiguration(
-  TreeController controller,
-  Size size,
+TreeConfiguration treeConfigurationBuilder(
+  BuildContext context,
 ) =>
-    LeafConfiguration(
-      onTap: (Node node, BuildContext context) {
-        controller.selectNode(node);
-      },
-      boxDecoration: (LeafNode leaf) => BoxDecoration(
-        color: controller.selection.value?.id == leaf.id
-            ? Colors.black.withOpacity(0.10)
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      leading: (LeafNode leaf, BuildContext context) => Padding(
-        padding: const EdgeInsets.only(right: 5),
-        child: Icon(
-          (leaf as File).content.isEmpty
-              ? CupertinoIcons.doc_text
-              : CupertinoIcons.doc_text_fill,
-          size: isAndroid ? 20 : null,
-        ),
-      ),
-      content: (LeafNode leaf, BuildContext context) {
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(right: 5),
-            child: Text(
-              (leaf as File).name,
-              maxLines: 1,
-              overflow: TextOverflow.fade,
-              style: const TextStyle(
-                fontSize: 14,
-              ),
-            ),
-          ),
+    TreeConfiguration(
+      keepAliveTree: true,
+      activateDragAndDropFeature: true,
+      indentConfiguration: IndentConfiguration(),
+      scrollConfigs: ScrollConfigs(),
+      onHoverContainer: (NodeContainer<Node> node) {},
+      draggableConfigurations: DraggableConfigurations(
+          buildDragFeedbackWidget: (node) => const Material(),
+          childDragAnchorStrategy: (
+            Draggable<Object> draggable,
+            BuildContext context,
+            Offset position,
+          ) {
+            final RenderBox renderObject = context.findRenderObject()! as RenderBox;
+            return renderObject.globalToLocal(position);
+          },
+          allowAutoExpandOnHover: true,
+          preferLongPressDraggable: isMobile),
+      nodeDragGestures: (Node node) {
+        return NodeDragGestures(
+          onWillAcceptWithDetails: (
+            NovDragAndDropDetails<Node>? details,
+            DragTargetDetails<Node> dragDetails,
+            NodeContainer<Node>? parent,
+          ) =>
+              false,
+          onAcceptWithDetails: (
+            NovDragAndDropDetails<Node>? details,
+            NodeContainer<Node>? parent,
+            DragHandlerPosition position,
+          ) {},
         );
       },
-      trailing: (LeafNode node, BuildContext context) {
-        return TrailingMenu(
-          menuChildren: [
-            MenuItemButton(
-              child: const Text('Delete'),
-              onPressed: () {
-                context.readTree().removeAt(node.id);
-              },
+      nodeBuilder: (Node node, NovDragAndDropDetails<Node>? details) {
+        Decoration? decoration;
+        final BorderSide borderSide = BorderSide(
+          color: Theme.of(context).colorScheme.outline,
+          width: 2.0,
+        );
+
+        if (details != null) {
+          // Add a border to indicate in which portion of the target's height
+          // the dragging node will be inserted.
+          decoration = BoxDecoration(
+            border: details.mapDropPosition(
+              whenAbove: () => Border(top: borderSide),
+              whenInside: () => Border.fromBorderSide(borderSide),
+              whenBelow: () => Border(bottom: borderSide),
             ),
-          ],
+          );
+        }
+        if(node.isRoot) {
+          return const SizedBox.shrink();
+        }
+        return Container(
+          decoration: decoration,
+          child: node.isDirectory
+              ? DirectoryTile(directory: node.asDirectory)
+              : FileTile(file: node.asFile),
         );
       },
     );
-
-ContainerConfiguration kDefaultContainerConfiguration(
-    TreeController controller, Size size) {
-  return ContainerConfiguration(
-    showDefaultExpandableButton: false,
-    onTap: (NodeContainer node, BuildContext context) {
-      node.openOrClose();
-    },
-    expandableIconConfiguration: const ExpandableIconConfiguration.base(),
-    boxDecoration: (NodeContainer<Node> container) => BoxDecoration(
-      color: controller.selection.value?.id == container.id
-          ? Colors.black.withOpacity(0.10)
-          : Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1.5),
-    widgetHeight: size.height * 0.070,
-    leading: (NodeContainer node, BuildContext context) => Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: Icon(
-        node.isExpanded && node.isEmpty
-            ? CupertinoIcons.folder_open
-            : CupertinoIcons.folder_fill,
-        size: isAndroid ? 20 : null,
-      ),
-    ),
-    content: (NodeContainer node, BuildContext context) => Expanded(
-      child: Text(
-        (node as Directory).name,
-        maxLines: 1,
-        softWrap: true,
-        overflow: TextOverflow.fade,
-      ),
-    ),
-    trailing: (Node node, BuildContext context) {
-      return TrailingMenu(
-        menuChildren: [
-          MenuItemButton(
-            onPressed: () {
-              context.readTree().insertAt(
-                  File(
-                    details: NodeDetails.zero(node.id),
-                    content: '',
-                    name: 'File',
-                    createAt: DateTime.now(),
-                  ),
-                  node.id,
-                  removeIfNeeded: true);
-              return;
-            },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text('Add a document'),
-            ),
-          ),
-          MenuItemButton(
-            onPressed: () {
-              context.readTree().insertAt(
-                  Directory(
-                    details: NodeDetails.zero(node.id),
-                    children: List.from([]),
-                    isExpanded: false,
-                    name: 'Directory',
-                    createAt: DateTime.now(),
-                  ),
-                  node.id,
-                  removeIfNeeded: true);
-            },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text('Add a directory'),
-            ),
-          ),
-          MenuItemButton(
-            onPressed: () {
-              context.readTree().removeAt(node.id);
-            },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text('Delete'),
-            ),
-          ),
-          MenuItemButton(
-            onPressed: () {
-              context.readTree().clearNodeChildren(node.id);
-            },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text('Clear children'),
-            ),
-          ),
-        ],
-      );
-    },
-  );
-}
 
 class TrailingMenu extends StatefulWidget {
   final List<MenuItemButton> menuChildren;

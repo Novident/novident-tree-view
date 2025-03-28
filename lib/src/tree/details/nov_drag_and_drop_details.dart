@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// The details of the drag-and-drop relationship of [TreeDraggable] and
 /// [TreeDragTarget].
@@ -37,7 +38,7 @@ import 'package:meta/meta.dart';
 ///   }
 /// }
 /// ```
-class NovDragAndDropDetails<T extends Object> with Diagnosticable {
+class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   /// Creates a [NovDragAndDropDetails].
   const NovDragAndDropDetails({
     required this.draggedNode,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_tree_view/src/tree/config/gestures/node_drag_gestures.dart';
 
 /// A widget that wraps either [Draggable] or [LongPressDraggable] depending on
 /// the value of [longPressDelay], with additional tree view capabilities.
@@ -156,7 +155,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (!widget.node.canDrag() || !widget.configuration.activateDragAndDropFeature) {
+    if (!widget.node.isDraggable() || !widget.configuration.activateDragAndDropFeature) {
       return widget.child;
     }
 

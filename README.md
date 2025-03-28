@@ -56,12 +56,30 @@ class LeafNode extends Node {
   final String nodeId;
   NodeContainer? parent;
   
-  NodeModel({
+  LeafNode({
     required this.title,
     required this.nodeLevel,
     required this.nodeId,
     this.parent,
   }));
+
+  @override
+  bool isDraggable() => true;
+
+  @override
+  bool isDropIntoAllowed() => false;
+
+  @override
+  bool isDropPositionValid(
+    Node draggedNode,
+    DragHandlerPosition dropPosition,
+  ) =>
+      dropPosition != DragHandlerPosition.into;
+
+  @override
+  bool isDropTarget() {
+    return true;
+  }
 
   @override
   String get id => nodeId;
@@ -76,20 +94,6 @@ class LeafNode extends Node {
   set owner(NodeContainer? owner) {
     parent = owner;
     notifyListeners();
-  }
-
-  // if is false, this node cannot be dragged 
-  // using gestures
-  @override
-  bool canDrag() {
-    return true;
-  }
-
-  // if is false, then another nodes
-  // cannot be inserted via Drag-and-Drop
-  @override
-  bool canSiblingsDropInto() {
-    return true;
   }
 }
 ```
@@ -117,19 +121,20 @@ class NodeContainerModel extends NodeContainer<Node> {
   }) : _isExpanded = isExpanded;
 
   @override
-  bool get isEmpty => children.isEmpty;
+  bool isDraggable() => true;
 
   @override
-  bool get isNotEmpty => !isEmpty;
+  bool isDropIntoAllowed() => true;
 
+  // we need to avoid insert unnecessarily
+  // the dragged into itself and adding
+  // into its parent (when this node is already
+  // in it)
   @override
-  bool get isExpanded => _isExpanded;
-
-  set isExpanded(bool expand) {
-    _isExpanded = expand;
-    // will rebuild the nodes below this node 
-    notifyListeners();
-  }
+  bool isDropPositionValid(
+    Node draggedNode,
+    DragHandlerPosition dropPosition,
+  ) => draggedNode.id != id && draggedNode.owner?.id != id;
 
   @override
   String get id => nodeId;
@@ -146,18 +151,13 @@ class NodeContainerModel extends NodeContainer<Node> {
     notifyListeners();
   }
 
-  // if is false, this node cannot be dragged 
-  // using gestures
   @override
-  bool canDrag() {
-    return true;
-  }
+  bool get isExpanded => _isExpanded;
 
-  // if is false, then another nodes
-  // cannot be inserted via Drag-and-Drop
-  @override
-  bool canSiblingsDropInto() {
-    return true;
+  set isExpanded(bool expand) {
+    _isExpanded = expand;
+    // will rebuild the nodes below this node 
+    notifyListeners();
   }
 }
 ```
@@ -181,7 +181,7 @@ TreeView(
   root: root,
   configuration: TreeConfiguration(
     nodeBuilder: (node, details) => ListTile(
-      title: Text((node as NodeModel).title),
+      title: Text((node as LeafNode).title),
     ),
     // ... other configs
   ),

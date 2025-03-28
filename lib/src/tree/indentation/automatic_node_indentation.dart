@@ -8,7 +8,7 @@ import 'package:novident_tree_view/novident_tree_view.dart';
 /// - The node's depth level
 /// - The indentation configuration
 /// - Any additional padding specified
-class TreeIndentation extends StatelessWidget {
+class AutomaticNodeIndentation extends StatelessWidget {
   /// The widget to be indented (typically the node's content)
   final Widget child;
 
@@ -23,7 +23,7 @@ class TreeIndentation extends StatelessWidget {
   /// [node]: The tree node to determine indentation level
   /// [configuration]: Indentation settings to apply
   /// [child]: The content widget to be indented
-  const TreeIndentation({
+  const AutomaticNodeIndentation({
     required this.node,
     required this.configuration,
     required this.child,

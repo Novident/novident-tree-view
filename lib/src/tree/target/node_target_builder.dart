@@ -1,8 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_tree_view/src/tree/config/gestures/node_drag_gestures.dart';
 
 /// [NodeTargetBuilder] handles drag-and-drop operations for tree nodes
 ///
@@ -114,7 +112,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     _startOrCancelOnHoverExpansion(cancel: true);
 
     if (_details == null || _details!.draggedNode != details.data) return;
-    
+
     // Determine drop position relative to target node
     final DragHandlerPosition position = _details!.mapDropPosition(
       whenAbove: () => DragHandlerPosition.above,
@@ -122,9 +120,12 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
       whenBelow: () => DragHandlerPosition.below,
     );
 
-    // Only containers can accept "into" position drops
-    if (widget.node is! NodeContainer && position == DragHandlerPosition.into) {
+    if (!widget.node.isDropIntoAllowed() && position == DragHandlerPosition.into) {
       return;
+    }
+
+    if(!widget.node.isDropPositionValid(details.data, position)) {
+      return ;
     }
 
     // Notify about the accepted drop
@@ -174,16 +175,16 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     // Skip if auto-expansion is disabled or node isn't a container
     if (!widget.configuration.draggableConfigurations.allowAutoExpandOnHover ||
         widget.node is! NodeContainer<Node>) return;
-        
+
     if (cancel) {
       timer?.cancel();
       timer = null;
       return;
     }
-    
+
     // Don't expand if already expanded
     if ((widget.node as NodeContainer).isExpanded) return;
-    
+
     // Start new timer if none exists or current one isn't active
     bool? isActive = timer?.isActive;
     if (timer == null || (isActive != null && !isActive)) {
@@ -201,13 +202,12 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
   @override
   Widget build(BuildContext context) {
     // Skip drag target if dropping is disabled or node doesn't accept siblings
-    if (!widget.node.canSiblingsDropInto() ||
-        !widget.configuration.activateDragAndDropFeature) {
+    if (!widget.node.isDropTarget() || !widget.configuration.activateDragAndDropFeature) {
       return widget.configuration.nodeBuilder(widget.node, _details);
     }
-    
+
     NodeDragGestures? dragGestures = widget.configuration.nodeDragGestures(widget.node);
-    
+
     return Column(
       children: <Widget>[
         DragTarget<Node>(

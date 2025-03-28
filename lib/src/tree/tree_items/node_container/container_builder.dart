@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_tree_view/src/tree/indentation/automatic_node_indentation.dart';
 import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_builder.dart';
 
 /// Represents the [NodeContainer] into the Tree
@@ -8,10 +9,10 @@ import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_build
 /// or closed
 class ContainerBuilder extends StatefulWidget {
   /// The [ContainerTreeNode] item
-  final NodeContainer nodeContainer;
+  final NodeContainer<Node> nodeContainer;
 
   /// The owner of this [NodeContainer]
-  final NodeContainer owner;
+  final NodeContainer<Node> owner;
 
   final TreeConfiguration configuration;
 
@@ -39,7 +40,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     return ListenableBuilder(
       listenable: widget.nodeContainer,
       builder: (BuildContext ctx, Widget? child) {
-        return TreeIndentation(
+        return AutomaticNodeIndentation(
           node: widget.nodeContainer,
           configuration: widget.configuration.indentConfiguration,
           child: Column(
