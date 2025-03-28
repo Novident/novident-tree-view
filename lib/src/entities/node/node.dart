@@ -4,7 +4,10 @@ import 'package:meta/meta.dart';
 
 /// Abstract base class representing a node in a hierarchical tree structure
 abstract class Node extends ChangeNotifier implements DragAndDropMixin {
-  Node();
+  final List<Node> children;
+  Node({
+    List<Node>? children,
+  }) : children = children ?? <Node>[];
 
   /// Unique identifier for the node
   ///
@@ -30,10 +33,26 @@ abstract class Node extends ChangeNotifier implements DragAndDropMixin {
   int get level;
 
   /// The parent container that owns this node
-  NodeContainer? get owner;
+  Node? get owner;
+
+  /// Determine if this nodes is considered as a container
+  bool get isChildrenContainer;
+
+  bool get isExpanded;
+
+  @mustCallSuper
+  void notify() {
+    notifyListeners();
+  }
+
+  /// Indicates if the container has no child nodes
+  bool get isEmpty => children.isEmpty;
+
+  /// Indicates if the container has at least one child node
+  bool get isNotEmpty => children.isNotEmpty;
 
   /// Updates the parent container relationship
-  set owner(NodeContainer? owner);
+  set owner(Node? owner);
 
   @override
   @mustCallSuper
@@ -41,6 +60,11 @@ abstract class Node extends ChangeNotifier implements DragAndDropMixin {
     // Ensures proper cleanup of change notifier resources
     assert(ChangeNotifier.debugAssertNotDisposed(this));
     super.dispose();
+    if (isChildrenContainer) {
+      for (final child in children) {
+        child.dispose();
+      }
+    }
   }
 
   @override

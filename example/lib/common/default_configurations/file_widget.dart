@@ -1,11 +1,14 @@
+import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/entities/file.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_quill/internal.dart';
 
 class FileTile extends StatefulWidget {
   final File file;
+  final TreeController controller;
   const FileTile({
     required this.file,
+    required this.controller,
     super.key,
   });
 

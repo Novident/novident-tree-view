@@ -65,7 +65,8 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   Offset? _dragPointer;
 
   NodeDragGestures get gestures =>
-      widget.customGestures ?? widget.configuration.nodeDragGestures(widget.node);
+      widget.customGestures ??
+      widget.configuration.nodeDragGestures(widget.node);
 
   set isDragging(bool value) {
     if (value == _isDragging) return;
@@ -155,7 +156,8 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (!widget.node.isDraggable() || !widget.configuration.activateDragAndDropFeature) {
+    if (!widget.node.isDraggable() ||
+        !widget.configuration.activateDragAndDropFeature) {
       return widget.child;
     }
 
@@ -171,13 +173,15 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
         feedback: widget.configuration.draggableConfigurations
             .buildDragFeedbackWidget(widget.node),
         axis: widget.configuration.draggableConfigurations.axis,
-        childWhenDragging:
-            widget.configuration.draggableConfigurations.childWhenDraggingBuilder?.call(
+        childWhenDragging: widget
+            .configuration.draggableConfigurations.childWhenDraggingBuilder
+            ?.call(
           widget.node,
         ),
-        dragAnchorStrategy:
-            widget.configuration.draggableConfigurations.childDragAnchorStrategy,
-        feedbackOffset: widget.configuration.draggableConfigurations.feedbackOffset,
+        dragAnchorStrategy: widget
+            .configuration.draggableConfigurations.childDragAnchorStrategy,
+        feedbackOffset:
+            widget.configuration.draggableConfigurations.feedbackOffset,
         delay: widget.configuration.draggableConfigurations.longPressDelay,
         child: widget.child,
       );
@@ -193,15 +197,18 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
       onDragCompleted: () => gestures.onDragCompleted?.call(widget.node),
       dragAnchorStrategy:
           widget.configuration.draggableConfigurations.childDragAnchorStrategy,
-      feedback: widget.configuration.draggableConfigurations.buildDragFeedbackWidget(
+      feedback:
+          widget.configuration.draggableConfigurations.buildDragFeedbackWidget(
         widget.node,
       ),
       axis: widget.configuration.draggableConfigurations.axis,
-      childWhenDragging:
-          widget.configuration.draggableConfigurations.childWhenDraggingBuilder?.call(
+      childWhenDragging: widget
+          .configuration.draggableConfigurations.childWhenDraggingBuilder
+          ?.call(
         widget.node,
       ),
-      feedbackOffset: widget.configuration.draggableConfigurations.feedbackOffset,
+      feedbackOffset:
+          widget.configuration.draggableConfigurations.feedbackOffset,
       child: widget.child,
     );
   }

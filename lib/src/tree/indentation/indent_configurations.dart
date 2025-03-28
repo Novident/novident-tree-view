@@ -4,7 +4,7 @@ import 'package:flutter/rendering.dart';
 const int _largestIndentPermitted = -1 >>> 1;
 
 /// Configuration class that defines how tree nodes should be indented
-/// 
+///
 /// This class provides parameters to control:
 /// - The amount of indentation per level
 /// - Maximum indentation level
@@ -17,12 +17,12 @@ class IndentConfiguration {
   final EdgeInsetsGeometry padding;
 
   /// The maximum level depth that will be indented
-  /// 
+  ///
   /// Nodes deeper than this level will be indented as if they were at this level
   final int maxLevel;
 
   /// Creates an indentation configuration
-  /// 
+  ///
   /// [indentPerLevel]: Space per level (default 40px)
   /// [maxLevel]: Maximum indentation level (default unlimited)
   /// [padding]: Additional padding around nodes (default zero)
@@ -33,7 +33,7 @@ class IndentConfiguration {
   });
 
   /// Creates a copy of this configuration with the specified fields replaced
-  /// 
+  ///
   /// Any parameter not specified will maintain its current value
   IndentConfiguration copyWith({
     double? indentPerLevel,

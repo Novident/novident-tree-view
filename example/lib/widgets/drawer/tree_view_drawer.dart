@@ -1,12 +1,10 @@
+import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/default_configurations/configurations.dart';
 import 'package:example/widgets/drawer/drawer_header.dart';
 import 'package:example/widgets/drawer/tree_view_toolbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
-
-import '../../common/entities/directory.dart';
-import '../../common/entities/file.dart';
 
 class TreeViewDrawer extends HookWidget {
   final TreeController controller;
@@ -22,12 +20,14 @@ class TreeViewDrawer extends HookWidget {
     return SafeArea(
       top: true,
       child: Drawer(
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.zero)),
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.zero)),
         width: size.width * 0.95,
         child: Container(
           decoration: BoxDecoration(
-            border:
-                Border(right: BorderSide(color: Colors.black.withOpacity(0.4), width: 1)),
+            border: Border(
+                right:
+                    BorderSide(color: Colors.black.withOpacity(0.4), width: 1)),
           ),
           child: SingleChildScrollView(
             controller: scrollController,
@@ -39,7 +39,7 @@ class TreeViewDrawer extends HookWidget {
                 TreeViewToolbar(controller: controller),
                 TreeView(
                   root: controller.root,
-                  configuration: treeConfigurationBuilder(context),
+                  configuration: treeConfigurationBuilder(controller, context),
                 ),
               ],
             ),

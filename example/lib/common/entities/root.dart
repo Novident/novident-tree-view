@@ -1,12 +1,18 @@
 import 'package:example/common/entities/directory.dart';
 import 'package:example/common/entities/file.dart';
+import 'package:example/common/entities/node_base.dart';
+import 'package:example/common/entities/node_details.dart';
 import 'package:flutter/foundation.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-class Root extends NodeContainer<Node> {
+class Root extends NodeBase {
   Root({
     required super.children,
-  }) {
+  }) : super(
+          details: NodeDetails.zero(
+            null,
+          ),
+        ) {
     for (final Node child in children) {
       child.owner = this;
     }
@@ -29,7 +35,7 @@ class Root extends NodeContainer<Node> {
             details: node.details.copyWith(level: currentLevel + 1),
           );
         }
-        if (node is NodeContainer && node.isNotEmpty) {
+        if (node.isChildrenContainer && node.isNotEmpty) {
           redepth(node.children, currentLevel + 1);
         }
       }
@@ -73,7 +79,7 @@ class Root extends NodeContainer<Node> {
   int get level => -1;
 
   @override
-  NodeContainer<Node>? get owner => null;
+  Node? get owner => null;
 
   @override
   bool isDraggable() => true;
@@ -93,6 +99,20 @@ class Root extends NodeContainer<Node> {
     return true;
   }
 
+  operator []=(int index, Node node) {
+    node.owner = this;
+    children[index] = node;
+    notify();
+  }
+
   @override
-  set owner(NodeContainer<Node>? owner) {}
+  set owner(Node? owner) {}
+
+  @override
+  bool get isChildrenContainer => true;
+
+  @override
+  Root copyWith({NodeDetails? details}) {
+    return this;
+  }
 }

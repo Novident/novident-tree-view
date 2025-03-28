@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// Widget that applies indentation to tree nodes based on their depth level
-/// 
+///
 /// This widget calculates the appropriate left padding based on:
 /// - The node's depth level
 /// - The indentation configuration
@@ -19,7 +19,7 @@ class AutomaticNodeIndentation extends StatelessWidget {
   final IndentConfiguration configuration;
 
   /// Creates an indentation widget for tree nodes
-  /// 
+  ///
   /// [node]: The tree node to determine indentation level
   /// [configuration]: Indentation settings to apply
   /// [child]: The content widget to be indented
@@ -31,7 +31,7 @@ class AutomaticNodeIndentation extends StatelessWidget {
   });
 
   /// Constrains the indentation level to the configured maximum
-  /// 
+  ///
   /// Returns the minimum between the node's level and the configured maxLevel
   int _constrainLevel(int level) => math.min(level, configuration.maxLevel);
 

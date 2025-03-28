@@ -1,17 +1,20 @@
+import 'package:example/common/entities/node_base.dart';
 import 'package:example/common/entities/node_details.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-class File extends Node {
+class File extends NodeBase {
   final String name;
   final String content;
   final DateTime createAt;
-  final NodeDetails details;
+
   File({
-    required this.details,
+    required super.details,
     required this.content,
     required this.name,
     required this.createAt,
-  });
+  }) : super(
+          children: <Node>[],
+        );
 
   @override
   bool isDraggable() => true;
@@ -38,15 +41,20 @@ class File extends Node {
   int get level => details.level;
 
   @override
-  NodeContainer<Node> get owner => details.owner!;
+  Node get owner => details.owner!;
 
   @override
-  set owner(NodeContainer<Node>? owner) {
+  set owner(Node? owner) {
+    if (owner != null && !owner.isChildrenContainer) {
+      throw Exception('owner cannot be setted, since the owner '
+          'always must implements Container interface');
+    }
     details.owner = owner;
     notifyListeners();
   }
 
-  Node copyWith({
+  @override
+  File copyWith({
     NodeDetails? details,
     String? name,
     DateTime? createAt,
@@ -82,4 +90,10 @@ class File extends Node {
   String toString() {
     return 'File(name: $name)';
   }
+
+  @override
+  bool get isChildrenContainer => false;
+
+  @override
+  bool get isExpanded => false;
 }

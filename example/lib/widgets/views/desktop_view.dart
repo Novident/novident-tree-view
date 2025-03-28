@@ -1,9 +1,10 @@
 import 'dart:convert';
 
+import 'package:example/common/controller/tree_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Node;
 import 'package:flutter_quill/quill_delta.dart';
-import 'package:flutter_tree_view/flutter_tree_view.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
 import '../../common/entities/file.dart';
 import '../drawer/tree_view_drawer.dart';
@@ -140,8 +141,7 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                             children: [
                               QuillSimpleToolbar(
                                 controller: _controller,
-                                configurations:
-                                    const QuillSimpleToolbarConfigurations(),
+                                config: const QuillSimpleToolbarConfig(),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(
@@ -152,8 +152,7 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                                 child: MyEditor(
                                   controller: _controller,
                                   scrollController: _scrollController,
-                                  configurations:
-                                      const QuillEditorConfigurations(
+                                  configurations: const QuillEditorConfig(
                                     placeholder: 'Write something',
                                     scrollable: true,
                                     expands: true,
@@ -172,7 +171,7 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                                             _lastNode!.copyWith(
                                           content: jsonEncode(
                                               document.toDelta().toJson()),
-                                        ) as File;
+                                        );
                                         //TODO. change this part because, when we select a node with content, calls to update node
                                         final bool wasNotFounded =
                                             !treeController
@@ -183,10 +182,9 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                                           },
                                         );
                                         if (wasNotFounded) {
-                                          throw NodeNotExistInTree(
-                                              message:
-                                                  'The node ${newNodeState.name} not exist into the current Tree state',
-                                              node: newNodeState.id);
+                                          throw Exception(
+                                            'The node ${newNodeState.name} not exist into the current Tree state',
+                                          );
                                         }
                                       }
                                     }

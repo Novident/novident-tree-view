@@ -9,16 +9,21 @@ class LeafNodeBuilder extends StatefulWidget {
   final Node node;
 
   /// The owner of this [NodeContainer]
-  final NodeContainer<Node> owner;
+  final Node owner;
 
   final TreeConfiguration configuration;
 
-  const LeafNodeBuilder({
+  LeafNodeBuilder({
     required this.node,
     required this.owner,
     required this.configuration,
     super.key,
-  });
+  }) : assert(
+          owner.isChildrenContainer,
+          'The owner($owner) passed '
+          'at level ${node.level} is not '
+          'valid to be an "owner" of the current node',
+        );
 
   @override
   State<LeafNodeBuilder> createState() => _LeafNodeBuilderState();
@@ -29,7 +34,8 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty('owner', widget.owner));
-    properties.add(DiagnosticsProperty('${widget.node.runtimeType}', widget.node));
+    properties
+        .add(DiagnosticsProperty('${widget.node.runtimeType}', widget.node));
   }
 
   @override

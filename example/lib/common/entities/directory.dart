@@ -1,17 +1,16 @@
 import 'package:example/common/entities/file.dart';
+import 'package:example/common/entities/node_base.dart';
 import 'package:example/common/entities/node_details.dart';
 import 'package:flutter/foundation.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-class Directory extends NodeContainer<Node> {
+class Directory extends NodeBase {
   final String name;
   final DateTime createAt;
-  final NodeDetails details;
-
   bool _isExpanded;
 
   Directory({
-    required this.details,
+    required super.details,
     required super.children,
     required this.name,
     required this.createAt,
@@ -44,7 +43,7 @@ class Directory extends NodeContainer<Node> {
             details: node.details.copyWith(level: currentLevel + 1),
           );
         }
-        if (node is NodeContainer && node.isNotEmpty) {
+        if (node.isChildrenContainer && node.isNotEmpty) {
           redepth(node.children, currentLevel + 1);
         }
       }
@@ -89,6 +88,7 @@ class Directory extends NodeContainer<Node> {
     notifyListeners();
   }
 
+  @override
   Directory copyWith({
     NodeDetails? details,
     List<Node>? children,
@@ -151,11 +151,21 @@ class Directory extends NodeContainer<Node> {
   int get level => details.level;
 
   @override
-  NodeContainer<Node> get owner => details.owner!;
+  Node get owner => details.owner!;
 
   @override
-  set owner(NodeContainer<Node>? owner) {
+  bool get isChildrenContainer => true;
+
+  @override
+  set owner(Node? owner) {
+    if (owner != null && !owner.isChildrenContainer) {
+      throw Exception('owner cannot be setted, since the owner '
+          'always must implements Container interface');
+    }
     details.owner = owner;
     notifyListeners();
   }
+
+  @override
+  bool get isNotEmpty => !isEmpty;
 }

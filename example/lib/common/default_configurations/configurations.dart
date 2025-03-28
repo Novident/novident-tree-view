@@ -1,3 +1,4 @@
+import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/default_configurations/directory_widget.dart';
 import 'package:example/common/default_configurations/file_widget.dart';
 import 'package:example/common/extensions/node_ext.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_quill/internal.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 TreeConfiguration treeConfigurationBuilder(
+  TreeController controller,
   BuildContext context,
 ) =>
     TreeConfiguration(
@@ -13,7 +15,7 @@ TreeConfiguration treeConfigurationBuilder(
       activateDragAndDropFeature: true,
       indentConfiguration: IndentConfiguration(),
       scrollConfigs: ScrollConfigs(),
-      onHoverContainer: (NodeContainer<Node> node) {},
+      onHoverContainer: (Node node) {},
       draggableConfigurations: DraggableConfigurations(
           buildDragFeedbackWidget: (node) => const Material(),
           childDragAnchorStrategy: (
@@ -21,7 +23,8 @@ TreeConfiguration treeConfigurationBuilder(
             BuildContext context,
             Offset position,
           ) {
-            final RenderBox renderObject = context.findRenderObject()! as RenderBox;
+            final RenderBox renderObject =
+                context.findRenderObject()! as RenderBox;
             return renderObject.globalToLocal(position);
           },
           allowAutoExpandOnHover: true,
@@ -31,12 +34,12 @@ TreeConfiguration treeConfigurationBuilder(
           onWillAcceptWithDetails: (
             NovDragAndDropDetails<Node>? details,
             DragTargetDetails<Node> dragDetails,
-            NodeContainer<Node>? parent,
+            Node? parent,
           ) =>
               false,
           onAcceptWithDetails: (
             NovDragAndDropDetails<Node>? details,
-            NodeContainer<Node>? parent,
+            Node? parent,
             DragHandlerPosition position,
           ) {},
         );
@@ -59,14 +62,25 @@ TreeConfiguration treeConfigurationBuilder(
             ),
           );
         }
-        if(node.isRoot) {
+        if (node.isRoot) {
           return const SizedBox.shrink();
         }
-        return Container(
-          decoration: decoration,
-          child: node.isDirectory
-              ? DirectoryTile(directory: node.asDirectory)
-              : FileTile(file: node.asFile),
+        return InkWell(
+          onTap: () {
+            controller.selectNode(node);
+          },
+          child: Container(
+            decoration: decoration,
+            child: node.isDirectory
+                ? DirectoryTile(
+                    directory: node.asDirectory,
+                    controller: controller,
+                  )
+                : FileTile(
+                    file: node.asFile,
+                    controller: controller,
+                  ),
+          ),
         );
       },
     );

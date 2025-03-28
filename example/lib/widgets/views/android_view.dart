@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:example/common/controller/tree_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Node;
 import 'package:flutter_quill/quill_delta.dart';
@@ -68,7 +69,7 @@ class _AndroidTreeViewExampleState extends State<AndroidTreeViewExample> {
       // Find the last node to show an example of how works this feature
       if (_isFirst) {
         _isFirst = false;
-        _lastNode = treeController?.children.lastOrNull as File?;
+        _lastNode = treeController?.root.children.lastOrNull as File?;
         if (treeController != null) {
           widget.controller.selectNode(_lastNode);
           _loadContent();
@@ -138,7 +139,7 @@ class _AndroidTreeViewExampleState extends State<AndroidTreeViewExample> {
                               child: MyEditor(
                                 controller: _controller,
                                 scrollController: _scrollController,
-                                configurations: const QuillEditorConfigurations(
+                                configurations: const QuillEditorConfig(
                                   placeholder: 'Write something',
                                   scrollable: true,
                                   expands: true,
@@ -150,20 +151,20 @@ class _AndroidTreeViewExampleState extends State<AndroidTreeViewExample> {
                                   final newNodeState = _lastNode!.copyWith(
                                     content:
                                         jsonEncode(document.toDelta().toJson()),
-                                  ) as File;
+                                  );
                                   //TODO. change this part because, when we select a node with content, calls to update node
                                   final bool wasNotFounded =
                                       !treeController!.updateNodeAtWithCallback(
                                     newNodeState.id,
-                                    (originalNode) {
+                                    (Node originalNode) {
                                       return newNodeState;
                                     },
                                   );
                                   if (wasNotFounded) {
-                                    throw NodeNotExistInTree(
-                                        message:
-                                            'The node ${newNodeState.name} not exist into the current Tree state',
-                                        node: newNodeState.id);
+                                    throw Exception(
+                                      'The node ${newNodeState.name} not '
+                                      'exist into the current Tree state',
+                                    );
                                   }
                                 },
                               ),
@@ -171,8 +172,7 @@ class _AndroidTreeViewExampleState extends State<AndroidTreeViewExample> {
                           ),
                           QuillSimpleToolbar(
                             controller: _controller,
-                            configurations:
-                                const QuillSimpleToolbarConfigurations(
+                            config: const QuillSimpleToolbarConfig(
                               multiRowsDisplay: false,
                             ),
                           ),

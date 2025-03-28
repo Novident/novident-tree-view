@@ -1,11 +1,14 @@
+import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/entities/directory.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_quill/internal.dart';
 
 class DirectoryTile extends StatefulWidget {
+  final TreeController controller;
   final Directory directory;
   const DirectoryTile({
     required this.directory,
+    required this.controller,
     super.key,
   });
 
@@ -17,7 +20,7 @@ class _DirectoryTileState extends State<DirectoryTile> {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: [
+      children: <Widget>[
         Padding(
           padding: const EdgeInsets.only(right: 10),
           child: Icon(

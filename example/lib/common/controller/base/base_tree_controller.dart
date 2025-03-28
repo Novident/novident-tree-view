@@ -1,6 +1,7 @@
-import 'dart:async';
-
+import 'package:example/common/controller/extension/base_controller_helpers.dart';
 import 'package:example/common/entities/root.dart';
+import 'package:example/common/extensions/node_container_ext.dart';
+import 'package:example/common/extensions/node_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
@@ -21,105 +22,14 @@ abstract class BaseTreeController extends ChangeNotifier {
   ValueNotifier<Node?> get selection => currentSelectedNode;
 
   set children(List<Node> newRoot) {
-    verifyState();
     root.clearAndOverrideState(newRoot);
     // reload the visual selection since the new root couldn't contain
     // the current node in selection
     selectNode(null);
-    TreeLogger.root.debug(
-      'Root was cleared and it has new children state',
-    );
-  }
-
-  String get id {
-    verifyState();
-    return root.id;
   }
 
   Node? get selectedNode => currentSelectedNode.value;
 
-  @override
-  Node? childBeforeThis(NodeDetails node, [int? indexNode]) {
-    verifyState();
-    final isRootLevel = node.id == root.details.id;
-    if (isRootLevel && indexNode != null) {
-      if (indexNode == 0) return root.elementAt(0);
-      return root.elementAt(indexNode - 1);
-    } else {
-      for (int i = 0; i < root.length; i++) {
-        final treeNode = root.elementAt(i);
-        if (treeNode.details.id == node.id) {
-          if (i == 0) return treeNode;
-          return root.elementAt(i - 1);
-        } else if (treeNode is NodeContainer && treeNode.isNotEmpty) {
-          final backNode = treeNode.childBeforeThis(node, true, indexNode);
-          if (backNode != null) return backNode;
-        }
-      }
-    }
-    return null;
-  }
-
-  /// Use this with caution because this method
-  /// does not check if the current selection
-  /// is a node into the node that will be cleared
-  @override
-  void clearNodeChildren(String nodeId) {
-    verifyState();
-    for (int index = 0; index < root.length; index++) {
-      final node = root.elementAt(index);
-      if (node is NodeContainer && node.details.id == nodeId) {
-        root.addNewChange(
-          [node.copyWith(children: [])],
-          TreeOperation.clearChildren,
-          root.clone(),
-        );
-        node
-          ..clear()
-          ..openOrClose(forceOpen: true);
-        TreeLogger.internalNodes.debug(
-          'Node(id: ${node.id}, level: ${node.level}, parent: ${node.owner ?? 'no-parent'}) was cleared',
-        );
-        break;
-      } else if (node is NodeContainer && node.isNotEmpty) {
-        final shouldBreak = clearChildrenHelper(nodeId, node);
-        if (shouldBreak) break;
-      }
-    }
-  }
-
-  @override
-  int getFullCountOfChildrenInNode(NodeContainer? node, String? nodeId,
-      {bool recursive = false}) {
-    nodeId ??= '';
-    if (nodeId.isNotEmpty) {
-      if (!root.existNode(nodeId)) {
-        throw NodeNotExistInTree(
-          message:
-              'The node $nodeId not exist into the tree currently. Please, ensure first if the node was removed before insert any node',
-          node: nodeId,
-        );
-      }
-    }
-    final NodeContainer<Node> container =
-        node ?? getNodeById(nodeId) as NodeContainer;
-    int nodesCount = container.length;
-
-    void recursiveNodeSearch(NodeContainer composite) {
-      for (var subNode in composite.children) {
-        nodesCount++;
-        if (subNode is NodeContainer && subNode.isNotEmpty) {
-          recursiveNodeSearch(subNode);
-        }
-      }
-    }
-
-    if (recursive) recursiveNodeSearch(container);
-
-    return nodesCount;
-  }
-
-  @override
   List<Node>? getAllNodeMatches(bool Function(Node node) predicate) {
     final Set<Node> matchedNodes = {};
 
@@ -127,7 +37,7 @@ abstract class BaseTreeController extends ChangeNotifier {
       for (var node in children) {
         if (predicate(node)) {
           matchedNodes.add(node);
-        } else if (node is NodeContainer && node.isNotEmpty) {
+        } else if (node.isChildrenContainer && node.isNotEmpty) {
           matchNode(node.children);
         }
       }
@@ -138,7 +48,6 @@ abstract class BaseTreeController extends ChangeNotifier {
     return matchedNodes.toList();
   }
 
-  @override
   Node? getNodeWhere(bool Function(Node node) predicate) {
     Node? foundedNode;
 
@@ -147,7 +56,7 @@ abstract class BaseTreeController extends ChangeNotifier {
         if (predicate(node)) {
           foundedNode = node;
           return true;
-        } else if (node is NodeContainer && node.isNotEmpty) {
+        } else if (node.isChildrenContainer && node.isNotEmpty) {
           final wasFounded = searchNode(node.children);
           if (wasFounded) return true;
         }
@@ -160,107 +69,58 @@ abstract class BaseTreeController extends ChangeNotifier {
     return foundedNode;
   }
 
-  @override
   List<Node>? getAllChildrenInNode(String nodeId) {
-    verifyState();
-    NodeContainer? node;
+    Node? node;
     for (var treenode in root.children) {
-      if (treenode is NodeContainer && treenode.details.id == nodeId) {
+      if (treenode.isChildrenContainer &&
+          treenode.asBase.details.id == nodeId) {
         node = treenode;
-      } else if (treenode is NodeContainer && treenode.isNotEmpty) {
+      } else if (treenode.isChildrenContainer && treenode.isNotEmpty) {
         node = getMultiNodeHelper(nodeId, compositeNode: treenode);
       }
     }
     if (node != null) return [...node.children];
 
-    throw InvalidNodeId(
-      message:
-          'The gived node: $nodeId is not founded on any part of the tree. Please, ensure the node really exist into the Tree',
+    throw Exception(
+      'The gived node: $nodeId is not founded on any part of the tree. '
+      'Please, ensure the node really exist into the Tree',
     );
-  }
-
-  @override
-  Node? getNodeById(String nodeId) {
-    verifyState();
-    for (Node node in root.children) {
-      if (node.details.id == nodeId) {
-        return node;
-      } else if (node is NodeContainer && node.isNotEmpty) {
-        final targetNode =
-            searchChild(node, NodeDetails.base(nodeId), SearchStrategy.target);
-        if (targetNode != null) return targetNode;
-      }
-    }
-    TreeLogger.internalNodes.error(
-      'Node(id: $nodeId) not exist into the Node Tree',
-    );
-    throw InvalidNodeId(
-        message: 'Node(id: $nodeId) not exist into the Node Tree');
-  }
-
-  @override
-  Node? childAfterThis(NodeDetails node, [int? indexNode]) {
-    verifyState();
-    final isRootLevel = node.level == -1 && node.id == root.details.id;
-    if (isRootLevel && indexNode != null) {
-      if (indexNode + 1 >= root.length) return null;
-      return root.elementAt(indexNode + 1);
-    } else {
-      for (int i = 0; i < root.length; i++) {
-        final treeNode = root.elementAt(i);
-        if (treeNode.details.id == node.id) {
-          if (i + 1 >= root.length) return null;
-          return root.elementAt(i + 1);
-        } else if (treeNode is NodeContainer && treeNode.isNotEmpty) {
-          final nextNode = treeNode.childAfterThis(node, true, indexNode);
-          if (nextNode != null) return nextNode;
-        }
-      }
-    }
-    return null;
   }
 
   /// selectNode just makes of the tree directory
   /// select a node
   void selectNode(Node? node) {
-    verifyState();
-    if (currentSelectedNode.value?.details == node?.details) return;
-    TreeLogger.selection.debug(
-        'Selected ${node.runtimeType}(id: ${node?.id.substring(0, 6)}, level: ${node?.level}, parent: ${node?.owner?.substring(0, 3) ?? 'no-parent'})');
+    if (currentSelectedNode.value?.asBase.details == node?.asBase.details)
+      return;
     currentSelectedNode.value = node;
   }
 
-  @override
   bool updateNodeAtWithCallback(String nodeId, Node Function(Node) callback) {
     for (int i = 0; i < root.length; i++) {
       final node = root.elementAt(i);
       if (node.id == nodeId) {
         var newChildState = callback(node);
-        newChildState = newChildState.copyWith(
-            details: newChildState.details
-                .copyWith(level: node.level, owner: node.owner));
+        newChildState = newChildState.asBase.copyWith(
+          details: newChildState.asBase.details.copyWith(
+            level: node.level,
+            owner: node.owner,
+          ),
+        );
         // verify if the callback created by the dev
         // does not change the node value of the tree node
         if (newChildState.id != node.id) {
-          throw InvalidCustomNodeBuilderCallbackReturn(
-              message:
-                  'Invalid custom node builded $newChildState. Please, ensure of create a TreeNode valid with the same Node of the passed as the argument',
-              originalVersionNode: node,
-              newNodeVersion: newChildState,
-              reason:
-                  'The Node of the TreeNode cannot be different than the original');
+          throw Exception(
+            'Invalid custom node builded $newChildState. Please, ensure of create a '
+            'TreeNode valid with the same '
+            'Node of the passed as the argument',
+          );
         }
-        root.addNewChange(
-          [newChildState],
-          TreeOperation.update,
-          node,
-        );
         root[i] = newChildState;
         if (selectedNode?.id == newChildState.id) {
           selectNode(newChildState);
         }
         return true;
-      } else if (node is NodeContainer && node.isNotEmpty) {
+      } else if (node.isChildrenContainer && node.isNotEmpty) {
         final wasUpdated =
             updateSubNodesWithCallback(node.children, callback, nodeId);
         if (wasUpdated) {

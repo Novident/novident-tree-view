@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_tree_view/src/tree/indentation/automatic_node_indentation.dart';
 import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_builder.dart';
 
 /// Represents the [NodeContainer] into the Tree
@@ -9,19 +8,31 @@ import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_build
 /// or closed
 class ContainerBuilder extends StatefulWidget {
   /// The [ContainerTreeNode] item
-  final NodeContainer<Node> nodeContainer;
+  final Node nodeContainer;
 
   /// The owner of this [NodeContainer]
-  final NodeContainer<Node> owner;
+  final Node owner;
 
   final TreeConfiguration configuration;
 
-  const ContainerBuilder({
+  ContainerBuilder({
     required this.nodeContainer,
     required this.owner,
     required this.configuration,
     super.key,
-  });
+  })  : assert(
+          nodeContainer.isChildrenContainer,
+          'the container($nodeContainer) at level ${nodeContainer.level} is not valid to be '
+          'rendered as a node with children. '
+          'Please, ensure that the property '
+          '[isChildrenContainer] is always return true',
+        ),
+        assert(
+          owner.isChildrenContainer,
+          'The owner($owner) passed '
+          'at level ${nodeContainer.level} is not '
+          'valid to be an "owner" of the current node',
+        );
 
   @override
   State<ContainerBuilder> createState() => _ContainerBuilderState();
@@ -74,17 +85,18 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
               primary: false,
               itemCount: widget.nodeContainer.children.length,
               itemBuilder: (BuildContext context, int index) {
-                Node file = widget.nodeContainer.children.elementAt(index);
-                if (file is! NodeContainer) {
+                final Node node =
+                    widget.nodeContainer.children.elementAt(index);
+                if (!node.isChildrenContainer) {
                   return LeafNodeBuilder(
                     owner: widget.owner,
-                    node: file,
+                    node: node,
                     configuration: widget.configuration,
                   );
                 } else
                   return ContainerBuilder(
                     owner: widget.owner,
-                    nodeContainer: file,
+                    nodeContainer: node,
                     configuration: widget.configuration,
                     // there's no parent
                   );

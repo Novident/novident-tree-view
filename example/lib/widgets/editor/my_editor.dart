@@ -8,7 +8,7 @@ class MyEditor extends HookWidget {
   final void Function(Document document) onChange;
   final ScrollController _scrollController;
   final FocusNode _focusNode;
-  final QuillEditorConfigurations configurations;
+  final QuillEditorConfig configurations;
   const MyEditor({
     super.key,
     required QuillController controller,
@@ -30,7 +30,7 @@ class MyEditor extends HookWidget {
       controller: _controller,
       scrollController: _scrollController,
       focusNode: _focusNode,
-      configurations: configurations,
+      config: configurations,
     );
   }
 

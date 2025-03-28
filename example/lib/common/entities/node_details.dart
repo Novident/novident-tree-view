@@ -12,13 +12,16 @@ import 'package:novident_tree_view/novident_tree_view.dart';
 class NodeDetails implements Comparable<NodeDetails> {
   final int level;
   final String id;
-  NodeContainer? owner;
+  Node? owner;
 
   NodeDetails({
     required this.level,
     required this.id,
     this.owner,
-  }) : assert(owner == null);
+  }) : assert(
+            owner == null || owner.isChildrenContainer,
+            'owner cannot have a isChildrenContainer '
+            'that returns false');
 
   bool get hasNotOwner => owner == null;
   bool get hasOwner => !hasNotOwner;
@@ -26,8 +29,9 @@ class NodeDetails implements Comparable<NodeDetails> {
   NodeDetails copyWith({
     int? level,
     String? id,
-    NodeContainer? owner,
+    Node? owner,
   }) {
+    assert(owner == null || owner.isChildrenContainer);
     return NodeDetails(
       level: level ?? this.level,
       id: id ?? this.id,
@@ -43,7 +47,8 @@ class NodeDetails implements Comparable<NodeDetails> {
     };
   }
 
-  factory NodeDetails.base([String? id, NodeContainer? owner]) {
+  factory NodeDetails.base([String? id, Node? owner]) {
+    assert(owner == null || owner.isChildrenContainer);
     return NodeDetails(
       level: 0,
       id: id ?? (Random.secure().nextInt(99999) * 50).toString(),
@@ -51,8 +56,10 @@ class NodeDetails implements Comparable<NodeDetails> {
     );
   }
 
-  factory NodeDetails.withLevel([int? level, NodeContainer? owner]) {
+  factory NodeDetails.withLevel([int? level, Node? owner]) {
     level ??= 0;
+
+    assert(owner == null || owner.isChildrenContainer);
     return NodeDetails(
       level: level,
       id: (Random.secure().nextInt(99999) * 50).toString(),
@@ -60,7 +67,8 @@ class NodeDetails implements Comparable<NodeDetails> {
     );
   }
 
-  factory NodeDetails.zero(NodeContainer owner) {
+  factory NodeDetails.zero(Node? owner) {
+    assert(owner == null || owner.isChildrenContainer);
     return NodeDetails(
       level: 0,
       id: (Random.secure().nextInt(99999) * 50).toString(),

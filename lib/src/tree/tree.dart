@@ -8,7 +8,7 @@ import 'package:novident_tree_view/src/tree/tree_items/node_container/container_
 /// Displays a hierarchical tree structure using a combination of ListViews
 class TreeView extends StatefulWidget {
   /// The root node container of the tree
-  final NodeContainer<Node> root;
+  final Node root;
 
   /// Configuration object for tree behavior and appearance
   final TreeConfiguration configuration;
@@ -44,7 +44,7 @@ class TreeView extends StatefulWidget {
   /// [primary]: Primary scroll view flag
   /// [clipBehavior]: Content clipping strategy
   /// [focusNode]: Keyboard focus control
-  const TreeView({
+  TreeView({
     required this.root,
     required this.configuration,
     this.bottomInsets = 30,
@@ -54,13 +54,18 @@ class TreeView extends StatefulWidget {
     this.clipBehavior,
     this.focusNode,
     super.key,
-  });
+  }) : assert(
+          root.isChildrenContainer,
+          'The root of the project must return '
+          'always "true" when [isChildrenContainer] is called',
+        );
 
   @override
   State<StatefulWidget> createState() => _TreeViewState();
 }
 
-class _TreeViewState extends State<TreeView> with AutomaticKeepAliveClientMixin {
+class _TreeViewState extends State<TreeView>
+    with AutomaticKeepAliveClientMixin {
   bool _keepAlive = true;
 
   @override
@@ -87,7 +92,8 @@ class _TreeViewState extends State<TreeView> with AutomaticKeepAliveClientMixin 
       controller: widget.scrollController,
       primary: widget.primary,
       clipBehavior: widget.clipBehavior ?? Clip.hardEdge,
-      physics: widget.configuration.physics ?? const NeverScrollableScrollPhysics(),
+      physics:
+          widget.configuration.physics ?? const NeverScrollableScrollPhysics(),
       children: <Widget>[
         // Main tree content
         ListenableBuilder(
@@ -105,7 +111,7 @@ class _TreeViewState extends State<TreeView> with AutomaticKeepAliveClientMixin 
               itemBuilder: (BuildContext context, int index) {
                 final Node node = widget.root.children.elementAt(index);
                 // Build appropriate node type
-                if (node is! NodeContainer) {
+                if (!node.isChildrenContainer) {
                   return LeafNodeBuilder(
                     owner: widget.root,
                     node: node,
@@ -145,7 +151,7 @@ class _TreeViewState extends State<TreeView> with AutomaticKeepAliveClientMixin 
 /// [TreeConfiguration.useRootSection] is enabled
 class RootTargetToDropSection extends StatefulWidget {
   final TreeConfiguration configuration;
-  final NodeContainer<Node> root;
+  final Node root;
 
   const RootTargetToDropSection({
     required this.root,
@@ -154,7 +160,8 @@ class RootTargetToDropSection extends StatefulWidget {
   });
 
   @override
-  State<RootTargetToDropSection> createState() => _RootTargetToDropSectionState();
+  State<RootTargetToDropSection> createState() =>
+      _RootTargetToDropSectionState();
 }
 
 class _RootTargetToDropSectionState extends State<RootTargetToDropSection> {
@@ -171,14 +178,14 @@ class _RootTargetToDropSectionState extends State<RootTargetToDropSection> {
 }
 
 /// Default widget shown when no nodes are present in the tree
-/// 
+///
 /// Used when [TreeConfiguration.onDetectEmptyRoot] is not provided
 Widget get _kDefaultNotFoundWidget => Column(
-  children: <Widget>[
-    Container(
-      alignment: Alignment.bottomCenter,
-      height: 200,
-      child: const Text("--|| No nodes yet ||--"),
-    ),
-  ],
-);
+      children: <Widget>[
+        Container(
+          alignment: Alignment.bottomCenter,
+          height: 200,
+          child: const Text("--|| No nodes yet ||--"),
+        ),
+      ],
+    );

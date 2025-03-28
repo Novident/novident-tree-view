@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/default_nodes_demo.dart';
 import 'package:example/common/entities/root.dart';
 import 'package:example/widgets/views/android_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart'
+    show FlutterQuillLocalizations;
 import 'widgets/views/desktop_view.dart';
 
 void main() {
@@ -17,7 +20,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final Root _controller = Root(children: defaultNodes);
+  final TreeController _controller = TreeController(
+    root: Root(
+      children: defaultNodes,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +35,9 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        FlutterQuillLocalizations.delegate,
+      ],
       debugShowMaterialGrid: false,
       home: MiddlewareView(controller: _controller),
     );
@@ -35,7 +45,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class MiddlewareView extends StatelessWidget {
-  final Root controller;
+  final TreeController controller;
   const MiddlewareView({
     super.key,
     required this.controller,

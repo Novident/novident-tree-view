@@ -1,8 +1,6 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
+import 'package:example/common/entities/node_details.dart';
 import 'package:example/common/extensions/node_ext.dart';
-import 'package:flutter/foundation.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// [NodeContainer] represents a node that can contains all
@@ -10,23 +8,18 @@ import 'package:novident_tree_view/novident_tree_view.dart';
 ///
 /// You can take this implementation as a directory from your
 /// local storage that can contains a wide variety of file types
-extension NodeContainerExt on NodeContainer {
+extension NodeContainerExt on Node {
   /// adjust the depth level of the children
   void redepthChildren([int? currentLevel]) {
+    if (!isChildrenContainer) return;
     assert(level >= 0);
     void redepth(List<Node> unformattedChildren, int currentLevel) {
       currentLevel = level;
       for (int i = 0; i < unformattedChildren.length; i++) {
         final Node node = unformattedChildren.elementAt(i);
-        if (node.isFile) {
-          unformattedChildren[i] = node.asFile
-              .copyWith(details: node.asFile.details.copyWith(level: currentLevel + 1));
-        }
-        if (node.isDirectory) {
-          unformattedChildren[i] = node.asDirectory.copyWith(
-              details: node.asDirectory.details.copyWith(level: currentLevel + 1));
-        }
-        if (node is NodeContainer && node.isNotEmpty) {
+        unformattedChildren[i] = node.asBase.copyWith(
+            details: node.asBase.details.copyWith(level: currentLevel + 1));
+        if (node.isChildrenContainer && node.isNotEmpty) {
           redepth(node.children, currentLevel + 1);
         }
       }
@@ -36,29 +29,16 @@ extension NodeContainerExt on NodeContainer {
       children,
       currentLevel ?? level,
     );
-    notifyListeners();
-  }
-
-  /// Update the id of the parent of the children
-  void updateInternalNodesByParentId(String newParentNode,
-      [List<Node>? nodes, bool shouldNotify = true]) {
-    nodes ??= children;
-    for (int i = 0; i < nodes.length; i++) {
-      final node = nodes.elementAt(i);
-      nodes[i] = node.copyWith(details: node.details.copyWith(owner: newParentNode));
-      if (node is NodeContainer && node.isNotEmpty) {
-        updateInternalNodesByParentId(newParentNode, node.children, false);
-      }
-    }
-    if (shouldNotify) {
-      notify();
-    }
+    notify();
   }
 
   /// Check if the id of the node exist in the root
   /// of the [NodeContainer] without checking into its children
   bool existInRoot(String nodeId) {
-    for (int i = 0; i < length; i++) if (elementAt(i).details.id == nodeId) return true;
+    if (!isChildrenContainer) return false;
+    for (int i = 0; i < length; i++) {
+      if (elementAt(i).asBase.details.id == nodeId) return true;
+    }
     return false;
   }
 
@@ -68,12 +48,13 @@ extension NodeContainerExt on NodeContainer {
   /// This opertion could be heavy based on the deep of the nodes
   /// into the [NodeContainer]
   bool existNode(String nodeId) {
+    if (!isChildrenContainer) return false;
     for (int i = 0; i < length; i++) {
       final node = elementAt(i);
-      if (node.details.id == nodeId) {
+      if (node.asBase.details.id == nodeId) {
         return true;
-      } else if (node is NodeContainer && node.isNotEmpty) {
-        final foundedNode = node.existNode(nodeId);
+      } else if (node.isChildrenContainer && node.isNotEmpty) {
+        final bool foundedNode = node.existNode(nodeId);
         if (foundedNode) return true;
       }
     }
@@ -85,21 +66,25 @@ extension NodeContainerExt on NodeContainer {
   ///
   /// This opertion could be heavy based on the deep of the nodes
   /// into the [NodeContainer]
-  bool existNodeWhere(bool Function(Node node) predicate, [List<Node>? subChildren]) {
+  bool existNodeWhere(bool Function(Node node) predicate,
+      [List<Node>? subChildren]) {
+    if (!isChildrenContainer) return false;
     final currentChildren = subChildren;
-    for (int i = 0; i < (currentChildren ?? this.children).length; i++) {
-      final node = (currentChildren ?? this.children).elementAt(i);
+    for (int i = 0; i < (currentChildren ?? children).length; i++) {
+      final Node node = (currentChildren ?? children).elementAt(i);
       if (predicate(node)) {
         return true;
-      } else if (node is NodeContainer && node.isNotEmpty) {
-        final foundedNode = existNodeWhere(predicate, node.children);
+      } else if (node.isChildrenContainer && node.isNotEmpty) {
+        final bool foundedNode = existNodeWhere(predicate, node.children);
         if (foundedNode) return true;
       }
     }
     return false;
   }
 
-  Node? childBeforeThis(NodeDetails node, bool alsoInChildren, [int? indexNode]) {
+  Node? childBeforeThis(NodeDetails node, bool alsoInChildren,
+      [int? indexNode]) {
+    if (!isChildrenContainer) return null;
     if (indexNode != null) {
       final element = elementAtOrNull(indexNode);
       if (element != null) {
@@ -109,18 +94,23 @@ extension NodeContainerExt on NodeContainer {
     }
     for (int i = 0; i < length; i++) {
       final treeNode = elementAt(i);
-      if (treeNode.details.id == node.id) {
+      if (treeNode.asBase.details.id == node.id) {
         if (i - 1 == -1) return null;
         return elementAt(i - 1);
-      } else if (treeNode is NodeContainer && treeNode.isNotEmpty && alsoInChildren) {
-        final backNode = treeNode.childBeforeThis(node, alsoInChildren, indexNode);
+      } else if (treeNode.isChildrenContainer &&
+          treeNode.isNotEmpty &&
+          alsoInChildren) {
+        final backNode =
+            treeNode.childBeforeThis(node, alsoInChildren, indexNode);
         if (backNode != null) return backNode;
       }
     }
     return null;
   }
 
-  Node? childAfterThis(NodeDetails node, bool alsoInChildren, [int? indexNode]) {
+  Node? childAfterThis(NodeDetails node, bool alsoInChildren,
+      [int? indexNode]) {
+    if (!isChildrenContainer) return null;
     if (indexNode != null) {
       final element = elementAtOrNull(indexNode);
       if (element != null) {
@@ -130,72 +120,105 @@ extension NodeContainerExt on NodeContainer {
     }
     for (int i = 0; i < length; i++) {
       final treeNode = elementAt(i);
-      if (treeNode.details.id == node.id) {
+      if (treeNode.asBase.details.id == node.id) {
         if (i + 1 >= length) return null;
         return elementAt(i + 1);
-      } else if (treeNode is NodeContainer && treeNode.isNotEmpty && alsoInChildren) {
-        final nextChild = treeNode.childAfterThis(node, alsoInChildren, indexNode);
+      } else if (treeNode.isChildrenContainer &&
+          treeNode.isNotEmpty &&
+          alsoInChildren) {
+        final nextChild =
+            treeNode.childAfterThis(node, alsoInChildren, indexNode);
         if (nextChild != null) return nextChild;
       }
     }
     return null;
   }
 
-  T elementAt(int index) {
+  Node elementAt(int index) {
+    if (!isChildrenContainer) return this;
     return children.elementAt(index);
   }
 
-  T? elementAtOrNull(int index) {
+  Node? elementAtOrNull(int index) {
+    if (!isChildrenContainer) return null;
     return children.elementAtOrNull(index);
   }
 
   bool contains(Object object) {
+    if (!isChildrenContainer) return false;
     return children.contains(object);
   }
 
-  void clearAndOverrideState(List<T> newChildren) {
+  void clearAndOverrideState(List<Node> newChildren) {
+    if (!isChildrenContainer) return;
     clear();
     addAll(newChildren);
   }
 
-  T get first => children.first;
-  T get last => children.last;
-  T? get lastOrNull => children.lastOrNull;
-  T? get firstOrNull => children.firstOrNull;
-  Iterator<T> get iterator => children.iterator;
-  Iterable<T> get reversed => children.reversed;
-  bool get isEmpty => children.isEmpty;
-  bool get hasNoChildren => children.isEmpty;
-  bool get isNotEmpty => !isEmpty;
+  Node? get first {
+    if (!isChildrenContainer) null;
+    return children.first;
+  }
+
+  Node? get last {
+    if (!isChildrenContainer) null;
+    return children.last;
+  }
+
+  Node? get lastOrNull {
+    if (!isChildrenContainer) return null;
+    return children.lastOrNull;
+  }
+
+  Node? get firstOrNull {
+    if (!isChildrenContainer) return null;
+    return children.firstOrNull;
+  }
+
+  Iterator<Node>? get iterator {
+    if (!isChildrenContainer) return null;
+    return children.iterator;
+  }
+
+  Iterable<Node>? get reversed {
+    if (!isChildrenContainer) return null;
+    return children.reversed;
+  }
+
   int get length => children.length;
 
-  int indexWhere(bool Function(T) callback) {
+  int indexWhere(bool Function(Node) callback) {
+    if (!isChildrenContainer) return -1;
     return children.indexWhere(callback);
   }
 
-  int indexOf(T element, int start) {
+  int indexOf(Node element, int start) {
+    if (!isChildrenContainer) return -1;
     return children.indexOf(element, start);
   }
 
-  T firstWhere(bool Function(T) callback) {
+  Node? firstWhere(bool Function(Node) callback) {
+    if (!isChildrenContainer) return null;
     return children.firstWhere(callback);
   }
 
-  T lastWhere(bool Function(T) callback) {
+  Node? lastWhere(bool Function(Node) callback) {
+    if (!isChildrenContainer) return null;
     return children.lastWhere(callback);
   }
 
-  void add(T element) {
+  void add(Node element) {
+    if (!isChildrenContainer) return;
     children.add(element);
     notify();
   }
 
-  void addAll(Iterable<T> children) {
+  void addAll(Iterable<Node> children) {
     this.children.addAll(children);
     notify();
   }
 
-  void insert(int index, T element) {
+  void insert(int index, Node element) {
     children.insert(index, element);
     notify();
   }
@@ -205,55 +228,36 @@ extension NodeContainerExt on NodeContainer {
     notify();
   }
 
-  bool remove(T element) {
+  bool remove(Node element) {
     final removed = children.remove(element);
     notify();
     return removed;
   }
 
-  T removeLast() {
-    final T value = children.removeLast();
+  Node removeLast() {
+    final Node value = children.removeLast();
     notify();
     return value;
   }
 
-  void removeWhere(bool Function(T) callback) {
+  void removeWhere(bool Function(Node) callback) {
     children.removeWhere(callback);
     notify();
   }
 
-  T removeAt(int index) {
-    final T value = children.removeAt(index);
+  Node removeAt(int index) {
+    final Node value = children.removeAt(index);
     notify();
     return value;
   }
 
-  void operator []=(int index, T format) {
+  void operator []=(int index, Node format) {
     if (index < 0) return;
     children[index] = format;
     notify();
   }
 
-  T operator [](int index) {
+  Node operator [](int index) {
     return children[index];
-  }
-
-  @override
-  bool canDrag({bool isSelectingModeActive = false}) {
-    return !isSelectingModeActive;
-  }
-
-  @override
-  bool canDrop({required Node target}) {
-    return target is MakeDraggable && target is NodeContainer<T>;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    for (var e in children) {
-      ChangeNotifier.debugAssertNotDisposed(this);
-      e.dispose();
-    }
   }
 }

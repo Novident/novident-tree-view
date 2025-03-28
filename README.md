@@ -13,7 +13,7 @@ Most existing tree view implementations:
 **Novident Tree View solves these by:**
 
 - Using extendable data types instead of enforced controllers
-- Letting nodes self-manage their state via `Listenable` (`Node` and `NodeContainer` extends of `ChangeNotifier`)
+- Letting nodes self-manage their state via `Listenable` (`Node` extend of `ChangeNotifier`)
 - Providing gesture hooks instead of predefined behaviors
 - Allowing complete visual customization
 

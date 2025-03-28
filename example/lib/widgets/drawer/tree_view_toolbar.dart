@@ -1,6 +1,7 @@
+import 'package:example/common/controller/tree_controller.dart';
+import 'package:example/common/entities/node_details.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tree_view/flutter_tree_view.dart';
 
 import '../../common/entities/directory.dart';
 import '../../common/entities/file.dart';
@@ -27,8 +28,10 @@ class _TreeViewToolbarState extends State<TreeViewToolbar> {
             onPressed: () {
               widget.controller.insertAtRoot(
                 File(
-                  details:
-                      NodeDetails.withLevel(null, widget.controller.root.id),
+                  details: NodeDetails.withLevel(
+                    null,
+                    widget.controller.root,
+                  ),
                   content: '',
                   name: 'Basic name',
                   createAt: DateTime.now(),
@@ -42,7 +45,7 @@ class _TreeViewToolbarState extends State<TreeViewToolbar> {
           onPressed: () {
             widget.controller.insertAtRoot(
               Directory(
-                details: NodeDetails.withLevel(null, widget.controller.root.id),
+                details: NodeDetails.withLevel(null, widget.controller.root),
                 children: [],
                 isExpanded: false,
                 name: 'Basic name',

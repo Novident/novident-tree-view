@@ -35,7 +35,8 @@ class ScrollConfigs {
     double? autoScrollSensitivity,
   }) {
     return ScrollConfigs(
-      autoScrollSensitivity: autoScrollSensitivity ?? this.autoScrollSensitivity,
+      autoScrollSensitivity:
+          autoScrollSensitivity ?? this.autoScrollSensitivity,
     );
   }
 

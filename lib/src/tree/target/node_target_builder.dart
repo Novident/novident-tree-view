@@ -15,12 +15,12 @@ class NodeTargetBuilder extends StatefulWidget {
   /// [node]: The target node for drag operations
   /// [configuration]: Tree configuration parameters
   /// [owner]: The container that owns this node
-  const NodeTargetBuilder({
+  NodeTargetBuilder({
     required this.node,
     required this.configuration,
     required this.owner,
     super.key,
-  });
+  }) : assert(owner.isChildrenContainer, '');
 
   /// Configuration settings for the tree view
   final TreeConfiguration configuration;
@@ -29,7 +29,7 @@ class NodeTargetBuilder extends StatefulWidget {
   final Node node;
 
   /// The container that owns and manages this node
-  final NodeContainer owner;
+  final Node owner;
 
   @override
   State<NodeTargetBuilder> createState() => _NodeTargetBuilderState();
@@ -59,11 +59,12 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
   /// [gestures]: The drag gesture handlers
   /// [details]: Information about the dragged node
   /// Returns true if the node can be accepted
-  bool _onWillAccept(NodeDragGestures gestures, DragTargetDetails<Node> details) {
+  bool _onWillAccept(
+      NodeDragGestures gestures, DragTargetDetails<Node> details) {
     return gestures.onWillAcceptWithDetails(
       _details,
       details,
-      widget.node as NodeContainer,
+      widget.node.isChildrenContainer ? widget.node : widget.owner,
     );
   }
 
@@ -72,7 +73,8 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
   /// [draggedNode]: The node being dragged
   /// [pointer]: Current pointer position in global coordinates
   /// Returns detailed drop information including position and bounds
-  NovDragAndDropDetails<Node> _getDropDetails(Node draggedNode, Offset pointer) {
+  NovDragAndDropDetails<Node> _getDropDetails(
+      Node draggedNode, Offset pointer) {
     final RenderBox renderBox = context.findRenderObject()! as RenderBox;
 
     return NovDragAndDropDetails<Node>(
@@ -120,12 +122,13 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
       whenBelow: () => DragHandlerPosition.below,
     );
 
-    if (!widget.node.isDropIntoAllowed() && position == DragHandlerPosition.into) {
+    if (!widget.node.isDropIntoAllowed() &&
+        position == DragHandlerPosition.into) {
       return;
     }
 
-    if(!widget.node.isDropPositionValid(details.data, position)) {
-      return ;
+    if (!widget.node.isDropPositionValid(details.data, position)) {
+      return;
     }
 
     // Notify about the accepted drop
@@ -174,7 +177,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
   void _startOrCancelOnHoverExpansion({bool cancel = false}) {
     // Skip if auto-expansion is disabled or node isn't a container
     if (!widget.configuration.draggableConfigurations.allowAutoExpandOnHover ||
-        widget.node is! NodeContainer<Node>) return;
+        !widget.node.isChildrenContainer) return;
 
     if (cancel) {
       timer?.cancel();
@@ -183,7 +186,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     }
 
     // Don't expand if already expanded
-    if ((widget.node as NodeContainer).isExpanded) return;
+    if (widget.node.isExpanded) return;
 
     // Start new timer if none exists or current one isn't active
     bool? isActive = timer?.isActive;
@@ -193,7 +196,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
           milliseconds: widget.configuration.onHoverContainerExpansionDelay,
         ),
         () {
-          widget.configuration.onHoverContainer?.call(widget.node as NodeContainer);
+          widget.configuration.onHoverContainer?.call(widget.node);
         },
       );
     }
@@ -202,16 +205,19 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
   @override
   Widget build(BuildContext context) {
     // Skip drag target if dropping is disabled or node doesn't accept siblings
-    if (!widget.node.isDropTarget() || !widget.configuration.activateDragAndDropFeature) {
+    if (!widget.node.isDropTarget() ||
+        !widget.configuration.activateDragAndDropFeature) {
       return widget.configuration.nodeBuilder(widget.node, _details);
     }
 
-    NodeDragGestures? dragGestures = widget.configuration.nodeDragGestures(widget.node);
+    NodeDragGestures? dragGestures =
+        widget.configuration.nodeDragGestures(widget.node);
 
     return Column(
       children: <Widget>[
         DragTarget<Node>(
-          onWillAcceptWithDetails: (DragTargetDetails<Node> details) => _onWillAccept(
+          onWillAcceptWithDetails: (DragTargetDetails<Node> details) =>
+              _onWillAccept(
             dragGestures,
             details,
           ),
