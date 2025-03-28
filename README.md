@@ -5,6 +5,7 @@ This package provides a flexible solution for displaying hierarchical data struc
 ## Motivation 💡
 
 Most existing tree view implementations:
+
 - Require controller setups when probably we don't want to manage the nodes using them
 - Force predefined state management strategies
 - Limit customization of the internal node behavior
@@ -12,7 +13,7 @@ Most existing tree view implementations:
 **Novident Tree View solves these by:**
 
 - Using extendable data types instead of enforced controllers
-- Letting nodes self-manage their state via `Listenable`
+- Letting nodes self-manage their state via `Listenable` (`Node` and `NodeContainer` extends of `ChangeNotifier`)
 - Providing gesture hooks instead of predefined behaviors
 - Allowing complete visual customization
 
@@ -41,10 +42,15 @@ dependencies:
 
 > [!NOTE]
 > Keep in mind that you'll have to manually manage the order and values of the Nodes. For example, to manage the level of the nodes, you'll have to implement your own logic to ensure that each Node has the correct level.
+>
 
-### 1. Define Node Models
+### 1. Define a Leaf node 
+
+> [!TIP]
+> We call it Leaf because instead of creating nodes that can always have children, we can create Nodes that also only have their own values and don't need to draw any children. You can think of `Node` and `NodeContainer` as the equivalent of `File` and `Directory`.
+
 ```dart
-class NodeModel extends Node {
+class LeafNode extends Node {
   final String title;
   final int nodeLevel;
   final String nodeId;
@@ -66,6 +72,11 @@ class NodeModel extends Node {
   @override
   NodeContainer? get owner => parent;
 
+  set owner(NodeContainer? owner) {
+    parent = owner;
+    notifyListeners();
+  }
+
   // if is false, this node cannot be dragged 
   // using gestures
   @override
@@ -80,6 +91,14 @@ class NodeModel extends Node {
     return true;
   }
 }
+```
+
+### 2. Define the Root model
+
+> [!TIP]
+> We call it `NodeContainer` because instead of creating nodes that can always have children You can think of `NodeContainer` as the equivalent `Directory`.
+
+```dart
 // and the container model
 class NodeContainerModel extends NodeContainer<Node> {
   final String title;
@@ -105,6 +124,12 @@ class NodeContainerModel extends NodeContainer<Node> {
   @override
   bool get isExpanded => _isExpanded;
 
+  set isExpanded(bool expand) {
+    _isExpanded = expand;
+    // will rebuild the nodes below this node 
+    notifyListeners();
+  }
+
   @override
   String get id => nodeId;
 
@@ -113,6 +138,11 @@ class NodeContainerModel extends NodeContainer<Node> {
 
   @override
   NodeContainer? get owner => parent;
+
+  set owner(NodeContainer? owner) {
+    parent = owner;
+    notifyListeners();
+  }
 
   // if is false, this node cannot be dragged 
   // using gestures
@@ -141,7 +171,7 @@ final root = NodeContainerModel(
   parent: null,
   children: [
     NodeContainerModel(/* ... */),
-    NodeModel(/* ... */),
+    LeafNode(/* ... */),
   ],
 );
 
