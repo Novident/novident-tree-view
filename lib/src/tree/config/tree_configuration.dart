@@ -17,7 +17,7 @@ class TreeConfiguration {
   ///
   /// [node]: The node to visualize
   /// [details]: Current drag-and-drop operation details (null when not dragging)
-  final Widget Function(Node node, NovDragAndDropDetails<Node>? details)
+  final Widget Function(Node node, BuildContext context, NovDragAndDropDetails<Node>? details)
       nodeBuilder;
 
   /// Whether to wrap each row in a RepaintBoundary.
@@ -123,7 +123,7 @@ class TreeConfiguration {
   ///
   /// Any parameter not specified will retain its original value
   TreeConfiguration copyWith({
-    Widget Function(Node node, NovDragAndDropDetails<Node>? details)?
+    Widget Function(Node node, BuildContext context, NovDragAndDropDetails<Node>? details)?
         nodeBuilder,
     void Function(Node node)? onHoverContainer,
     ScrollConfigs? scrollConfigs,

@@ -1,9 +1,9 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/default_configurations/directory_widget.dart';
 import 'package:example/common/default_configurations/file_widget.dart';
-import 'package:example/common/entities/file.dart';
 import 'package:example/common/entities/root.dart';
 import 'package:example/common/extensions/node_ext.dart';
 import 'package:flutter/material.dart';
@@ -88,7 +88,7 @@ TreeConfiguration treeConfigurationBuilder(
           },
         );
       },
-      nodeBuilder: (Node node, NovDragAndDropDetails<Node>? details) {
+      nodeBuilder: (Node node, BuildContext context, NovDragAndDropDetails<Node>? details) {
         Decoration? decoration;
         final BorderSide borderSide = BorderSide(
           color: Theme.of(context).colorScheme.outline,

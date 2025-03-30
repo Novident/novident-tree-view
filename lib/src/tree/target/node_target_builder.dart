@@ -230,6 +230,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
           ) {
             return widget.configuration.nodeBuilder(
               widget.node,
+              context,
               _details?.applyData(
                 candidateData,
                 rejectedData,
