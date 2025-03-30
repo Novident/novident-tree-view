@@ -31,7 +31,7 @@ dependencies:
 ### 1. Define a Leaf node 
 
 > [!TIP]
-> We call it Leaf because instead of creating nodes that can always have children, we can create Nodes that also only have their own values and don't need to draw any children. You can think of `Node` as the equivalent of `File`.
+> You can think of `Node` as the equivalent of `File`.
 
 ```dart
 import 'package:novident_tree_view/novident_tree_view.dart';
