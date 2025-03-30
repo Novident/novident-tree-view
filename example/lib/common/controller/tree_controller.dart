@@ -47,12 +47,7 @@ class TreeController extends BaseTreeController {
       if (node.isChildrenContainer && node.isNotEmpty) {
         node.redepthChildren(0);
       }
-      Node newNodeState = node.asBase.copyWith(
-        details: node.asBase.details.copyWith(
-          level: 0,
-          owner: root,
-        ),
-      );
+      Node newNodeState = node..owner = root;
       root.add(newNodeState);
       if (selectedNode?.id == node.id) {
         selectNode(newNodeState);
@@ -104,8 +99,9 @@ class TreeController extends BaseTreeController {
   }
 
   void insertAtRoot(Node node, {bool removeIfNeeded = false}) {
-    if (removeIfNeeded)
+    if (removeIfNeeded) {
       removeAt(node.id, verifyDuplicates: true, ignoreNotify: true);
+    }
     insertAt(node, root.details.id, removeIfNeeded: !removeIfNeeded);
     notifyListeners();
   }
@@ -349,9 +345,6 @@ class TreeController extends BaseTreeController {
     bool verifyDuplicates = false,
     bool ignoreNotify = false,
   }) {
-    if (root.existInRoot(nodeId)) {
-      if (!verifyDuplicates) return null;
-    }
     for (int i = 0; i < root.length; i++) {
       Node node = root.elementAt(i);
       if (node.id == nodeId && !ignoreRoot) {

@@ -209,6 +209,9 @@ extension NodeContainerExt on Node {
 
   void add(Node element) {
     if (!isChildrenContainer) return;
+    if (element.owner != this && isChildrenContainer) {
+      element.owner = this;
+    }
     children.add(element);
     notify();
   }
@@ -253,6 +256,9 @@ extension NodeContainerExt on Node {
 
   void operator []=(int index, Node format) {
     if (index < 0) return;
+    if (format.owner != this && isChildrenContainer) {
+      format.owner = this;
+    }
     children[index] = format;
     notify();
   }

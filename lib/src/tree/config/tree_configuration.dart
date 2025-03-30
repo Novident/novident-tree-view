@@ -20,6 +20,18 @@ class TreeConfiguration {
   final Widget Function(Node node, NovDragAndDropDetails<Node>? details)
       nodeBuilder;
 
+  /// Whether to wrap each row in a RepaintBoundary.
+  final bool addRepaintBoundaries;
+
+  /// Builder function that creates the configuration for nodes
+  ///
+  /// Usually used to give to the [Node] the tappable capability
+  final NodeConfiguration Function(Node node)? nodeConfigBuilder;
+
+  /// Determine if we should autoscroll when necessary during
+  /// dragging events
+  final bool activateAutoScrollFeature;
+
   /// Callback when hovering over a NodeContainer
   ///
   /// Triggered when a drag operation hovers over a container node
@@ -30,11 +42,6 @@ class TreeConfiguration {
 
   /// Settings for drag-and-drop operations
   final DraggableConfigurations draggableConfigurations;
-
-  /// Whether to maintain state for collapsed nodes
-  ///
-  /// When true, preserves the state of nodes even when they're collapsed
-  final bool keepAliveTree;
 
   /// Toggles visibility of child count badges on NodeContainers
   ///
@@ -99,7 +106,9 @@ class TreeConfiguration {
     required this.onHoverContainer,
     required this.scrollConfigs,
     required this.draggableConfigurations,
-    required this.keepAliveTree,
+    this.addRepaintBoundaries = false,
+    this.activateAutoScrollFeature = false,
+    this.nodeConfigBuilder,
     this.nodeWidgetKey,
     this.useRootSection = false,
     this.shouldDisplayNodeChildrenCount = false,
@@ -119,10 +128,11 @@ class TreeConfiguration {
     void Function(Node node)? onHoverContainer,
     ScrollConfigs? scrollConfigs,
     DraggableConfigurations? draggableConfigurations,
-    bool? keepAliveTree,
     bool? shouldDisplayNodeChildrenCount,
     bool? activateDragAndDropFeature,
     bool? useRootSection,
+    bool? activateAutoScrollFeature,
+    NodeConfiguration Function(Node node)? nodeConfigBuilder,
     PageStorageKey<String>? Function(Node node)? nodeWidgetKey,
     Widget Function(Node? parent, List<Node> children)? buildCustomChildren,
     Widget? onDetectEmptyRoot,
@@ -137,7 +147,6 @@ class TreeConfiguration {
       nodeBuilder: nodeBuilder ?? this.nodeBuilder,
       onHoverContainer: onHoverContainer ?? this.onHoverContainer,
       scrollConfigs: scrollConfigs ?? this.scrollConfigs,
-      keepAliveTree: keepAliveTree ?? this.keepAliveTree,
       draggableConfigurations:
           draggableConfigurations ?? this.draggableConfigurations,
       shouldDisplayNodeChildrenCount:
@@ -155,6 +164,9 @@ class TreeConfiguration {
           rootTargetToDropSection ?? this.rootTargetToDropSection,
       physics: physics ?? this.physics,
       nodeDragGestures: nodeDragGestures ?? this.nodeDragGestures,
+      activateAutoScrollFeature:
+          activateDragAndDropFeature ?? this.activateAutoScrollFeature,
+      nodeConfigBuilder: nodeConfigBuilder ?? this.nodeConfigBuilder,
     );
   }
 
@@ -165,7 +177,8 @@ class TreeConfiguration {
     return other.nodeBuilder == nodeBuilder &&
         other.onHoverContainer == onHoverContainer &&
         other.scrollConfigs == scrollConfigs &&
-        other.keepAliveTree == keepAliveTree &&
+        other.activateAutoScrollFeature == activateAutoScrollFeature &&
+        other.nodeConfigBuilder == nodeConfigBuilder &&
         other.draggableConfigurations == draggableConfigurations &&
         other.shouldDisplayNodeChildrenCount ==
             shouldDisplayNodeChildrenCount &&
@@ -188,8 +201,9 @@ class TreeConfiguration {
       nodeBuilder,
       onHoverContainer,
       scrollConfigs,
+      activateAutoScrollFeature.hashCode,
+      nodeConfigBuilder.hashCode,
       draggableConfigurations,
-      keepAliveTree,
       shouldDisplayNodeChildrenCount,
       activateDragAndDropFeature,
       useRootSection,

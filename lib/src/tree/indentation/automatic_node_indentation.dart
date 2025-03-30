@@ -33,17 +33,19 @@ class AutomaticNodeIndentation extends StatelessWidget {
   /// Constrains the indentation level to the configured maximum
   ///
   /// Returns the minimum between the node's level and the configured maxLevel
-  int _constrainLevel(int level) => math.min(level, configuration.maxLevel);
+  int _constrainLevel(int level) =>
+      math.min<int>(level, configuration.maxLevel);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       // Combine the base padding with calculated indentation
       padding: configuration.padding.add(
-        EdgeInsetsDirectional.only(
+        EdgeInsets.only(
           // Calculate indentation: level × pixels-per-level
           // Constrained by maxLevel configuration
-          start: _constrainLevel(node.level) * configuration.indentPerLevel,
+          left: configuration.indentPerLevelBuilder?.call(node) ??
+              _constrainLevel(node.level) * configuration.indentPerLevel,
         ),
       ),
       child: child,

@@ -1,18 +1,13 @@
-import 'package:example/common/entities/directory.dart';
-import 'package:example/common/entities/file.dart';
 import 'package:example/common/entities/node_base.dart';
 import 'package:example/common/entities/node_details.dart';
+import 'package:example/common/extensions/node_ext.dart';
 import 'package:flutter/foundation.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 class Root extends NodeBase {
   Root({
     required super.children,
-  }) : super(
-          details: NodeDetails.zero(
-            null,
-          ),
-        ) {
+  }) : super(details: NodeDetails(id: 'root', level: -1)) {
     for (final Node child in children) {
       child.owner = this;
     }
@@ -24,17 +19,9 @@ class Root extends NodeBase {
     void redepth(List<Node> unformattedChildren, int currentLevel) {
       for (int i = 0; i < unformattedChildren.length; i++) {
         final Node node = unformattedChildren.elementAt(i);
-        if (node is File) {
-          unformattedChildren[i] = node.copyWith(
-            details: node.details.copyWith(level: currentLevel + 1),
-          );
-        }
-
-        if (node is Directory) {
-          unformattedChildren[i] = node.copyWith(
-            details: node.details.copyWith(level: currentLevel + 1),
-          );
-        }
+        unformattedChildren[i] = node.asBase.copyWith(
+          details: node.asBase.details.copyWith(level: currentLevel + 1),
+        );
         if (node.isChildrenContainer && node.isNotEmpty) {
           redepth(node.children, currentLevel + 1);
         }
@@ -54,11 +41,14 @@ class Root extends NodeBase {
     if (ignoreRedepth) return;
 
     redepth(children, currentLevel ?? level);
-    notifyListeners();
+    notify();
   }
 
   @override
-  bool operator ==(covariant Root other) {
+  bool operator ==(Object other) {
+    if (other is! Root) {
+      return false;
+    }
     if (identical(this, other)) return true;
     return listEquals(children, other.children);
   }
@@ -100,7 +90,9 @@ class Root extends NodeBase {
   }
 
   operator []=(int index, Node node) {
-    node.owner = this;
+    if (node.owner != this) {
+      node.owner = this;
+    }
     children[index] = node;
     notify();
   }

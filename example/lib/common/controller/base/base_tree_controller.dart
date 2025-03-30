@@ -90,8 +90,11 @@ abstract class BaseTreeController extends ChangeNotifier {
   /// selectNode just makes of the tree directory
   /// select a node
   void selectNode(Node? node) {
-    if (currentSelectedNode.value?.asBase.details == node?.asBase.details)
-      return;
+    if (currentSelectedNode.value.runtimeType == node.runtimeType) {
+      if (currentSelectedNode.value == node) {
+        return;
+      }
+    }
     currentSelectedNode.value = node;
   }
 
@@ -110,7 +113,7 @@ abstract class BaseTreeController extends ChangeNotifier {
         // does not change the node value of the tree node
         if (newChildState.id != node.id) {
           throw Exception(
-            'Invalid custom node builded $newChildState. Please, ensure of create a '
+            'Invalid custom node builded ${newChildState.id} when was expected $nodeId. Please, ensure of create a '
             'TreeNode valid with the same '
             'Node of the passed as the argument',
           );

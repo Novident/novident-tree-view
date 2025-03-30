@@ -1,7 +1,12 @@
+import 'dart:math';
+
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/default_configurations/directory_widget.dart';
 import 'package:example/common/default_configurations/file_widget.dart';
+import 'package:example/common/entities/file.dart';
+import 'package:example/common/entities/root.dart';
 import 'package:example/common/extensions/node_ext.dart';
+import 'package:example/common/extensions/num_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/internal.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
@@ -11,24 +16,50 @@ TreeConfiguration treeConfigurationBuilder(
   BuildContext context,
 ) =>
     TreeConfiguration(
-      keepAliveTree: true,
       activateDragAndDropFeature: true,
-      indentConfiguration: IndentConfiguration(),
+      addRepaintBoundaries: true,
+      indentConfiguration: IndentConfiguration(
+        indentPerLevel: 30,
+        indentPerLevelBuilder: (Node node) {
+          if (node is File) {
+            return node.level == 0
+                ? 1 * 30
+                : (min<int>(
+                          node.level,
+                          IndentConfiguration.largestIndentAccepted,
+                        ) *
+                        30 +
+                    node.level * 1.5);
+          }
+          return null;
+        },
+      ),
       scrollConfigs: ScrollConfigs(),
-      onHoverContainer: (Node node) {},
+      onHoverContainer: (Node node) {
+        if (node.isChildrenContainer) {
+          node.asDirectory.openOrClose(forceOpen: true);
+          return;
+        }
+      },
       draggableConfigurations: DraggableConfigurations(
-          buildDragFeedbackWidget: (node) => const Material(),
-          childDragAnchorStrategy: (
-            Draggable<Object> draggable,
-            BuildContext context,
-            Offset position,
-          ) {
-            final RenderBox renderObject =
-                context.findRenderObject()! as RenderBox;
-            return renderObject.globalToLocal(position);
-          },
-          allowAutoExpandOnHover: true,
-          preferLongPressDraggable: isMobile),
+        buildDragFeedbackWidget: (Node node) => Material(
+          type: MaterialType.canvas,
+          child: Text(
+            node.runtimeType.toString() + node.level.toString(),
+          ),
+        ),
+        childDragAnchorStrategy: (
+          Draggable<Object> draggable,
+          BuildContext context,
+          Offset position,
+        ) {
+          final RenderBox renderObject =
+              context.findRenderObject()! as RenderBox;
+          return renderObject.globalToLocal(position);
+        },
+        allowAutoExpandOnHover: true,
+        preferLongPressDraggable: isMobile,
+      ),
       nodeDragGestures: (Node node) {
         return NodeDragGestures(
           onWillAcceptWithDetails: (
@@ -36,12 +67,26 @@ TreeConfiguration treeConfigurationBuilder(
             DragTargetDetails<Node> dragDetails,
             Node? parent,
           ) =>
-              false,
+              true,
           onAcceptWithDetails: (
             NovDragAndDropDetails<Node>? details,
             Node? parent,
             DragHandlerPosition position,
           ) {},
+        );
+      },
+      nodeConfigBuilder: (Node node) {
+        return NodeConfiguration(
+          makeTappable: true,
+          decoration: BoxDecoration(
+            color: controller.selectedNode == node
+                ? Theme.of(context).primaryColor.withAlpha(50)
+                : null,
+          ),
+          onTap: (BuildContext context) {
+            if (node is Root) return;
+            controller.selectNode(node);
+          },
         );
       },
       nodeBuilder: (Node node, NovDragAndDropDetails<Node>? details) {
@@ -55,32 +100,32 @@ TreeConfiguration treeConfigurationBuilder(
           // Add a border to indicate in which portion of the target's height
           // the dragging node will be inserted.
           decoration = BoxDecoration(
-            border: details.mapDropPosition(
+            border: details.mapDropPosition<BoxBorder?>(
               whenAbove: () => Border(top: borderSide),
               whenInside: () => Border.fromBorderSide(borderSide),
               whenBelow: () => Border(bottom: borderSide),
+              boundsMultiplier: 0.3,
+              insideMultiplier: 1.5,
             ),
           );
         }
         if (node.isRoot) {
           return const SizedBox.shrink();
         }
-        return InkWell(
-          onTap: () {
-            controller.selectNode(node);
-          },
-          child: Container(
-            decoration: decoration,
-            child: node.isDirectory
-                ? DirectoryTile(
-                    directory: node.asDirectory,
-                    controller: controller,
-                  )
-                : FileTile(
-                    file: node.asFile,
-                    controller: controller,
-                  ),
-          ),
+        return Container(
+          decoration: decoration,
+          child: node.isDirectory
+              ? DirectoryTile(
+                  directory: node.asDirectory,
+                  controller: controller,
+                  onTap: () {
+                    node.asDirectory.openOrClose();
+                  },
+                )
+              : FileTile(
+                  file: node.asFile,
+                  controller: controller,
+                ),
         );
       },
     );

@@ -64,29 +64,13 @@ class TreeView extends StatefulWidget {
   State<StatefulWidget> createState() => _TreeViewState();
 }
 
-class _TreeViewState extends State<TreeView>
-    with AutomaticKeepAliveClientMixin {
-  bool _keepAlive = true;
-
-  @override
-  bool get wantKeepAlive => _keepAlive;
-
-  @override
-  void didUpdateWidget(covariant TreeView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!widget.configuration.keepAliveTree) {
-      _keepAlive = false;
-      super.updateKeepAlive();
-    }
-  }
-
+class _TreeViewState extends State<TreeView> {
   /// Widget displayed when no nodes are found in the tree
   Widget get noNodesFoundWidget =>
       widget.configuration.onDetectEmptyRoot ?? _kDefaultNotFoundWidget;
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return ListView(
       shrinkWrap: widget.shrinkWrap,
       controller: widget.scrollController,
@@ -105,6 +89,7 @@ class _TreeViewState extends State<TreeView>
               scrollDirection: Axis.vertical,
               physics: const NeverScrollableScrollPhysics(),
               primary: false,
+              clipBehavior: Clip.hardEdge,
               itemCount: widget.root.children.length,
               hitTestBehavior: HitTestBehavior.translucent,
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -113,8 +98,8 @@ class _TreeViewState extends State<TreeView>
                 // Build appropriate node type
                 if (!node.isChildrenContainer) {
                   return LeafNodeBuilder(
-                    owner: widget.root,
                     node: node,
+                    owner: widget.root,
                     configuration: widget.configuration,
                   );
                 } else {

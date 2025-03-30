@@ -19,26 +19,29 @@ class FileTile extends StatefulWidget {
 class _DirectoryTileState extends State<FileTile> {
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 5),
-          child: Icon(
-            widget.file.content.isEmpty
-                ? CupertinoIcons.doc_text
-                : CupertinoIcons.doc_text_fill,
-            size: isAndroid ? 20 : null,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 5),
+            child: Icon(
+              widget.file.content.isEmpty
+                  ? CupertinoIcons.doc_text
+                  : CupertinoIcons.doc_text_fill,
+              size: isAndroid ? 20 : null,
+            ),
           ),
-        ),
-        Expanded(
-          child: Text(
-            widget.file.name,
-            maxLines: 1,
-            softWrap: true,
-            overflow: TextOverflow.fade,
+          Expanded(
+            child: Text(
+              widget.file.name,
+              maxLines: 1,
+              softWrap: true,
+              overflow: TextOverflow.fade,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

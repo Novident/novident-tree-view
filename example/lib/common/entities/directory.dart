@@ -121,7 +121,10 @@ class Directory extends NodeBase {
   }
 
   @override
-  bool operator ==(covariant Directory other) {
+  bool operator ==(Object other) {
+    if (other is! Directory) {
+      return false;
+    }
     return listEquals(children, other.children) &&
         name == other.name &&
         details == other.details &&

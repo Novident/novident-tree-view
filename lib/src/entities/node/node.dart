@@ -69,7 +69,7 @@ abstract class Node extends ChangeNotifier implements DragAndDropMixin {
 
   @override
   @mustBeOverridden
-  bool operator ==(covariant Node other);
+  bool operator ==(Object other);
 
   @override
   @mustBeOverridden

@@ -71,7 +71,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   set isDragging(bool value) {
     if (value == _isDragging) return;
 
-    if (mounted) {
+    if (context.mounted && mounted) {
       setState(() {
         _isDragging = value;
         updateKeepAlive();
@@ -82,6 +82,9 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   }
 
   void _createAutoScroller([ScrollableState? scrollable]) {
+    if (!widget.configuration.activateAutoScrollFeature) {
+      return;
+    }
     _autoScroller = EdgeDraggingAutoScroller(
       scrollable ?? Scrollable.of(context),
       velocityScalar: 20,
@@ -94,6 +97,9 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   }
 
   void _autoScroll(Offset offset) {
+    if (!widget.configuration.activateAutoScrollFeature) {
+      return;
+    }
     _dragPointer = offset;
     _autoScroller?.startAutoScrollIfNecessary(
       Rect.fromCenter(
@@ -105,6 +111,9 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   }
 
   void _stopAutoScroll() {
+    if (!widget.configuration.activateAutoScrollFeature) {
+      return;
+    }
     _dragPointer = null;
     _autoScroller?.stopAutoScroll();
   }

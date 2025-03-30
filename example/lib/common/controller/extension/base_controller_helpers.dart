@@ -176,10 +176,9 @@ extension BaseControllerHelpers on BaseTreeController {
         );
         // verify if the callback created by the dev
         // does not change the details value of the node
-        if (newChildState.asBase.details != child.asBase.details ||
-            newChildState.id != child.id) {
+        if (newChildState.id != child.id) {
           throw Exception(
-            'Invalid custom node builded $newChildState. Please, ensure of create a '
+            'Invalid custom node builded ${newChildState.id} when as expected ${child.id}. Please, ensure of create a '
             'TreeNode valid with the same Node of the passed as the argument',
           );
         }

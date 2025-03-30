@@ -27,12 +27,11 @@ class File extends NodeBase {
     Node draggedNode,
     DragHandlerPosition dropPosition,
   ) =>
-      dropPosition != DragHandlerPosition.into;
+      dropPosition == DragHandlerPosition.above ||
+      dropPosition == DragHandlerPosition.below;
 
   @override
-  bool isDropTarget() {
-    return true;
-  }
+  bool isDropTarget() => true;
 
   @override
   String get id => details.id;
@@ -69,7 +68,10 @@ class File extends NodeBase {
   }
 
   @override
-  bool operator ==(covariant File other) {
+  bool operator ==(Object other) {
+    if (other is! File) {
+      return false;
+    }
     return details == other.details &&
         content == other.content &&
         name == other.name &&

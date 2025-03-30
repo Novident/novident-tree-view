@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_tree_view/src/tree/indentation/automatic_node_indentation.dart';
 
 /// Represents the leaf [Node] into the Tree
 class LeafNodeBuilder extends StatefulWidget {
@@ -43,7 +42,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
     return ListenableBuilder(
       listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
-        return AutomaticNodeIndentation(
+        Widget child = AutomaticNodeIndentation(
           node: widget.node,
           configuration: widget.configuration.indentConfiguration,
           child: NodeDraggableBuilder(
@@ -56,6 +55,82 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
               owner: widget.owner,
             ),
           ),
+        );
+        if (widget.configuration.addRepaintBoundaries) {
+          child = RepaintBoundary(child: child);
+        }
+
+        final NodeConfiguration? nodeConfig =
+            widget.configuration.nodeConfigBuilder?.call(widget.node);
+        if (nodeConfig == null) {
+          return child;
+        }
+
+        final Widget? wrapper = nodeConfig.nodeWrapper?.call(
+          widget.node,
+          context,
+          child,
+        );
+        if (wrapper != null) {
+          child = wrapper;
+        }
+
+        if (nodeConfig.decoration != null) {
+          child = Container(
+            decoration: nodeConfig.decoration!,
+            clipBehavior: Clip.hardEdge,
+            child: child,
+          );
+        }
+
+        if (!nodeConfig.makeTappable) {
+          return child;
+        }
+
+        return InkWell(
+          onFocusChange: nodeConfig.onFocusChange,
+          focusNode: nodeConfig.focusNode,
+          focusColor: nodeConfig.focusColor,
+          onTap: () => nodeConfig.onTap?.call(context),
+          onTapDown: (TapDownDetails details) =>
+              nodeConfig.onTapDown?.call(details, context),
+          onTapUp: (TapUpDetails details) =>
+              nodeConfig.onTapUp?.call(details, context),
+          onTapCancel: () => nodeConfig.onTapCancel?.call(context),
+          onDoubleTap: nodeConfig.onDoubleTap == null
+              ? null
+              : () => nodeConfig.onDoubleTap?.call(context),
+          onLongPress: nodeConfig.onLongPress == null
+              ? null
+              : () => nodeConfig.onLongPress?.call(context),
+          onSecondaryTap: nodeConfig.onSecondaryTap == null
+              ? null
+              : () => nodeConfig.onSecondaryTap?.call(context),
+          onSecondaryTapUp: nodeConfig.onSecondaryTapUp == null
+              ? null
+              : (TapUpDetails details) =>
+                  nodeConfig.onSecondaryTapUp?.call(details, context),
+          onSecondaryTapDown: nodeConfig.onSecondaryTapDown == null
+              ? null
+              : (TapDownDetails details) =>
+                  nodeConfig.onSecondaryTapDown?.call(details, context),
+          onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null
+              ? null
+              : () => nodeConfig.onSecondaryTapCancel?.call(context),
+          onHover: (bool isHovered) =>
+              nodeConfig.onHover?.call(isHovered, context),
+          mouseCursor: nodeConfig.mouseCursor,
+          hoverDuration: nodeConfig.hoverDuration,
+          hoverColor: nodeConfig.hoverColor,
+          overlayColor: nodeConfig.overlayColor,
+          splashColor: nodeConfig.tapSplashColor,
+          splashFactory: nodeConfig.splashFactory,
+          borderRadius: nodeConfig.splashBorderRadius,
+          customBorder: nodeConfig.customSplashShape,
+          canRequestFocus: false,
+          excludeFromSemantics: true,
+          enableFeedback: true,
+          child: wrapper ?? child,
         );
       },
     );

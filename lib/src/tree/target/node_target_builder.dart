@@ -20,7 +20,8 @@ class NodeTargetBuilder extends StatefulWidget {
     required this.configuration,
     required this.owner,
     super.key,
-  }) : assert(owner.isChildrenContainer, '');
+  }) : assert(owner.isChildrenContainer,
+            'The owner must be a children container');
 
   /// Configuration settings for the tree view
   final TreeConfiguration configuration;
@@ -92,9 +93,6 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
   void _onMove(NodeDragGestures gestures, DragTargetDetails<Node> details) {
     _startOrCancelOnHoverExpansion(cancel: true);
 
-    // Prevent dropping a node on itself
-    if (details.data == widget.node) return;
-
     // Only handle one draggable at a time
     if (_details != null && details.data != _details!.draggedNode) return;
 
@@ -116,20 +114,12 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     if (_details == null || _details!.draggedNode != details.data) return;
 
     // Determine drop position relative to target node
-    final DragHandlerPosition position = _details!.mapDropPosition(
+    final DragHandlerPosition position =
+        _details!.mapDropPosition<DragHandlerPosition>(
       whenAbove: () => DragHandlerPosition.above,
       whenInside: () => DragHandlerPosition.into,
       whenBelow: () => DragHandlerPosition.below,
     );
-
-    if (!widget.node.isDropIntoAllowed() &&
-        position == DragHandlerPosition.into) {
-      return;
-    }
-
-    if (!widget.node.isDropPositionValid(details.data, position)) {
-      return;
-    }
 
     // Notify about the accepted drop
     gestures.onAcceptWithDetails.call(

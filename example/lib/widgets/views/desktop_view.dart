@@ -73,6 +73,14 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
 
   void _handleOnChangeSelection(Node? node) {
     if (_lastNode?.id == node?.id) return;
+    if (node != null && node is! File) {
+      _showNoFileToWatch = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {});
+      });
+      _onChangeCalledFromSelectionHandler = true;
+      return;
+    }
     _lastNode = node as File?;
     _onChangeCalledFromSelectionHandler = true;
     if (_lastNode != null) {
@@ -169,10 +177,11 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                                         oldVersion = currentDelta;
                                         final newNodeState =
                                             _lastNode!.copyWith(
+                                          details: _lastNode!.details,
                                           content: jsonEncode(
-                                              document.toDelta().toJson()),
+                                            document.toDelta().toJson(),
+                                          ),
                                         );
-                                        //TODO. change this part because, when we select a node with content, calls to update node
                                         final bool wasNotFounded =
                                             !treeController
                                                 .updateNodeAtWithCallback(

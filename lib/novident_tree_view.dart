@@ -2,6 +2,7 @@ library;
 
 // node entities
 export 'src/entities/node/node.dart';
+export 'src/tree/config/node/node_configuration.dart';
 // interfaces
 export 'src/interfaces/draggable_node.dart';
 // utils

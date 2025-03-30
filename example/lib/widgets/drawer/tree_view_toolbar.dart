@@ -29,7 +29,7 @@ class _TreeViewToolbarState extends State<TreeViewToolbar> {
               widget.controller.insertAtRoot(
                 File(
                   details: NodeDetails.withLevel(
-                    null,
+                    0,
                     widget.controller.root,
                   ),
                   content: '',
@@ -45,7 +45,7 @@ class _TreeViewToolbarState extends State<TreeViewToolbar> {
           onPressed: () {
             widget.controller.insertAtRoot(
               Directory(
-                details: NodeDetails.withLevel(null, widget.controller.root),
+                details: NodeDetails.withLevel(0, widget.controller.root),
                 children: [],
                 isExpanded: false,
                 name: 'Basic name',
