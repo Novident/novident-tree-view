@@ -48,18 +48,14 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = AutomaticNodeIndentation(
+    Widget child = NodeDraggableBuilder(
       node: widget.nodeContainer,
-      configuration: widget.configuration.indentConfiguration,
-      child: NodeDraggableBuilder(
+      configuration: widget.configuration,
+      child: NodeTargetBuilder(
+        key: Key("container-key ${widget.nodeContainer.id}"),
         node: widget.nodeContainer,
         configuration: widget.configuration,
-        child: NodeTargetBuilder(
-          key: Key("container-key ${widget.nodeContainer.id}"),
-          node: widget.nodeContainer,
-          configuration: widget.configuration,
-          owner: widget.owner,
-        ),
+        owner: widget.owner,
       ),
     );
 

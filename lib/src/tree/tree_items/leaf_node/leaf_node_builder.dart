@@ -42,18 +42,14 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
     return ListenableBuilder(
       listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
-        Widget child = AutomaticNodeIndentation(
+        Widget child = NodeDraggableBuilder(
           node: widget.node,
-          configuration: widget.configuration.indentConfiguration,
-          child: NodeDraggableBuilder(
+          configuration: widget.configuration,
+          child: NodeTargetBuilder(
+            key: Key("${widget.node.runtimeType}-key ${widget.node.id}"),
             node: widget.node,
             configuration: widget.configuration,
-            child: NodeTargetBuilder(
-              key: Key("${widget.node.runtimeType}-key ${widget.node.id}"),
-              node: widget.node,
-              configuration: widget.configuration,
-              owner: widget.owner,
-            ),
+            owner: widget.owner,
           ),
         );
         if (widget.configuration.addRepaintBoundaries) {

@@ -6,7 +6,6 @@ import 'package:example/common/default_configurations/file_widget.dart';
 import 'package:example/common/entities/file.dart';
 import 'package:example/common/entities/root.dart';
 import 'package:example/common/extensions/node_ext.dart';
-import 'package:example/common/extensions/num_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/internal.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
@@ -114,18 +113,21 @@ TreeConfiguration treeConfigurationBuilder(
         }
         return Container(
           decoration: decoration,
-          child: node.isDirectory
-              ? DirectoryTile(
-                  directory: node.asDirectory,
-                  controller: controller,
-                  onTap: () {
-                    node.asDirectory.openOrClose();
-                  },
-                )
-              : FileTile(
-                  file: node.asFile,
-                  controller: controller,
-                ),
+          child: AutomaticNodeIndentation(
+            node: node,
+            child: node.isDirectory
+                ? DirectoryTile(
+                    directory: node.asDirectory,
+                    controller: controller,
+                    onTap: () {
+                      node.asDirectory.openOrClose();
+                    },
+                  )
+                : FileTile(
+                    file: node.asFile,
+                    controller: controller,
+                  ),
+          ),
         );
       },
     );
