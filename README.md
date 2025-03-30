@@ -4,12 +4,6 @@ This package provides a flexible solution for displaying hierarchical data struc
 
 ## Motivation 💡
 
-Most existing tree view implementations:
-
-- Require controller setups when probably we don't want to manage the nodes using them
-- Force predefined state management strategies
-- Limit customization of the internal node behavior
-
 **Novident Tree View solves these by:**
 
 - Using extendable data types instead of enforced controllers
@@ -18,16 +12,6 @@ Most existing tree view implementations:
 - Allowing complete visual customization
 
 This approach enables true ownership of your node lifecycle while handling tree-specific rendering logic under the hood.
-
-## Key Features 🚀
-
-- **Hierarchical Structure**: Render nested nodes with configurable indentation
-- **Drag-and-Drop**: Full control over drag validation and drop handling
-- **Self-Contained Nodes**: Nodes manage their own state via `Listenable`
-- **Zero-Controller Architecture**: Optional controller usage (you own the data)
-- **Visual Customization**: Complete control over node rendering
-- **Keep-Alive Support**: Preserve node states during interactions
-- **Edge Cases Handled**: Empty states, boundary conditions, overflow
 
 ## Installation 📦
 
@@ -63,7 +47,7 @@ class LeafNode extends Node {
     required this.nodeLevel,
     required this.nodeId,
     this.parent,
-  }));
+  })) : super(children: []);
 
   @override
   bool isDraggable() => true;
