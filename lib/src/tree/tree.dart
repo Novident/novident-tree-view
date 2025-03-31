@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:novident_nodes/novident_nodes.dart' show Node, NodeContainer;
 import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_builder.dart';
 import 'package:novident_tree_view/src/tree/tree_items/node_container/container_builder.dart';
@@ -9,7 +10,7 @@ import 'package:provider/provider.dart';
 /// Displays a hierarchical tree structure using a combination of ListViews
 class TreeView extends StatefulWidget {
   /// The root node container of the tree
-  final Node root;
+  final NodeContainer root;
 
   /// Configuration object for tree behavior and appearance
   final TreeConfiguration configuration;
@@ -55,11 +56,7 @@ class TreeView extends StatefulWidget {
     this.clipBehavior,
     this.focusNode,
     super.key,
-  }) : assert(
-          root.isChildrenContainer,
-          'The root of the project must return '
-          'always "true" when [isChildrenContainer] is called',
-        );
+  });
 
   @override
   State<StatefulWidget> createState() => _TreeViewState();
@@ -100,7 +97,7 @@ class _TreeViewState extends State<TreeView> {
                 itemBuilder: (BuildContext context, int index) {
                   final Node node = widget.root.children.elementAt(index);
                   // Build appropriate node type
-                  if (!node.isChildrenContainer) {
+                  if (node is! NodeContainer) {
                     return LeafNodeBuilder(
                       node: node,
                       owner: widget.root,
@@ -141,7 +138,7 @@ class _TreeViewState extends State<TreeView> {
 /// [TreeConfiguration.useRootSection] is enabled
 class RootTargetToDropSection extends StatefulWidget {
   final TreeConfiguration configuration;
-  final Node root;
+  final NodeContainer root;
 
   const RootTargetToDropSection({
     required this.root,

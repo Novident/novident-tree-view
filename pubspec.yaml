@@ -14,6 +14,10 @@ dependencies:
   meta: ^1.16.0
   collection: ^1.19.1
   provider: ^6.1.4
+  novident_nodes:
+    git:
+      url: https://github.com/Novident/novident-nodes.git
+      ref: master 
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,5 @@
 import 'package:flutter/rendering.dart';
-import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 
 /// Configuration class that defines how tree nodes should be indented
 ///

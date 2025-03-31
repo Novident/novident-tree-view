@@ -1,7 +1,7 @@
 import 'package:example/common/controller/tree_controller.dart';
-import 'package:example/common/entities/node_details.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 
 import '../../common/entities/directory.dart';
 import '../../common/entities/file.dart';

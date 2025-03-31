@@ -1,10 +1,9 @@
 import 'package:example/common/entities/file.dart';
-import 'package:example/common/entities/node_base.dart';
-import 'package:example/common/entities/node_details.dart';
 import 'package:flutter/foundation.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-class Directory extends NodeBase {
+class Directory extends NodeContainer implements DragAndDropMixin {
   final String name;
   final DateTime createAt;
   bool _isExpanded;
@@ -21,6 +20,9 @@ class Directory extends NodeBase {
     }
     redepthChildren(checkFirst: true);
   }
+
+  @override
+  bool get isExpanded => _isExpanded;
 
   void openOrClose({bool forceOpen = false}) {
     _isExpanded = forceOpen ? true : !isExpanded;
@@ -43,7 +45,7 @@ class Directory extends NodeBase {
             details: node.details.copyWith(level: currentLevel + 1),
           );
         }
-        if (node.isChildrenContainer && node.isNotEmpty) {
+        if (node is NodeContainer && node.isNotEmpty) {
           redepth(node.children, currentLevel + 1);
         }
       }
@@ -65,6 +67,11 @@ class Directory extends NodeBase {
     notifyListeners();
   }
 
+  set isExpanded(bool expand) {
+    _isExpanded = expand;
+    notifyListeners();
+  }
+
   @override
   bool isDraggable() => true;
 
@@ -72,20 +79,13 @@ class Directory extends NodeBase {
   bool isDropIntoAllowed() => true;
 
   @override
-  bool isDropPositionValid(
-    Node draggedNode,
-    DragHandlerPosition dropPosition,
-  ) =>
-      draggedNode.id != id && draggedNode.owner?.id != id;
+  bool isDropPositionValid(draggedNode, DragHandlerPosition dropPosition) {
+    return true;
+  }
 
   @override
   bool isDropTarget() {
     return true;
-  }
-
-  set isExpanded(bool expand) {
-    _isExpanded = expand;
-    notifyListeners();
   }
 
   @override
@@ -110,6 +110,7 @@ class Directory extends NodeBase {
     return 'Directory(name: $name, isExpanded: $isExpanded, children: ${children.length})';
   }
 
+  @override
   Directory clone() {
     return Directory(
       children: children,
@@ -142,33 +143,13 @@ class Directory extends NodeBase {
       ]);
 
   @override
-  String get id => details.id;
-
-  @override
-  bool get isEmpty => children.isEmpty;
-
-  @override
-  bool get isExpanded => _isExpanded;
-
-  @override
-  int get level => details.level;
-
-  @override
-  Node get owner => details.owner!;
-
-  @override
-  bool get isChildrenContainer => true;
-
-  @override
-  set owner(Node? owner) {
-    if (owner != null && !owner.isChildrenContainer) {
-      throw Exception('owner cannot be setted, since the owner '
-          'always must implements Container interface');
-    }
-    details.owner = owner;
-    notifyListeners();
+  Map<String, dynamic> toJson() {
+    return {
+      'details': details.toJson(),
+      'createAt': createAt.millisecondsSinceEpoch,
+      'name': name,
+      'children': children.map((Node e) => e.toJson()).toList(),
+      'isExpanded': _isExpanded,
+    };
   }
-
-  @override
-  bool get isNotEmpty => !isEmpty;
 }

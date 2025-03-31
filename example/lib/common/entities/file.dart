@@ -1,8 +1,7 @@
-import 'package:example/common/entities/node_base.dart';
-import 'package:example/common/entities/node_details.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-class File extends NodeBase {
+class File extends Node implements DragAndDropMixin {
   final String name;
   final String content;
   final DateTime createAt;
@@ -12,9 +11,7 @@ class File extends NodeBase {
     required this.content,
     required this.name,
     required this.createAt,
-  }) : super(
-          children: <Node>[],
-        );
+  });
 
   @override
   bool isDraggable() => true;
@@ -32,25 +29,6 @@ class File extends NodeBase {
 
   @override
   bool isDropTarget() => true;
-
-  @override
-  String get id => details.id;
-
-  @override
-  int get level => details.level;
-
-  @override
-  Node get owner => details.owner!;
-
-  @override
-  set owner(Node? owner) {
-    if (owner != null && !owner.isChildrenContainer) {
-      throw Exception('owner cannot be setted, since the owner '
-          'always must implements Container interface');
-    }
-    details.owner = owner;
-    notifyListeners();
-  }
 
   @override
   File copyWith({
@@ -94,8 +72,52 @@ class File extends NodeBase {
   }
 
   @override
-  bool get isChildrenContainer => false;
+  File clone() {
+    return File(
+      details: details,
+      content: content,
+      name: name,
+      createAt: createAt,
+    );
+  }
 
   @override
-  bool get isExpanded => false;
+  int countAllNodes({required Predicate countNode}) {
+    return 1;
+  }
+
+  @override
+  int countNodes({required Predicate countNode}) {
+    return 1;
+  }
+
+  @override
+  bool deepExist(String id) {
+    return this.id == id;
+  }
+
+  @override
+  bool exist(String id) {
+    return this.id == id;
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'name': name,
+      'details': details.toJson(),
+      'content': content,
+      'createAt': createAt.millisecondsSinceEpoch,
+    };
+  }
+
+  @override
+  Node? visitAllNodes({required Predicate shouldGetNode}) {
+    return shouldGetNode(this) ? this : null;
+  }
+
+  @override
+  File? visitNode({required Predicate shouldGetNode}) {
+    return shouldGetNode(this) ? this : null;
+  }
 }

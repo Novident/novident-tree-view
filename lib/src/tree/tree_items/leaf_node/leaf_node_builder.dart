@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// Represents the leaf [Node] into the Tree
@@ -8,7 +9,7 @@ class LeafNodeBuilder extends StatefulWidget {
   final Node node;
 
   /// The owner of this [NodeContainer]
-  final Node owner;
+  final NodeContainer owner;
 
   final TreeConfiguration configuration;
 
@@ -17,12 +18,7 @@ class LeafNodeBuilder extends StatefulWidget {
     required this.owner,
     required this.configuration,
     super.key,
-  }) : assert(
-          owner.isChildrenContainer,
-          'The owner($owner) passed '
-          'at level ${node.level} is not '
-          'valid to be an "owner" of the current node',
-        );
+  });
 
   @override
   State<LeafNodeBuilder> createState() => _LeafNodeBuilderState();

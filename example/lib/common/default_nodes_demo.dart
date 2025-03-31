@@ -3,10 +3,8 @@ import 'dart:convert';
 import 'package:example/common/contents.dart';
 import 'package:example/common/entities/directory.dart';
 import 'package:example/common/entities/file.dart';
-import 'package:example/common/entities/node_details.dart';
-import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 
-final _subDirNodeBase = NodeDetails.withLevel(1);
 final parentDirNode1 = NodeDetails.withLevel(0);
 
 final List<Node> defaultNodes = [
@@ -24,7 +22,7 @@ final List<Node> defaultNodes = [
             createAt: DateTime.now(),
           ),
         ],
-        details: NodeDetails(level: 1, id: 'id'),
+        details: NodeDetails(level: 1),
         name: 'Sub directory 1',
         createAt: DateTime.now(),
       ),

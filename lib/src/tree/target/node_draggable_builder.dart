@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_tree_view/src/extensions/cast_nodes.dart';
 
 /// A widget that wraps either [Draggable] or [LongPressDraggable] depending on
 /// the value of [longPressDelay], with additional tree view capabilities.
@@ -165,7 +167,9 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (!widget.node.isDraggable() ||
+    if (widget.node is! DragAndDropMixin ||
+        (widget.node is DragAndDropMixin &&
+            !widget.node.cast<DragAndDropMixin>().isDraggable()) ||
         !widget.configuration.activateDragAndDropFeature) {
       return widget.child;
     }

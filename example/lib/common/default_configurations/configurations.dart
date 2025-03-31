@@ -8,6 +8,7 @@ import 'package:example/common/entities/root.dart';
 import 'package:example/common/extensions/node_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/internal.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 TreeConfiguration treeConfigurationBuilder(
@@ -35,7 +36,7 @@ TreeConfiguration treeConfigurationBuilder(
       ),
       scrollConfigs: ScrollConfigs(),
       onHoverContainer: (Node node) {
-        if (node.isChildrenContainer) {
+        if (node is NodeContainer) {
           node.asDirectory.openOrClose(forceOpen: true);
           return;
         }
@@ -66,12 +67,32 @@ TreeConfiguration treeConfigurationBuilder(
             DragTargetDetails<Node> dragDetails,
             Node? parent,
           ) =>
-              true,
+              details?.draggedNode != node,
           onAcceptWithDetails: (
             NovDragAndDropDetails<Node>? details,
             Node? parent,
-            DragHandlerPosition position,
-          ) {},
+          ) {
+            if (details != null) {
+              details.mapDropPosition<void>(
+                //TODO: is happening. When you insert below or above
+                // the controller is removing the nodes
+                //
+                // and, when inserting into, the loops breaks the app
+                whenAbove: () {
+                  controller.insertAbove(node, details.targetNode.id);
+                },
+                whenInside: () {
+                  controller.insertAt(node, details.targetNode.id);
+                },
+                whenBelow: () {
+                  controller.insertBelow(node, details.targetNode.id);
+                },
+                boundsMultiplier: 0.3,
+                insideMultiplier: 1.5,
+              );
+              return;
+            }
+          },
         );
       },
       nodeConfigBuilder: (Node node) {
@@ -88,7 +109,8 @@ TreeConfiguration treeConfigurationBuilder(
           },
         );
       },
-      nodeBuilder: (Node node, BuildContext context, NovDragAndDropDetails<Node>? details) {
+      nodeBuilder: (Node node, BuildContext context,
+          NovDragAndDropDetails<Node>? details) {
         Decoration? decoration;
         final BorderSide borderSide = BorderSide(
           color: Theme.of(context).colorScheme.outline,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 const int kDefaultExpandDelay = 625;
@@ -17,7 +18,8 @@ class TreeConfiguration {
   ///
   /// [node]: The node to visualize
   /// [details]: Current drag-and-drop operation details (null when not dragging)
-  final Widget Function(Node node, BuildContext context, NovDragAndDropDetails<Node>? details)
+  final Widget Function(
+          Node node, BuildContext context, NovDragAndDropDetails<Node>? details)
       nodeBuilder;
 
   /// Whether to wrap each row in a RepaintBoundary.
@@ -35,7 +37,7 @@ class TreeConfiguration {
   /// Callback when hovering over a NodeContainer
   ///
   /// Triggered when a drag operation hovers over a container node
-  final void Function(Node node)? onHoverContainer;
+  final void Function(NodeContainer node)? onHoverContainer;
 
   /// Configuration parameters for scroll behavior
   final ScrollConfigs scrollConfigs;
@@ -68,7 +70,8 @@ class TreeConfiguration {
   /// Overrides default child rendering with custom layouts. Receives:
   /// [parent]: The parent container (null for root)
   /// [children]: List of child nodes to display
-  final Widget Function(Node? parent, List<Node> children)? buildCustomChildren;
+  final Widget Function(NodeContainer? parent, List<Node> children)?
+      buildCustomChildren;
 
   /// Placeholder widget for empty root state
   ///
@@ -123,7 +126,8 @@ class TreeConfiguration {
   ///
   /// Any parameter not specified will retain its original value
   TreeConfiguration copyWith({
-    Widget Function(Node node, BuildContext context, NovDragAndDropDetails<Node>? details)?
+    Widget Function(Node node, BuildContext context,
+            NovDragAndDropDetails<Node>? details)?
         nodeBuilder,
     void Function(Node node)? onHoverContainer,
     ScrollConfigs? scrollConfigs,

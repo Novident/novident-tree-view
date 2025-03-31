@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
-import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 
 /// The details of the drag-and-drop relationship of [TreeDraggable] and
 /// [TreeDragTarget].

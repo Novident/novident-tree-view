@@ -1,12 +1,11 @@
 import 'package:example/common/controller/base/base_tree_controller.dart';
-import 'package:example/common/extensions/node_container_ext.dart';
 import 'package:example/common/extensions/node_ext.dart';
 import 'package:flutter/foundation.dart';
-import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 
 extension BaseControllerHelpers on BaseTreeController {
   bool insertNodeInSubContainer(
-    Node container,
+    NodeContainer container,
     Node node,
     String target,
   ) {
@@ -14,7 +13,7 @@ extension BaseControllerHelpers on BaseTreeController {
       var compositeNode = container.elementAt(i);
       if (compositeNode.id == target) {
         // when the user will insert a node the target need to be a compositeTreeNode
-        if (!compositeNode.isChildrenContainer) {
+        if (compositeNode is! NodeContainer) {
           throw Exception(
             'The node [${compositeNode.runtimeType}-$target] is not a valid target to '
             'insert the ${node.runtimeType} into it. Please, ensure of the target '
@@ -22,11 +21,11 @@ extension BaseControllerHelpers on BaseTreeController {
           );
         }
         if (!container.existInRoot(node.id)) {
-          if (node.isChildrenContainer) {
+          if (node is NodeContainer) {
             node.redepthChildren();
           }
-          var validStateToNode = node.asBase.copyWith(
-            details: node.asBase.details.copyWith(
+          var validStateToNode = node.copyWith(
+            details: node.details.copyWith(
               level: compositeNode.level + 1,
               owner: compositeNode,
             ),
@@ -41,8 +40,7 @@ extension BaseControllerHelpers on BaseTreeController {
         } else {
           return true;
         }
-      } else if (compositeNode.isChildrenContainer &&
-          compositeNode.isNotEmpty) {
+      } else if (compositeNode is NodeContainer && compositeNode.isNotEmpty) {
         bool inserted = insertNodeInSubContainer(compositeNode, node, target);
         if (inserted) {
           compositeNode.asDirectory.openOrClose(forceOpen: true);
@@ -53,17 +51,18 @@ extension BaseControllerHelpers on BaseTreeController {
     return false;
   }
 
-  bool insertAboveNodeInSubComposite(Node container, Node node, String target) {
+  bool insertAboveNodeInSubComposite(
+      NodeContainer container, Node node, String target) {
     for (int i = 0; i < container.length; i++) {
       var belowNode = container.elementAt(i);
       if (belowNode.id == target) {
-        if (node.isChildrenContainer) {
+        if (node is NodeContainer) {
           node.redepthChildren();
         }
         if (selectedNode?.id == node.id) {
           selectNode(
-            node.asBase.copyWith(
-              details: node.asBase.details.copyWith(
+            node.copyWith(
+              details: node.details.copyWith(
                 level: belowNode.level,
                 owner: container,
               ),
@@ -72,15 +71,56 @@ extension BaseControllerHelpers on BaseTreeController {
         }
         container.insert(
           i,
-          node.asBase.copyWith(
-            details: node.asBase.details.copyWith(
+          node.copyWith(
+            details: node.details.copyWith(
               level: belowNode.level,
               owner: container,
             ),
           ),
         );
         return true;
-      } else if (belowNode.isChildrenContainer && belowNode.isNotEmpty) {
+      } else if (belowNode is NodeContainer && belowNode.isNotEmpty) {
+        bool inserted = insertAboveNodeInSubComposite(belowNode, node, target);
+        if (inserted) return true;
+      }
+    }
+    return false;
+  }
+
+  bool insertBelowNodeInSubComposite(
+      NodeContainer container, Node node, String target) {
+    for (int i = 0; i < container.length; i++) {
+      final Node belowNode = container.elementAt(i);
+      if (belowNode.id == target) {
+        if (node is NodeContainer) {
+          node.redepthChildren();
+        }
+        final Node effectiveNode = node.copyWith(
+          details: node.details.copyWith(
+            level: belowNode.level,
+            owner: container,
+          ),
+        );
+        if (selectedNode?.id == node.id) {
+          selectNode(
+            node.copyWith(
+              details: node.details.copyWith(
+                level: belowNode.level,
+                owner: container,
+              ),
+            ),
+          );
+        }
+        if (i + 1 > container.children.length) {
+          container.add(effectiveNode);
+          return true;
+        }
+        container.insert(
+          i,
+          effectiveNode,
+        );
+        return true;
+      } else if (belowNode is NodeContainer && belowNode.isNotEmpty) {
         bool inserted = insertAboveNodeInSubComposite(belowNode, node, target);
         if (inserted) return true;
       }
@@ -90,22 +130,22 @@ extension BaseControllerHelpers on BaseTreeController {
 
   @protected
   bool insertAtInSubCompositeWithCallback(
-    Node compositeNode,
+    NodeContainer compositeNode,
     Node Function() callback,
     String parentId,
   ) {
     Node node = callback();
     for (int i = 0; i < compositeNode.length; i++) {
       Node treeNode = compositeNode.elementAt(i);
-      if (treeNode.isChildrenContainer) {
+      if (treeNode is NodeContainer) {
         if (treeNode.id == parentId) {
-          var nodeToInsert = node.asBase.copyWith(
-            details: node.asBase.details.copyWith(
+          var nodeToInsert = node.copyWith(
+            details: node.details.copyWith(
               level: treeNode.level + 1,
               owner: treeNode,
             ),
           );
-          if (nodeToInsert.isChildrenContainer) {
+          if (nodeToInsert is NodeContainer) {
             nodeToInsert.redepthChildren();
           }
           if (selectedNode?.id == nodeToInsert.id) selectNode(nodeToInsert);
@@ -131,7 +171,7 @@ extension BaseControllerHelpers on BaseTreeController {
     int i = 0;
     while (i < children.length) {
       Node child = children[i];
-      if (child.isChildrenContainer) {
+      if (child is NodeContainer) {
         if (!visited.contains(child.id)) {
           visited.add(child.id);
           if (child.id == nodeId) {
@@ -167,9 +207,9 @@ extension BaseControllerHelpers on BaseTreeController {
       Node child = children.elementAt(i);
       if (child.id == nodeId) {
         int index = children.indexWhere((element) => element.id == nodeId);
-        var newChildState = callback(child);
-        newChildState = newChildState.asBase.copyWith(
-          details: newChildState.asBase.details.copyWith(
+        Node newChildState = callback(child);
+        newChildState = newChildState.copyWith(
+          details: newChildState.details.copyWith(
             level: child.level,
             owner: child.owner,
           ),
@@ -188,7 +228,7 @@ extension BaseControllerHelpers on BaseTreeController {
         }
         updated = true;
         return updated;
-      } else if (child.isChildrenContainer && child.isNotEmpty) {
+      } else if (child is NodeContainer && child.isNotEmpty) {
         updated = updateSubNodesWithCallback(child.children, callback, nodeId);
         if (updated) {
           break;
@@ -214,7 +254,7 @@ extension BaseControllerHelpers on BaseTreeController {
       var node = root.elementAt(i);
       if (node.id == nodeId) {
         return true;
-      } else if (node.isChildrenContainer && node.isNotEmpty) {
+      } else if (node is NodeContainer && node.isNotEmpty) {
         var foundedNode = node.existNode(nodeId);
         if (foundedNode) return true;
       }
@@ -228,13 +268,13 @@ extension BaseControllerHelpers on BaseTreeController {
         'This TreeController is no longer usable because it is already disposed');
   }
 
-  bool clearChildrenHelper(String nodeId, Node node) {
+  bool clearChildrenHelper(String nodeId, NodeContainer node) {
     for (int index = 0; index < node.length; index++) {
       var treenode = node.elementAt(index);
-      if (treenode.isChildrenContainer && treenode.id == nodeId) {
+      if (treenode is NodeContainer && treenode.id == nodeId) {
         treenode.clear();
         return true;
-      } else if (treenode.isChildrenContainer && treenode.isNotEmpty) {
+      } else if (treenode is NodeContainer && treenode.isNotEmpty) {
         var shouldBreak = clearChildrenHelper(nodeId, treenode);
         if (shouldBreak) return shouldBreak;
       }
@@ -242,25 +282,26 @@ extension BaseControllerHelpers on BaseTreeController {
     return false;
   }
 
-  Node? getMultiNodeHelper(
+  NodeContainer? getMultiNodeHelper(
     String nodeId, {
-    Node? compositeNode,
+    NodeContainer? compositeNode,
   }) {
     verifyState();
     if (compositeNode != null) {
-      for (var treenode in compositeNode.children) {
-        if (treenode.isChildrenContainer && treenode.id == nodeId) {
+      for (Node treenode in compositeNode.children) {
+        if (treenode is NodeContainer && treenode.id == nodeId) {
           return treenode;
-        } else if (treenode.isChildrenContainer) {
-          var container = getMultiNodeHelper(nodeId, compositeNode: treenode);
+        } else if (treenode is NodeContainer) {
+          NodeContainer? container =
+              getMultiNodeHelper(nodeId, compositeNode: treenode);
           if (container != null) return container;
         }
       }
     } else {
       for (var treenode in root.children) {
-        if (treenode.isChildrenContainer && treenode.id == nodeId) {
+        if (treenode is NodeContainer && treenode.id == nodeId) {
           return treenode;
-        } else if (treenode.isChildrenContainer && treenode.isNotEmpty) {
+        } else if (treenode is NodeContainer && treenode.isNotEmpty) {
           var container = getMultiNodeHelper(nodeId, compositeNode: treenode);
           if (container != null) return container;
         }

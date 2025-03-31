@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_tree_view/src/extensions/cast_nodes.dart';
 
 /// [NodeTargetBuilder] handles drag-and-drop operations for tree nodes
 ///
@@ -20,8 +22,7 @@ class NodeTargetBuilder extends StatefulWidget {
     required this.configuration,
     required this.owner,
     super.key,
-  }) : assert(owner.isChildrenContainer,
-            'The owner must be a children container');
+  });
 
   /// Configuration settings for the tree view
   final TreeConfiguration configuration;
@@ -30,7 +31,7 @@ class NodeTargetBuilder extends StatefulWidget {
   final Node node;
 
   /// The container that owns and manages this node
-  final Node owner;
+  final NodeContainer owner;
 
   @override
   State<NodeTargetBuilder> createState() => _NodeTargetBuilderState();
@@ -65,7 +66,9 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     return gestures.onWillAcceptWithDetails(
       _details,
       details,
-      widget.node.isChildrenContainer ? widget.node : widget.owner,
+      widget.node is NodeContainer
+          ? widget.node.castToContainer()
+          : widget.owner,
     );
   }
 
@@ -113,19 +116,10 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
 
     if (_details == null || _details!.draggedNode != details.data) return;
 
-    // Determine drop position relative to target node
-    final DragHandlerPosition position =
-        _details!.mapDropPosition<DragHandlerPosition>(
-      whenAbove: () => DragHandlerPosition.above,
-      whenInside: () => DragHandlerPosition.into,
-      whenBelow: () => DragHandlerPosition.below,
-    );
-
     // Notify about the accepted drop
     gestures.onAcceptWithDetails.call(
       _details!,
       widget.owner,
-      position,
     );
 
     setState(() {
@@ -167,7 +161,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
   void _startOrCancelOnHoverExpansion({bool cancel = false}) {
     // Skip if auto-expansion is disabled or node isn't a container
     if (!widget.configuration.draggableConfigurations.allowAutoExpandOnHover ||
-        !widget.node.isChildrenContainer) return;
+        widget.node is! NodeContainer) return;
 
     if (cancel) {
       timer?.cancel();
@@ -176,7 +170,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     }
 
     // Don't expand if already expanded
-    if (widget.node.isExpanded) return;
+    if (widget.node.castToContainer().isExpanded) return;
 
     // Start new timer if none exists or current one isn't active
     bool? isActive = timer?.isActive;
@@ -186,7 +180,8 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
           milliseconds: widget.configuration.onHoverContainerExpansionDelay,
         ),
         () {
-          widget.configuration.onHoverContainer?.call(widget.node);
+          widget.configuration.onHoverContainer
+              ?.call(widget.node.castToContainer());
         },
       );
     }
@@ -195,9 +190,16 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
   @override
   Widget build(BuildContext context) {
     // Skip drag target if dropping is disabled or node doesn't accept siblings
-    if (!widget.node.isDropTarget() ||
+
+    if (widget.node is! DragAndDropMixin ||
+        (widget.node is DragAndDropMixin &&
+            !widget.node.cast<DragAndDropMixin>().isDropTarget()) ||
         !widget.configuration.activateDragAndDropFeature) {
-      return widget.configuration.nodeBuilder(widget.node, _details);
+      return widget.configuration.nodeBuilder(
+        widget.node,
+        context,
+        _details,
+      );
     }
 
     NodeDragGestures? dragGestures =

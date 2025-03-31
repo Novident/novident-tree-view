@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_builder.dart';
 
@@ -8,10 +9,10 @@ import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_build
 /// or closed
 class ContainerBuilder extends StatefulWidget {
   /// The [ContainerTreeNode] item
-  final Node nodeContainer;
+  final NodeContainer nodeContainer;
 
   /// The owner of this [NodeContainer]
-  final Node owner;
+  final NodeContainer owner;
 
   final TreeConfiguration configuration;
 
@@ -20,19 +21,7 @@ class ContainerBuilder extends StatefulWidget {
     required this.owner,
     required this.configuration,
     super.key,
-  })  : assert(
-          nodeContainer.isChildrenContainer,
-          'the container($nodeContainer) at level ${nodeContainer.level} is not valid to be '
-          'rendered as a node with children. '
-          'Please, ensure that the property '
-          '[isChildrenContainer] is always returning true',
-        ),
-        assert(
-          owner.isChildrenContainer,
-          'The owner($owner) passed '
-          'at level ${nodeContainer.level} is not '
-          'valid to be an "owner" of the current node',
-        );
+  });
 
   @override
   State<ContainerBuilder> createState() => _ContainerBuilderState();
@@ -157,7 +146,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
                     itemBuilder: (BuildContext context, int index) {
                       final Node node =
                           widget.nodeContainer.children.elementAt(index);
-                      if (!node.isChildrenContainer) {
+                      if (node is! NodeContainer) {
                         return LeafNodeBuilder(
                           node: node,
                           owner: widget.nodeContainer,

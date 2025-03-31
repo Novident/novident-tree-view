@@ -4,7 +4,7 @@ import 'package:example/common/controller/tree_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Node;
 import 'package:flutter_quill/quill_delta.dart';
-import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 
 import '../../common/entities/file.dart';
 import '../drawer/tree_view_drawer.dart';

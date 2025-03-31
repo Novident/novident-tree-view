@@ -1,9 +1,7 @@
 import 'package:example/common/controller/extension/base_controller_helpers.dart';
 import 'package:example/common/entities/root.dart';
-import 'package:example/common/extensions/node_container_ext.dart';
-import 'package:example/common/extensions/node_ext.dart';
 import 'package:flutter/material.dart';
-import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 
 abstract class BaseTreeController extends ChangeNotifier {
   Root get root;
@@ -37,7 +35,7 @@ abstract class BaseTreeController extends ChangeNotifier {
       for (var node in children) {
         if (predicate(node)) {
           matchedNodes.add(node);
-        } else if (node.isChildrenContainer && node.isNotEmpty) {
+        } else if (node is NodeContainer && node.isNotEmpty) {
           matchNode(node.children);
         }
       }
@@ -56,7 +54,7 @@ abstract class BaseTreeController extends ChangeNotifier {
         if (predicate(node)) {
           foundedNode = node;
           return true;
-        } else if (node.isChildrenContainer && node.isNotEmpty) {
+        } else if (node is NodeContainer && node.isNotEmpty) {
           final wasFounded = searchNode(node.children);
           if (wasFounded) return true;
         }
@@ -70,12 +68,11 @@ abstract class BaseTreeController extends ChangeNotifier {
   }
 
   List<Node>? getAllChildrenInNode(String nodeId) {
-    Node? node;
-    for (var treenode in root.children) {
-      if (treenode.isChildrenContainer &&
-          treenode.asBase.details.id == nodeId) {
+    NodeContainer? node;
+    for (Node treenode in root.children) {
+      if (treenode is NodeContainer && treenode.details.id == nodeId) {
         node = treenode;
-      } else if (treenode.isChildrenContainer && treenode.isNotEmpty) {
+      } else if (treenode is NodeContainer && treenode.isNotEmpty) {
         node = getMultiNodeHelper(nodeId, compositeNode: treenode);
       }
     }
@@ -103,8 +100,8 @@ abstract class BaseTreeController extends ChangeNotifier {
       final node = root.elementAt(i);
       if (node.id == nodeId) {
         var newChildState = callback(node);
-        newChildState = newChildState.asBase.copyWith(
-          details: newChildState.asBase.details.copyWith(
+        newChildState = newChildState.copyWith(
+          details: newChildState.details.copyWith(
             level: node.level,
             owner: node.owner,
           ),
@@ -123,7 +120,7 @@ abstract class BaseTreeController extends ChangeNotifier {
           selectNode(newChildState);
         }
         return true;
-      } else if (node.isChildrenContainer && node.isNotEmpty) {
+      } else if (node is NodeContainer && node.isNotEmpty) {
         final wasUpdated =
             updateSubNodesWithCallback(node.children, callback, nodeId);
         if (wasUpdated) {

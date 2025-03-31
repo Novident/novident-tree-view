@@ -1,10 +1,8 @@
 import 'package:example/common/controller/extension/base_controller_helpers.dart';
-import 'package:example/common/entities/node_details.dart';
 import 'package:example/common/entities/root.dart';
-import 'package:example/common/extensions/node_container_ext.dart';
 import 'package:example/common/extensions/node_ext.dart';
 import 'package:flutter/foundation.dart';
-import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 import 'base/base_tree_controller.dart';
 
 /// The [`TreeController`] manages a tree of nodes, allowing for the manipulation and querying of its structure.
@@ -44,7 +42,7 @@ class TreeController extends BaseTreeController {
 
     bool existInRoot = root.existInRoot(node.id);
     if (root.id == nodeTargetId && !existInRoot) {
-      if (node.isChildrenContainer && node.isNotEmpty) {
+      if (node is NodeContainer && node.isNotEmpty) {
         node.redepthChildren(0);
       }
       Node newNodeState = node..owner = root;
@@ -56,7 +54,7 @@ class TreeController extends BaseTreeController {
       for (int i = 0; i < root.length; i++) {
         Node nodeAtRootPoint = root.elementAt(i);
         if (nodeAtRootPoint.id == nodeTargetId) {
-          if (!nodeAtRootPoint.isChildrenContainer) {
+          if (nodeAtRootPoint is! NodeContainer) {
             throw Exception(
               'The node [${nodeAtRootPoint.runtimeType}-$nodeTargetId] is not a '
               'valid target to insert the ${node.runtimeType} into it. '
@@ -65,11 +63,11 @@ class TreeController extends BaseTreeController {
             );
           }
           if (!nodeAtRootPoint.existInRoot(node.id)) {
-            if (node.isChildrenContainer) {
+            if (node is NodeContainer) {
               node.redepthChildren();
             }
-            Node validStateToNode = node.asBase.copyWith(
-                details: node.asBase.details.copyWith(
+            Node validStateToNode = node.copyWith(
+                details: node.details.copyWith(
               level: nodeAtRootPoint.level + 1,
               owner: nodeAtRootPoint,
             ));
@@ -86,7 +84,7 @@ class TreeController extends BaseTreeController {
             // is already inserted and doesn't need to be searched more
             return;
           }
-        } else if (nodeAtRootPoint.isChildrenContainer &&
+        } else if (nodeAtRootPoint is NodeContainer &&
             nodeAtRootPoint.isNotEmpty) {
           bool inserted =
               insertNodeInSubContainer(nodeAtRootPoint, node, nodeTargetId);
@@ -121,20 +119,20 @@ class TreeController extends BaseTreeController {
       // removes the node from the tree
       // insert the node at the position
       removeWhere(
-        (Node element) => element.asBase.details.id == node.asBase.details.id,
+        (Node element) => element.details.id == node.details.id,
         verifyDuplicates: true,
         ignoreNotify: true,
       );
     }
     for (int i = 0; i < root.length; i++) {
       Node belowNode = root.elementAt(i);
-      if (belowNode.asBase.details.id == childBelowId) {
+      if (belowNode.details.id == childBelowId) {
         int beforeIndex = (i - 1) == -1 ? 0 : i;
-        if (node.isChildrenContainer) {
+        if (node is NodeContainer) {
           node.redepthChildren();
         }
-        Node validStateToNode = node.asBase.copyWith(
-            details: node.asBase.details.copyWith(
+        Node validStateToNode = node.copyWith(
+            details: node.details.copyWith(
           level: belowNode.level,
           owner: root,
         ));
@@ -147,7 +145,60 @@ class TreeController extends BaseTreeController {
           validStateToNode,
         );
         break;
-      } else if (belowNode.isChildrenContainer && belowNode.isNotEmpty) {
+      } else if (belowNode is NodeContainer && belowNode.isNotEmpty) {
+        bool inserted =
+            insertAboveNodeInSubComposite(belowNode, node, childBelowId);
+        if (inserted) break;
+      }
+    }
+  }
+
+  void insertBelow(
+    Node node,
+    String childBelowId, {
+    bool removeIfNeeded = true,
+  }) {
+    if (!root.existNode(childBelowId)) {
+      throw Exception(
+        'The node $childBelowId not exist into the tree currently. '
+        'Please, ensure first if the node was removed before insert any node',
+      );
+    }
+    if (removeIfNeeded) {
+      // removes the node from the tree
+      // insert the node at the position
+      removeWhere(
+        (Node element) => element.id == node.id,
+        verifyDuplicates: true,
+        ignoreNotify: true,
+      );
+    }
+    for (int i = 0; i < root.length; i++) {
+      Node belowNode = root.elementAt(i);
+      if (belowNode.details.id == childBelowId) {
+        int effectiveIndex = i + 1;
+        if (node is NodeContainer) {
+          node.redepthChildren();
+        }
+        Node validStateToNode = node.copyWith(
+            details: node.details.copyWith(
+          level: belowNode.level,
+          owner: root,
+        ));
+
+        if (selectedNode?.id == node.id) {
+          selectNode(validStateToNode);
+        }
+        if (effectiveIndex >= root.length) {
+          root.add(validStateToNode);
+          break;
+        }
+        root.insert(
+          effectiveIndex,
+          validStateToNode,
+        );
+        break;
+      } else if (belowNode is NodeContainer && belowNode.isNotEmpty) {
         bool inserted =
             insertAboveNodeInSubComposite(belowNode, node, childBelowId);
         if (inserted) break;
@@ -164,8 +215,8 @@ class TreeController extends BaseTreeController {
           verifyDuplicates: true);
     }
     if (insertInRoot) {
-      Node nodeToRoot = node.asBase.copyWith(
-          details: node.asBase.details.copyWith(
+      Node nodeToRoot = node.copyWith(
+          details: node.details.copyWith(
         level: 0,
         owner: root,
       ));
@@ -178,13 +229,13 @@ class TreeController extends BaseTreeController {
     }
     for (int i = 0; i < root.length; i++) {
       Node nodeAtRootPoint = root.elementAt(i);
-      if (nodeAtRootPoint.isChildrenContainer) {
+      if (nodeAtRootPoint is NodeContainer) {
         if (nodeAtRootPoint.id == parentId) {
-          if (node.isChildrenContainer) {
+          if (node is NodeContainer) {
             node.redepthChildren();
           }
-          Node validStateToNewNode = node.asBase.copyWith(
-              details: node.asBase.details.copyWith(
+          Node validStateToNewNode = node.copyWith(
+              details: node.details.copyWith(
             level: nodeAtRootPoint.level + 1,
             owner: nodeAtRootPoint,
           ));
@@ -218,11 +269,11 @@ class TreeController extends BaseTreeController {
       for (int i = 0; i < tree.length; i++) {
         Node node = tree.elementAt(i);
         // the target was founded
-        if (node.isChildrenContainer &&
+        if (node is NodeContainer &&
             node.id == targetNode.id &&
             openTargetIfNeeded &&
-            node.asBase.details.level == 0) {}
-        if (node.isChildrenContainer &&
+            node.details.level == 0) {}
+        if (node is NodeContainer &&
             node.id == targetNode.id &&
             openTargetIfNeeded) {
           node.asDirectory.openOrClose(forceOpen: true);
@@ -230,7 +281,7 @@ class TreeController extends BaseTreeController {
         if (node.id == targetNode.id) {
           return true;
         }
-        if (node.isChildrenContainer && node.isNotEmpty) {
+        if (node is NodeContainer && node.isNotEmpty) {
           bool founded =
               await expandNodeWhen(node.children, ignoreBySubNode: true);
           if (founded) {
@@ -256,7 +307,7 @@ class TreeController extends BaseTreeController {
         }
         selectNode(targetNode);
         return true;
-      } else if (node.isChildrenContainer && node.isNotEmpty) {
+      } else if (node is NodeContainer && node.isNotEmpty) {
         bool wasUpdated = updateSubNodes(node.children, targetNode, nodeId);
         if (wasUpdated) {
           root[i] = node;
@@ -285,7 +336,7 @@ class TreeController extends BaseTreeController {
           invalidateSelection();
         }
         if (!verifyDuplicates) return node;
-      } else if (node.isChildrenContainer && node.isNotEmpty) {
+      } else if (node is NodeContainer && node.isNotEmpty) {
         bool isFounded = removeChild(
           node,
           null,
@@ -304,7 +355,7 @@ class TreeController extends BaseTreeController {
   // when return true the parent need override the root parent of this composite
   @protected
   bool removeChild(
-    Node containerNode,
+    NodeContainer containerNode,
     NodeDetails? target, [
     bool Function(Node)? predicate,
     bool verifyDuplicates = false,
@@ -325,7 +376,7 @@ class TreeController extends BaseTreeController {
           invalidateSelection();
         }
         if (!verifyDuplicates) return true;
-      } else if (node.isChildrenContainer && node.isNotEmpty) {
+      } else if (node is NodeContainer && node.isNotEmpty) {
         bool foundedNode = removeChild(
           node,
           target,
@@ -353,7 +404,7 @@ class TreeController extends BaseTreeController {
           selectNode(null);
         }
         return node;
-      } else if (node.isChildrenContainer && node.isNotEmpty) {
+      } else if (node is NodeContainer && node.isNotEmpty) {
         bool isFounded = removeChild(
           node,
           NodeDetails.base(nodeId),

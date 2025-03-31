@@ -1,3 +1,4 @@
+import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// Enables nodes to participate in drag-and-drop operations within the tree
