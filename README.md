@@ -31,23 +31,18 @@ dependencies:
 ### 1. Define a Leaf node 
 
 > [!TIP]
-> You can think of `Node` as the equivalent of `File`.
+> You can think on this version of a `Node` as the equivalent of `File`.
 
 ```dart
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-class LeafNode extends Node {
+class LeafNode extends Node implements DragAndDropMixin {
   final String title;
-  final int nodeLevel;
-  final String nodeId;
-  NodeContainer? parent;
   
   LeafNode({
     required this.title,
-    required this.nodeLevel,
-    required this.nodeId,
-    this.parent,
-  })) : super(children: []);
+    required super.details,
+  }));
 
   @override
   bool isDraggable() => true;
@@ -65,62 +60,25 @@ class LeafNode extends Node {
 
   @override
   bool isDropTarget() => true;
-
-  @override
-  String get id => id;
-
-  @override
-  int get level => level;
-
-  @override
-  Node get owner => owner!;
-
-  // Ensure that the owner of your Node, is a Node
-  // that has [isChildrenContainer] that returns true
-  // always
-  @override
-  set owner(Node? owner) {
-    if (owner != null && !owner.isChildrenContainer) {
-      throw Exception('owner cannot be setted, since the owner '
-          'always must implements Container interface');
-    }
-    details.owner = owner;
-    notifyListeners();
-  }
-
-  // This determine if the node will be treated
-  // as a container
-  @override
-  bool get isChildrenContainer => false;
-
-  // For non container nodes, this does not do 
-  // nothing
-  @override
-  bool get isExpanded => false;
 }
 ```
 
 ### 2. Define the Container model
 
 > [!TIP]
-> You can think as the equivalent `Directory`.
+> You can think in this version of the `NodeContainer` as the equivalent `Directory`.
 
 ```dart
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-class NodeContainer extends Node {
+class Container extends NodeContainer implements DragAndDropMixin {
   final String title;
-  final int nodeLevel;
-  final String nodeId;
-  Node? parent;
   bool _isExpanded;
 
-  NodeContainer({
+  Container({
     required this.title,
-    required this.nodeLevel,
-    required this.nodeId,
-    this.parent,
     bool isExpanded = false,
+    super.parent,
     super.children,
   }) : _isExpanded = isExpanded;
 
@@ -142,36 +100,10 @@ class NodeContainer extends Node {
     return true;
   }
 
-  @override
-  String get id => nodeId;
-
-  @override
-  int get level => nodeLevel;
-
-  @override
-  Node? get owner => parent;
-
-  @override
-  set owner(Node? owner) {
-    parent = owner;
-    notify();
-  }
-
-  // This tells to the tree that this node types 
-  // need to be treated as a container with children
-  @override
-  bool get isChildrenContainer => true;
-
   // if the node has children and is expanded
   // this ensure to show them
   @override
   bool get isExpanded => _isExpanded;
-
-  set isExpanded(bool expand) {
-    _isExpanded = expand;
-    // will rebuild the nodes below this node 
-    notify();
-  }
 }
 ```
 
@@ -190,7 +122,7 @@ final root = NodeContainer(
   level: -1,
   parent: null,
   children: [
-    NodeContainer(/* ... */),
+    Container(/* ... */),
     LeafNode(/* ... */),
   ],
 );
