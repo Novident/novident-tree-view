@@ -368,11 +368,10 @@ packages:
   novident_nodes:
     dependency: "direct main"
     description:
-      path: "."
-      ref: master
-      resolved-ref: "7e28971ce420a7d3fc7b7b828875fbb3ea835d95"
-      url: "https://github.com/Novident/novident-nodes.git"
-    source: git
+      name: novident_nodes
+      sha256: cefa13f551de7ca57c2b55e067dcc7560141bc9a6cec94466fadc0e2c5564cc4
+      url: "https://pub.dev"
+    source: hosted
     version: "1.0.0"
   novident_tree_view:
     dependency: "direct main"
