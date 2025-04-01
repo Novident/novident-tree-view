@@ -101,10 +101,13 @@ class Container extends NodeContainer implements DragAndDropMixin {
     return true;
   }
 
-  // if the node has children and is expanded
-  // this ensure to show them
   @override
   bool get isExpanded => _isExpanded;
+
+  set expand({forceOpen = false}) {
+    _isExpanded = forceOpen ? true : !_isExpanded;
+    notify();
+  }
 }
 ```
 
@@ -112,7 +115,7 @@ class Container extends NodeContainer implements DragAndDropMixin {
 
 ```dart
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Container;
 
 // you can also create your own root version
 // to manage the children by a different way 
@@ -157,13 +160,106 @@ class MyHomePage extends StatelessWidget {
           children: [
             TreeView(
               root: root,
+              // if you need an example of 
+              // how configurate the tree
+              // check this example config
+              //
+              // https://github.com/Novident/novident-tree-view/blob/master/example/lib/common/default_configurations/configurations.dart
               configuration: TreeConfiguration(
-                // ...your configs
-                // if you need an example of 
-                // how configurate the tree
-                // check this example config
-                //
-                // https://github.com/Novident/novident-tree-view/blob/master/example/lib/common/default_configurations/configurations.dart
+                activateDragAndDropFeature: true,
+                // wrap with RepaintBoundary widget
+                addRepaintBoundaries: true,
+                indentConfiguration: IndentConfiguration(
+                  indentPerLevel: 30,
+                  indentPerLevelBuilder: (Node node) {
+                    // you can build a custom indent for some node types
+                    // in this example, LeafNode has more indent than Container
+                    if (node is File) {
+                      return node.level == 0
+                      ? 1 * 30
+                      : (min<int>(
+                                 node.level,
+                                 IndentConfiguration.largestIndentAccepted,
+                             ) *
+                             30 +
+                             node.level * 1.5);
+                    }
+                    return null;
+                  },
+                ),
+                scrollConfigs: ScrollConfigs(),
+                onHoverContainer: (Node node) {
+                  if (node is NodeContainer) {
+                    node.expand(forceOpen: true);
+                  }
+                },
+                // Contains the common configurations for Draggable 
+                // and LongPressDraggable widgets
+                draggableConfigurations: DraggableConfigurations(
+                  buildDragFeedbackWidget: (Node node) => Material(
+                    type: MaterialType.canvas,
+                    child: Text(
+                      node.runtimeType.toString() + node.level.toString(),
+                    ),
+                  ),
+                  childDragAnchorStrategy: (
+                   Draggable<Object> draggable,
+                   BuildContext context,
+                   Offset position,
+                  ) {
+                   // ... you implementation
+                  },
+                  // when this is true,
+                  // onHoverContainer will be called after a delay
+                  allowAutoExpandOnHover: true,
+                  preferLongPressDraggable: isMobile,
+                ),
+                // Contains all operations of the most common
+                // used drag operatons/gestures by the users
+                nodeDragGestures: (Node node) {
+                  return NodeDragGestures(/*...your configs*/);
+                },
+                nodeBuilder: (Node node, BuildContext context,
+                    NovDragAndDropDetails<Node>? details) {
+                      Decoration? decoration;
+                      final BorderSide borderSide = BorderSide(
+                       color: Theme.of(context).colorScheme.outline,
+                       width: 2.0,
+                     );
+                     if (details != null) {
+                       // Add a border to indicate in which portion of the target's height
+                       // the dragging node will be inserted.
+                       decoration = BoxDecoration(
+                         border: details.mapDropPosition<BoxBorder?>(
+                          whenAbove: () => Border(top: borderSide),
+                          whenInside: () => Border.fromBorderSide(borderSide),
+                          whenBelow: () => Border(bottom: borderSide),
+                          // this is just an implementation that is used in the example
+                          //
+                          // If this doesn't work correctly in your implementation, 
+                          // you'll need to try different values hat suit your application.
+                          boundsMultiplier: 0.3,
+                          insideMultiplier: 1.5,
+                         ),
+                       );
+                     }
+                     return Container(
+                       decoration: decoration,
+                       // AutomaticNodeIndentation is a custom node
+                       // that novident-tree-view give to us for indent
+                       // the nodes automatically without configuring it
+                       child: AutomaticNodeIndentation(
+                         node: node,
+                         child: node.isDirectory
+                         ? YourContainerWidget(
+                             container: node,
+                           )
+                         : YourLeafWidget(
+                             file: node,
+                           ),
+                        ),
+                     );
+                },
               ),
             ),
           ],
