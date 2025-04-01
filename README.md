@@ -20,6 +20,7 @@ Add to your `pubspec.yaml`:
 ```yaml
 dependencies:
   novident_tree_view: <latest_version>
+  novident_nodes: <lastest_version>
 ```
 
 ## Example 🌱
@@ -118,9 +119,8 @@ import 'package:flutter/material.dart';
 // than NodeContainer
 //
 // See https://github.com/Novident/novident-tree-view/blob/master/example/lib/common/entities/root.dart
-final root = NodeContainer(
-  level: -1,
-  parent: null,
+final root = Container(
+  details: NodeDetails(level -1),
   children: [
     Container(/* ... */),
     LeafNode(/* ... */),
