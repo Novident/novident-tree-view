@@ -17,27 +17,6 @@ import 'package:novident_nodes/novident_nodes.dart';
 /// The following example splits the height of [targetBounds] in three and
 /// decides where to drop [draggedNode] depending on the `dy` property of
 /// [dropPosition]:
-///
-/// ```dart
-/// extension on NovDragAndDropDetails<Object> {
-///   T mapDropPosition<T>({
-///     required T Function() whenAbove,
-///     required T Function() whenInside,
-///     required T Function() whenBelow,
-///   }) {
-///     final double oneThirdOfTotalHeight = targetBounds.height * 0.3;
-///     final double pointerVerticalOffset = dropPosition.dy;
-///
-///     if (pointerVerticalOffset < oneThirdOfTotalHeight) {
-///        return whenAbove();
-///     } else if (pointerVerticalOffset < oneThirdOfTotalHeight * 2) {
-///       return whenInside();
-///     } else {
-///       return whenBelow();
-///     }
-///   }
-/// }
-/// ```
 class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   /// Creates a [NovDragAndDropDetails].
   const NovDragAndDropDetails({
