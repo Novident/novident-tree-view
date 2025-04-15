@@ -13,6 +13,8 @@ export 'src/tree/config/tree_configuration.dart';
 export 'src/tree/indentation/indent_configurations.dart';
 export 'src/tree/indentation/automatic_node_indentation.dart';
 export 'src/tree/config/gestures/node_drag_gestures.dart';
+export 'src/tree/builders/component_builder.dart';
+export 'src/tree/builders/component_context.dart';
 // details
 export 'src/tree/details/nov_drag_and_drop_details.dart';
 // draggable configs

@@ -5,11 +5,13 @@ import 'package:novident_tree_view/novident_tree_view.dart';
 typedef NovOnWillAcceptOnNode = bool Function(
   NovDragAndDropDetails<Node>? details,
   DragTargetDetails<Node> dragDetails,
+  Node target,
   NodeContainer? parent,
 );
 
 typedef NovOnAcceptOnNode = void Function(
   NovDragAndDropDetails<Node> details,
+  Node target,
   NodeContainer? parent,
 );
 

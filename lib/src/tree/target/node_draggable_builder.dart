@@ -1,3 +1,5 @@
+import 'dart:math' show max, min;
+
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
@@ -27,13 +29,12 @@ class NodeDraggableBuilder extends StatefulWidget {
   /// [LongPressDraggable], provide a [longPressDelay] different than `null`.
   const NodeDraggableBuilder({
     required this.child,
-    required this.node,
+    required this.builder,
     required this.configuration,
-    this.customGestures,
+    required this.node,
+    required this.depth,
     super.key,
   });
-
-  final NodeDragGestures? customGestures;
 
   /// The widget below this widget in the tree.
   ///
@@ -42,11 +43,13 @@ class NodeDraggableBuilder extends StatefulWidget {
   /// Otherwise, this widget always displays [child].
   ///
   /// The [feedback] widget is shown under the pointer when dragging.
-  ///
-  /// {@macro flutter.widgets.ProxyWidget.child}
   final Widget child;
 
   final TreeConfiguration configuration;
+
+  final NodeComponentBuilder builder;
+
+  final int depth;
 
   /// The tree node that is going to be provided to [Draggable.data].
   final Node node;
@@ -66,9 +69,15 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   EdgeDraggingAutoScroller? _autoScroller;
   Offset? _dragPointer;
 
-  NodeDragGestures get gestures =>
-      widget.customGestures ??
-      widget.configuration.nodeDragGestures(widget.node);
+  NodeDragGestures get gestures => widget.builder.buildGestures(
+        ComponentContext(
+          depth: widget.depth,
+          nodeContext: context,
+          node: widget.node,
+          details: null,
+          extraArgs: widget.configuration.extraArgs,
+        ),
+      );
 
   set isDragging(bool value) {
     if (value == _isDragging) return;
@@ -102,12 +111,30 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     if (!widget.configuration.activateAutoScrollFeature) {
       return;
     }
+    if (_autoScroller == null) {
+      return;
+    }
     _dragPointer = offset;
+    final scrollable = Scrollable.of(context);
+    final renderObject = scrollable.context.findRenderObject();
+
+    if (renderObject == null) return;
+
+    // Obtener el tamaño del viewport de manera correcta
+    final viewportSize = (renderObject as RenderBox).size;
+
+    // Calcular un tamaño mínimo sensato para el rectángulo de detección
+    final minDimension = min(viewportSize.width, viewportSize.height);
+    final sensitivity = max(
+      widget.configuration.scrollConfigs.autoScrollSensitivity,
+      minDimension * 0.3, // 30% del lado más pequeño como mínimo
+    );
+
     _autoScroller?.startAutoScrollIfNecessary(
       Rect.fromCenter(
         center: offset,
-        width: widget.configuration.scrollConfigs.autoScrollSensitivity,
-        height: widget.configuration.scrollConfigs.autoScrollSensitivity,
+        width: sensitivity,
+        height: sensitivity,
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
@@ -5,6 +6,8 @@ import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// Represents the leaf [Node] into the Tree
 class LeafNodeBuilder extends StatefulWidget {
+  final int depth;
+
   /// The [ContainerTreeNode] item
   final Node node;
 
@@ -17,6 +20,7 @@ class LeafNodeBuilder extends StatefulWidget {
     required this.node,
     required this.owner,
     required this.configuration,
+    required this.depth,
     super.key,
   });
 
@@ -26,34 +30,47 @@ class LeafNodeBuilder extends StatefulWidget {
 
 class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty('owner', widget.owner));
-    properties
-        .add(DiagnosticsProperty('${widget.node.runtimeType}', widget.node));
-  }
-
-  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
+        final NodeComponentBuilder? builder =
+            widget.configuration.components.firstWhereOrNull(
+          (NodeComponentBuilder b) => b.validate(widget.node),
+        );
+        if (builder == null) {
+          throw StateError(
+            'There\'s no a builder configurated '
+            'for ${widget.node.runtimeType}(${widget.node.id})',
+          );
+        }
         Widget child = NodeDraggableBuilder(
           node: widget.node,
+          depth: widget.depth,
+          builder: builder,
           configuration: widget.configuration,
           child: NodeTargetBuilder(
-            key: Key("${widget.node.runtimeType}-key ${widget.node.id}"),
+            builder: builder,
+            depth: widget.depth,
             node: widget.node,
             configuration: widget.configuration,
             owner: widget.owner,
           ),
         );
+
         if (widget.configuration.addRepaintBoundaries) {
           child = RepaintBoundary(child: child);
         }
 
         final NodeConfiguration? nodeConfig =
-            widget.configuration.nodeConfigBuilder?.call(widget.node);
+            builder.buildConfigurations(ComponentContext(
+          depth: widget.depth,
+          nodeContext: context,
+          node: widget.node,
+          details: null,
+          extraArgs: widget.configuration.extraArgs,
+        ));
+
         if (nodeConfig == null) {
           return child;
         }
@@ -126,5 +143,13 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty('owner', widget.owner));
+    properties
+        .add(DiagnosticsProperty('${widget.node.runtimeType}', widget.node));
   }
 }

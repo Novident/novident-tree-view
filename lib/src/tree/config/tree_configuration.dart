@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_tree_view/src/tree/builders/component_builder.dart';
 
 const int kDefaultExpandDelay = 625;
 
@@ -14,21 +16,13 @@ const int kDefaultExpandDelay = 625;
 /// - Visual customization
 @immutable
 class TreeConfiguration {
-  /// Builder function that creates visual representations for nodes
-  ///
-  /// [node]: The node to visualize
-  /// [details]: Current drag-and-drop operation details (null when not dragging)
-  final Widget Function(
-          Node node, BuildContext context, NovDragAndDropDetails<Node>? details)
-      nodeBuilder;
+  final List<NodeComponentBuilder> components;
+
+  /// These are args that usually we want to use in all node builders
+  final Map<String, dynamic> extraArgs;
 
   /// Whether to wrap each row in a RepaintBoundary.
   final bool addRepaintBoundaries;
-
-  /// Builder function that creates the configuration for nodes
-  ///
-  /// Usually used to give to the [Node] the tappable capability
-  final NodeConfiguration Function(Node node)? nodeConfigBuilder;
 
   /// Determine if we should autoscroll when necessary during
   /// dragging events
@@ -65,14 +59,6 @@ class TreeConfiguration {
   /// Generates unique keys to maintain node state across rebuilds
   final PageStorageKey<String>? Function(Node node)? nodeWidgetKey;
 
-  /// Custom builder for node children layouts
-  ///
-  /// Overrides default child rendering with custom layouts. Receives:
-  /// [parent]: The parent container (null for root)
-  /// [children]: List of child nodes to display
-  final Widget Function(NodeContainer? parent, List<Node> children)?
-      buildCustomChildren;
-
   /// Placeholder widget for empty root state
   ///
   /// Displayed when the tree has no root nodes and [useRootSection] is enabled
@@ -95,30 +81,23 @@ class TreeConfiguration {
   /// Scroll physics for the main tree view
   final ScrollPhysics? physics;
 
-  /// Gesture handler factory for drag operations
-  ///
-  /// Creates drag gesture handlers for individual nodes
-  final NodeDragGestures Function(Node) nodeDragGestures;
-
   /// Creates a tree configuration
   const TreeConfiguration({
-    required this.nodeBuilder,
-    required this.activateDragAndDropFeature,
+    required this.components,
+    required this.extraArgs,
     required this.indentConfiguration,
-    required this.nodeDragGestures,
     required this.onHoverContainer,
     required this.scrollConfigs,
     required this.draggableConfigurations,
+    this.activateDragAndDropFeature = true,
     this.addRepaintBoundaries = false,
     this.activateAutoScrollFeature = false,
-    this.nodeConfigBuilder,
     this.nodeWidgetKey,
     this.useRootSection = false,
     this.shouldDisplayNodeChildrenCount = false,
     this.onHoverContainerExpansionDelay = kDefaultExpandDelay,
     this.rootTargetToDropSection,
     this.physics,
-    this.buildCustomChildren,
     this.onDetectEmptyRoot,
   });
 
@@ -126,9 +105,8 @@ class TreeConfiguration {
   ///
   /// Any parameter not specified will retain its original value
   TreeConfiguration copyWith({
-    Widget Function(Node node, BuildContext context,
-            NovDragAndDropDetails<Node>? details)?
-        nodeBuilder,
+    List<NodeComponentBuilder>? components,
+    Map<String, dynamic>? extraArgs,
     void Function(Node node)? onHoverContainer,
     ScrollConfigs? scrollConfigs,
     DraggableConfigurations? draggableConfigurations,
@@ -136,20 +114,18 @@ class TreeConfiguration {
     bool? activateDragAndDropFeature,
     bool? useRootSection,
     bool? activateAutoScrollFeature,
-    NodeConfiguration Function(Node node)? nodeConfigBuilder,
     PageStorageKey<String>? Function(Node node)? nodeWidgetKey,
-    Widget Function(Node? parent, List<Node> children)? buildCustomChildren,
     Widget? onDetectEmptyRoot,
     int? onHoverContainerExpansionDelay,
     IndentConfiguration? indentConfiguration,
     Widget Function(NovDragAndDropDetails<Node> details)?
         rootTargetToDropSection,
     ScrollPhysics? physics,
-    NodeDragGestures Function(Node)? nodeDragGestures,
   }) {
     return TreeConfiguration(
-      nodeBuilder: nodeBuilder ?? this.nodeBuilder,
       onHoverContainer: onHoverContainer ?? this.onHoverContainer,
+      components: components ?? this.components,
+      extraArgs: extraArgs ?? this.extraArgs,
       scrollConfigs: scrollConfigs ?? this.scrollConfigs,
       draggableConfigurations:
           draggableConfigurations ?? this.draggableConfigurations,
@@ -159,7 +135,6 @@ class TreeConfiguration {
           activateDragAndDropFeature ?? this.activateDragAndDropFeature,
       useRootSection: useRootSection ?? this.useRootSection,
       nodeWidgetKey: nodeWidgetKey ?? this.nodeWidgetKey,
-      buildCustomChildren: buildCustomChildren ?? this.buildCustomChildren,
       onDetectEmptyRoot: onDetectEmptyRoot ?? this.onDetectEmptyRoot,
       onHoverContainerExpansionDelay:
           onHoverContainerExpansionDelay ?? this.onHoverContainerExpansionDelay,
@@ -167,10 +142,8 @@ class TreeConfiguration {
       rootTargetToDropSection:
           rootTargetToDropSection ?? this.rootTargetToDropSection,
       physics: physics ?? this.physics,
-      nodeDragGestures: nodeDragGestures ?? this.nodeDragGestures,
       activateAutoScrollFeature:
           activateDragAndDropFeature ?? this.activateAutoScrollFeature,
-      nodeConfigBuilder: nodeConfigBuilder ?? this.nodeConfigBuilder,
     );
   }
 
@@ -178,47 +151,43 @@ class TreeConfiguration {
   bool operator ==(covariant TreeConfiguration other) {
     if (identical(this, other)) return true;
 
-    return other.nodeBuilder == nodeBuilder &&
-        other.onHoverContainer == onHoverContainer &&
+    return other.onHoverContainer == onHoverContainer &&
         other.scrollConfigs == scrollConfigs &&
         other.activateAutoScrollFeature == activateAutoScrollFeature &&
-        other.nodeConfigBuilder == nodeConfigBuilder &&
         other.draggableConfigurations == draggableConfigurations &&
         other.shouldDisplayNodeChildrenCount ==
             shouldDisplayNodeChildrenCount &&
         other.activateDragAndDropFeature == activateDragAndDropFeature &&
         other.useRootSection == useRootSection &&
         other.nodeWidgetKey == nodeWidgetKey &&
-        other.buildCustomChildren == buildCustomChildren &&
         other.onDetectEmptyRoot == onDetectEmptyRoot &&
         other.onHoverContainerExpansionDelay ==
             onHoverContainerExpansionDelay &&
         other.indentConfiguration == indentConfiguration &&
         other.rootTargetToDropSection == rootTargetToDropSection &&
-        other.physics == physics &&
-        other.nodeDragGestures == nodeDragGestures;
+        listEquals<NodeComponentBuilder>(other.components, components) &&
+        mapEquals<String, dynamic>(other.extraArgs, extraArgs) &&
+        other.physics == physics;
   }
 
   @override
   int get hashCode {
     return Object.hashAll([
-      nodeBuilder,
+      components,
+      activateAutoScrollFeature,
+      extraArgs,
       onHoverContainer,
       scrollConfigs,
-      activateAutoScrollFeature.hashCode,
-      nodeConfigBuilder.hashCode,
       draggableConfigurations,
       shouldDisplayNodeChildrenCount,
       activateDragAndDropFeature,
       useRootSection,
       nodeWidgetKey,
-      buildCustomChildren,
       onDetectEmptyRoot,
       onHoverContainerExpansionDelay,
       indentConfiguration,
       rootTargetToDropSection,
       physics,
-      nodeDragGestures,
     ]);
   }
 }

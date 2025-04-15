@@ -1,10 +1,7 @@
-import 'dart:io';
-import 'dart:math';
-
+import 'package:example/common/builders/directory_component_builder.dart';
+import 'package:example/common/builders/file_component_builder.dart';
 import 'package:example/common/controller/tree_controller.dart';
-import 'package:example/common/default_configurations/directory_widget.dart';
-import 'package:example/common/default_configurations/file_widget.dart';
-import 'package:example/common/entities/root.dart';
+import 'package:example/common/entities/file.dart';
 import 'package:example/common/extensions/node_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/internal.dart';
@@ -18,18 +15,24 @@ TreeConfiguration treeConfigurationBuilder(
     TreeConfiguration(
       activateDragAndDropFeature: true,
       addRepaintBoundaries: true,
+      activateAutoScrollFeature: false,
+      components: <NodeComponentBuilder>[
+        DirectoryComponentBuilder(),
+        FileComponentBuilder(),
+      ],
+      extraArgs: <String, dynamic>{
+        'controller': controller,
+      },
       indentConfiguration: IndentConfiguration(
-        indentPerLevel: 30,
+        indentPerLevel: 10,
+        // we need to build a different indentation
+        // for files, since folders has a leading
+        // button
         indentPerLevelBuilder: (Node node) {
           if (node is File) {
-            return node.level == 0
-                ? 1 * 30
-                : (min<int>(
-                          node.level,
-                          IndentConfiguration.largestIndentAccepted,
-                        ) *
-                        30 +
-                    node.level * 1.5);
+            final double effectiveLeft =
+                node.level <= 0 ? 25 : (node.level * 10) + 30;
+            return effectiveLeft;
           }
           return null;
         },
@@ -60,98 +63,6 @@ TreeConfiguration treeConfigurationBuilder(
         allowAutoExpandOnHover: true,
         preferLongPressDraggable: isMobile,
       ),
-      nodeDragGestures: (Node node) {
-        return NodeDragGestures(
-          onWillAcceptWithDetails: (
-            NovDragAndDropDetails<Node>? details,
-            DragTargetDetails<Node> dragDetails,
-            Node? parent,
-          ) =>
-              details?.draggedNode != node,
-          onAcceptWithDetails: (
-            NovDragAndDropDetails<Node>? details,
-            Node? parent,
-          ) {
-            if (details != null) {
-              details.mapDropPosition<void>(
-                //TODO: is happening. When you insert below or above
-                // the controller is removing the nodes
-                //
-                // and, when inserting into, the loops breaks the app
-                whenAbove: () {
-                  controller.insertAbove(node, details.targetNode.id);
-                },
-                whenInside: () {
-                  controller.insertAt(node, details.targetNode.id);
-                },
-                whenBelow: () {
-                  controller.insertBelow(node, details.targetNode.id);
-                },
-                boundsMultiplier: 0.3,
-                insideMultiplier: 1.5,
-              );
-              return;
-            }
-          },
-        );
-      },
-      nodeConfigBuilder: (Node node) {
-        return NodeConfiguration(
-          makeTappable: true,
-          decoration: BoxDecoration(
-            color: controller.selectedNode == node
-                ? Theme.of(context).primaryColor.withAlpha(50)
-                : null,
-          ),
-          onTap: (BuildContext context) {
-            if (node is Root) return;
-            controller.selectNode(node);
-          },
-        );
-      },
-      nodeBuilder: (Node node, BuildContext context,
-          NovDragAndDropDetails<Node>? details) {
-        Decoration? decoration;
-        final BorderSide borderSide = BorderSide(
-          color: Theme.of(context).colorScheme.outline,
-          width: 2.0,
-        );
-
-        if (details != null) {
-          // Add a border to indicate in which portion of the target's height
-          // the dragging node will be inserted.
-          decoration = BoxDecoration(
-            border: details.mapDropPosition<BoxBorder?>(
-              whenAbove: () => Border(top: borderSide),
-              whenInside: () => Border.fromBorderSide(borderSide),
-              whenBelow: () => Border(bottom: borderSide),
-              boundsMultiplier: 0.3,
-              insideMultiplier: 1.5,
-            ),
-          );
-        }
-        if (node.isRoot) {
-          return const SizedBox.shrink();
-        }
-        return Container(
-          decoration: decoration,
-          child: AutomaticNodeIndentation(
-            node: node,
-            child: node.isDirectory
-                ? DirectoryTile(
-                    directory: node.asDirectory,
-                    controller: controller,
-                    onTap: () {
-                      node.asDirectory.openOrClose();
-                    },
-                  )
-                : FileTile(
-                    file: node.asFile,
-                    controller: controller,
-                  ),
-          ),
-        );
-      },
     );
 
 class TrailingMenu extends StatefulWidget {

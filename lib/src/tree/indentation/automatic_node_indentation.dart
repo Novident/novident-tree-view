@@ -47,7 +47,10 @@ class AutomaticNodeIndentation extends StatelessWidget {
           // Calculate indentation: level × pixels-per-level
           // Constrained by maxLevel configuration
           left: configuration.indentPerLevelBuilder?.call(node) ??
-              _constrainLevel(node.level, configuration) *
+              _constrainLevel(
+                    node.level,
+                    configuration,
+                  ) *
                   configuration.indentPerLevel,
         ),
       ),

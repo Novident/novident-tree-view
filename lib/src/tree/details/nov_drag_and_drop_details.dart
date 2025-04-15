@@ -45,6 +45,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     required this.targetNode,
     required this.dropPosition,
     required this.targetBounds,
+    required this.globalDropPosition,
+    required this.globalTargetNodeOffset,
     this.candidateData = const [],
     this.rejectedData = const [],
   });
@@ -61,6 +63,10 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   /// dropped at this vicinity of [targetBounds], whether it will become a
   /// child of [targetNode], a sibling, its parent, etc.
   final Offset dropPosition;
+
+  //
+  final Offset globalDropPosition;
+  final Offset globalTargetNodeOffset;
 
   /// The widget bounding box of [targetNode].
   ///
@@ -92,6 +98,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     return NovDragAndDropDetails<T>(
       draggedNode: draggedNode,
       targetNode: targetNode,
+      globalTargetNodeOffset: globalTargetNodeOffset,
+      globalDropPosition: globalDropPosition,
       dropPosition: dropPosition,
       targetBounds: targetBounds,
       candidateData: candidateData,
@@ -140,18 +148,21 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     required P Function() whenBelow,
     double boundsMultiplier = 0.3,
     double insideMultiplier = 2,
-    bool Function(double dropPosition, double thirdPartOfWidgetHeight)? isAbove,
-    bool Function(double dropPosition, double thirdPartOfWidgetHeight)?
-        isInside,
   }) {
-    final double oneThirdOfTotalHeight = targetBounds.height * boundsMultiplier;
-    final double pointerVerticalOffset = dropPosition.dy;
+    final double maxHeight = globalTargetNodeOffset.dy;
+    final double pointerVerticalOffset = globalDropPosition.dy;
+    final double upperBoundsPart = globalTargetNodeOffset.dy - 4;
+    final double lowerBoundsPart = (maxHeight + targetBounds.height) - 15;
+    print('Target offset: $globalTargetNodeOffset');
+    print('Third: $upperBoundsPart');
+    print('Lower: $lowerBoundsPart');
+    print('User point: $pointerVerticalOffset');
+    print('Limit height: $maxHeight');
 
-    if (isAbove?.call(pointerVerticalOffset, oneThirdOfTotalHeight) ??
-        pointerVerticalOffset < oneThirdOfTotalHeight) {
+    if (pointerVerticalOffset < upperBoundsPart) {
       return whenAbove();
-    } else if (isInside?.call(pointerVerticalOffset, oneThirdOfTotalHeight) ??
-        pointerVerticalOffset < (oneThirdOfTotalHeight * insideMultiplier)) {
+    } else if (pointerVerticalOffset > upperBoundsPart &&
+        pointerVerticalOffset < lowerBoundsPart) {
       return whenInside();
     } else {
       return whenBelow();
@@ -165,6 +176,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
       ..add(DiagnosticsProperty<T>('draggedNode', draggedNode))
       ..add(DiagnosticsProperty<T>('targetNode', targetNode))
       ..add(DiagnosticsProperty<Offset>('dropPosition', dropPosition))
+      ..add(
+          DiagnosticsProperty<Offset>('globalDropPosition', globalDropPosition))
       ..add(DiagnosticsProperty<Rect>('targetBounds', targetBounds));
   }
 
@@ -172,12 +185,17 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     T? draggedNode,
     T? targetNode,
     Offset? dropPosition,
+    Offset? globalDropPosition,
+    Offset? globalTargetNodeOffset,
     Rect? targetBounds,
     List<T?>? candidateData,
     List<dynamic>? rejectedData,
   }) {
     return NovDragAndDropDetails<T>(
       draggedNode: draggedNode ?? this.draggedNode,
+      globalDropPosition: globalDropPosition ?? this.globalDropPosition,
+      globalTargetNodeOffset:
+          globalTargetNodeOffset ?? this.globalTargetNodeOffset,
       targetNode: targetNode ?? this.targetNode,
       dropPosition: dropPosition ?? this.dropPosition,
       targetBounds: targetBounds ?? this.targetBounds,
@@ -194,6 +212,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
         other.targetNode == targetNode &&
         other.dropPosition == dropPosition &&
         other.targetBounds == targetBounds &&
+        other.globalDropPosition == globalDropPosition &&
+        other.globalTargetNodeOffset == globalTargetNodeOffset &&
         listEquals(other.candidateData, candidateData) &&
         listEquals(other.rejectedData, rejectedData);
   }
@@ -203,6 +223,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     return draggedNode.hashCode ^
         targetNode.hashCode ^
         dropPosition.hashCode ^
+        globalTargetNodeOffset.hashCode ^
+        globalDropPosition.hashCode ^
         targetBounds.hashCode ^
         candidateData.hashCode ^
         rejectedData.hashCode;

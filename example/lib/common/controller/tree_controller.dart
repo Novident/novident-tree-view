@@ -1,6 +1,7 @@
 import 'package:example/common/controller/extension/base_controller_helpers.dart';
 import 'package:example/common/entities/root.dart';
 import 'package:example/common/extensions/node_ext.dart';
+import 'package:example/common/extensions/num_ext.dart';
 import 'package:flutter/foundation.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'base/base_tree_controller.dart';
@@ -120,14 +121,13 @@ class TreeController extends BaseTreeController {
       // insert the node at the position
       removeWhere(
         (Node element) => element.details.id == node.details.id,
-        verifyDuplicates: true,
         ignoreNotify: true,
       );
     }
     for (int i = 0; i < root.length; i++) {
       Node belowNode = root.elementAt(i);
       if (belowNode.details.id == childBelowId) {
-        int beforeIndex = (i - 1) == -1 ? 0 : i;
+        int beforeIndex = (i - 1).zeroIfNegative;
         if (node is NodeContainer) {
           node.redepthChildren();
         }

@@ -100,12 +100,14 @@ class _TreeViewState extends State<TreeView> {
                   if (node is! NodeContainer) {
                     return LeafNodeBuilder(
                       node: node,
+                      depth: 0,
                       owner: widget.root,
                       configuration: widget.configuration,
                     );
                   } else {
                     return ContainerBuilder(
                       nodeContainer: node,
+                      depth: 0,
                       owner: widget.root,
                       configuration: widget.configuration,
                     );
@@ -114,12 +116,6 @@ class _TreeViewState extends State<TreeView> {
               );
             },
           ),
-          // Root-level drop target section
-          if (widget.configuration.useRootSection)
-            RootTargetToDropSection(
-              configuration: widget.configuration,
-              root: widget.root,
-            ),
           // Bottom padding spacer
           Padding(
             padding: EdgeInsets.only(
@@ -127,38 +123,6 @@ class _TreeViewState extends State<TreeView> {
             ),
           )
         ],
-      ),
-    );
-  }
-}
-
-/// Specialized widget for root-level drop targets
-///
-/// Displays an expanded drag-and-drop area at the root level when
-/// [TreeConfiguration.useRootSection] is enabled
-class RootTargetToDropSection extends StatefulWidget {
-  final TreeConfiguration configuration;
-  final NodeContainer root;
-
-  const RootTargetToDropSection({
-    required this.root,
-    required this.configuration,
-    super.key,
-  });
-
-  @override
-  State<RootTargetToDropSection> createState() =>
-      _RootTargetToDropSectionState();
-}
-
-class _RootTargetToDropSectionState extends State<RootTargetToDropSection> {
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: NodeTargetBuilder(
-        node: widget.root,
-        owner: widget.root,
-        configuration: widget.configuration,
       ),
     );
   }

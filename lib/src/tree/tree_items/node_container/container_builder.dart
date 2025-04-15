@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
@@ -8,6 +9,8 @@ import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_build
 /// that contains all its children and can be expanded
 /// or closed
 class ContainerBuilder extends StatefulWidget {
+  final int depth;
+
   /// The [ContainerTreeNode] item
   final NodeContainer nodeContainer;
 
@@ -20,6 +23,7 @@ class ContainerBuilder extends StatefulWidget {
     required this.nodeContainer,
     required this.owner,
     required this.configuration,
+    required this.depth,
     super.key,
   });
 
@@ -37,11 +41,24 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
 
   @override
   Widget build(BuildContext context) {
+    final NodeComponentBuilder? builder =
+        widget.configuration.components.firstWhereOrNull(
+      (NodeComponentBuilder b) => b.validate(widget.nodeContainer),
+    );
+    if (builder == null) {
+      throw StateError(
+        'There\'s no a builder configurated '
+        'for ${widget.nodeContainer.runtimeType}(${widget.nodeContainer.id})',
+      );
+    }
     Widget child = NodeDraggableBuilder(
       node: widget.nodeContainer,
+      depth: widget.depth,
+      builder: builder,
       configuration: widget.configuration,
       child: NodeTargetBuilder(
-        key: Key("container-key ${widget.nodeContainer.id}"),
+        depth: widget.depth,
+        builder: builder,
         node: widget.nodeContainer,
         configuration: widget.configuration,
         owner: widget.owner,
@@ -53,7 +70,13 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     }
 
     final NodeConfiguration? nodeConfig =
-        widget.configuration.nodeConfigBuilder?.call(widget.nodeContainer);
+        builder.buildConfigurations(ComponentContext(
+      depth: widget.depth,
+      nodeContext: context,
+      node: widget.nodeContainer,
+      details: null,
+      extraArgs: widget.configuration.extraArgs,
+    ));
     if (nodeConfig != null) {
       final Widget? wrapper = nodeConfig.nodeWrapper?.call(
         widget.nodeContainer,
@@ -130,9 +153,13 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             child,
-            widget.configuration.buildCustomChildren?.call(
-                  widget.nodeContainer,
-                  List<Node>.unmodifiable(widget.nodeContainer.children),
+            builder.buildChildren(
+                  ComponentContext(
+                    depth: widget.depth,
+                    nodeContext: context,
+                    node: widget.nodeContainer,
+                    details: null,
+                  ),
                 ) ??
                 Visibility(
                   visible: widget.nodeContainer.isExpanded,
@@ -148,12 +175,14 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
                           widget.nodeContainer.children.elementAt(index);
                       if (node is! NodeContainer) {
                         return LeafNodeBuilder(
+                          depth: widget.depth + 1,
                           node: node,
                           owner: widget.nodeContainer,
                           configuration: widget.configuration,
                         );
                       } else
                         return ContainerBuilder(
+                          depth: widget.depth + 1,
                           nodeContainer: node,
                           owner: widget.nodeContainer,
                           configuration: widget.configuration,

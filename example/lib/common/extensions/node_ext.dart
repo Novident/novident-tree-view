@@ -57,6 +57,7 @@ extension NodeContainerExt on NodeContainer {
   /// This opertion could be heavy based on the deep of the nodes
   /// into the [NodeContainer]
   bool existNode(String nodeId) {
+    if (isEmpty) return false;
     for (int i = 0; i < length; i++) {
       final node = elementAt(i);
       if (node.details.id == nodeId) {

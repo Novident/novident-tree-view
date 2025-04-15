@@ -1,5 +1,6 @@
 import 'package:example/common/controller/base/base_tree_controller.dart';
 import 'package:example/common/extensions/node_ext.dart';
+import 'package:example/common/extensions/num_ext.dart';
 import 'package:flutter/foundation.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
@@ -70,7 +71,7 @@ extension BaseControllerHelpers on BaseTreeController {
           );
         }
         container.insert(
-          i,
+          (i - 1).zeroIfNegative,
           node.copyWith(
             details: node.details.copyWith(
               level: belowNode.level,

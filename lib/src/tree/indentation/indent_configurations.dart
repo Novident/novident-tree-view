@@ -35,7 +35,7 @@ class IndentConfiguration {
   /// [maxLevel]: Maximum indentation level (default unlimited)
   /// [padding]: Additional padding around nodes (default zero)
   IndentConfiguration({
-    this.indentPerLevel = 30,
+    this.indentPerLevel = 20,
     this.indentPerLevelBuilder,
     this.maxLevel = largestIndentAccepted,
     this.padding = EdgeInsets.zero,
