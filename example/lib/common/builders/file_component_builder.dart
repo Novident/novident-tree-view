@@ -86,7 +86,6 @@ class FileComponentBuilder extends NodeComponentBuilder {
               if (target is File) {
                 return;
               }
-              controller.insertAt(node, target.id);
             },
             whenBelow: () {},
           );

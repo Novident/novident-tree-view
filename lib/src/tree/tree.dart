@@ -69,60 +69,62 @@ class _TreeViewState extends State<TreeView> {
 
   @override
   Widget build(BuildContext context) {
-    return Provider<TreeConfiguration>(
-      create: (BuildContext context) => widget.configuration,
-      child: ListView(
-        shrinkWrap: widget.shrinkWrap,
-        controller: widget.scrollController,
-        primary: widget.primary,
-        clipBehavior: widget.clipBehavior ?? Clip.hardEdge,
-        physics: widget.configuration.physics ??
-            const NeverScrollableScrollPhysics(),
-        children: <Widget>[
-          // Main tree content
-          ListenableBuilder(
-            listenable: widget.root,
-            builder: (BuildContext context, Widget? child) {
-              if (widget.root.isEmpty) return noNodesFoundWidget;
-              return ListView.builder(
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                physics: const NeverScrollableScrollPhysics(),
-                primary: false,
-                clipBehavior: Clip.hardEdge,
-                itemCount: widget.root.children.length,
-                hitTestBehavior: HitTestBehavior.translucent,
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                itemBuilder: (BuildContext context, int index) {
-                  final Node node = widget.root.children.elementAt(index);
-                  // Build appropriate node type
-                  if (node is! NodeContainer) {
-                    return LeafNodeBuilder(
-                      node: node,
-                      depth: 0,
-                      owner: widget.root,
-                      configuration: widget.configuration,
-                    );
-                  } else {
-                    return ContainerBuilder(
-                      nodeContainer: node,
-                      depth: 0,
-                      owner: widget.root,
-                      configuration: widget.configuration,
-                    );
-                  }
-                },
-              );
-            },
-          ),
-          // Bottom padding spacer
-          Padding(
-            padding: EdgeInsets.only(
-              bottom: widget.bottomInsets,
+    return DraggableListener(
+      child: Provider<TreeConfiguration>(
+        create: (BuildContext context) => widget.configuration,
+        child: ListView(
+          shrinkWrap: widget.shrinkWrap,
+          controller: widget.scrollController,
+          primary: widget.primary,
+          clipBehavior: widget.clipBehavior ?? Clip.hardEdge,
+          physics: widget.configuration.physics ??
+              const NeverScrollableScrollPhysics(),
+          children: <Widget>[
+            // Main tree content
+            ListenableBuilder(
+              listenable: widget.root,
+              builder: (BuildContext context, Widget? child) {
+                if (widget.root.isEmpty) return noNodesFoundWidget;
+                return ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  physics: const NeverScrollableScrollPhysics(),
+                  primary: false,
+                  clipBehavior: Clip.hardEdge,
+                  itemCount: widget.root.children.length,
+                  hitTestBehavior: HitTestBehavior.translucent,
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  itemBuilder: (BuildContext context, int index) {
+                    final Node node = widget.root.children.elementAt(index);
+                    // Build appropriate node type
+                    if (node is! NodeContainer) {
+                      return LeafNodeBuilder(
+                        node: node,
+                        depth: 0,
+                        owner: widget.root,
+                        configuration: widget.configuration,
+                      );
+                    } else {
+                      return ContainerBuilder(
+                        nodeContainer: node,
+                        depth: 0,
+                        owner: widget.root,
+                        configuration: widget.configuration,
+                      );
+                    }
+                  },
+                );
+              },
             ),
-          )
-        ],
+            // Bottom padding spacer
+            Padding(
+              padding: EdgeInsets.only(
+                bottom: widget.bottomInsets,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

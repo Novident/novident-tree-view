@@ -67,6 +67,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   bool _isDragging = false;
 
   EdgeDraggingAutoScroller? _autoScroller;
+
   Offset? _dragPointer;
 
   NodeDragGestures get gestures => widget.builder.buildGestures(
@@ -155,21 +156,39 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   void onDragStarted() {
     isDragging = true;
     _createAutoScroller();
+    final renderBox = context.findRenderObject() as RenderBox;
+    final cursorPosition = renderBox.localToGlobal(Offset.zero);
+    DraggableListener.of(context).dragListener
+      ..globalPosition = cursorPosition
+      ..localPosition = null
+      ..draggedNode = widget.node;
     gestures.onDragStart?.call(widget.node);
   }
 
   void onDragUpdate(DragUpdateDetails details) {
     _autoScroll(details.globalPosition);
+    DraggableListener.of(context).dragListener
+      ..globalPosition = details.globalPosition
+      ..localPosition = details.localPosition
+      ..draggedNode = widget.node;
     gestures.onDragUpdate?.call(details);
   }
 
   void onDraggableCanceled(Velocity velocity, Offset point) {
     _endDrag();
+    DraggableListener.of(context).dragListener
+      ..globalPosition = null
+      ..localPosition = null
+      ..draggedNode = null;
     gestures.onDragCanceled?.call(velocity, point);
   }
 
   void onDragCompleted() {
     _endDrag();
+    DraggableListener.of(context).dragListener
+      ..globalPosition = null
+      ..localPosition = null
+      ..draggedNode = null;
     gestures.onDragCompleted?.call(widget.node);
   }
 

@@ -6,6 +6,7 @@ export 'src/tree/config/node/node_configuration.dart';
 export 'src/interfaces/draggable_node.dart';
 // utils
 export 'src/entities/enums/drag_handler_position.dart';
+export 'src/tree/target/listeners/draggable_listener.dart';
 // tree
 export 'src/tree/tree.dart';
 // tree configurations

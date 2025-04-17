@@ -87,6 +87,7 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   }
 
   /// Determines the relative position of a dragged node with respect to a target widget
+  ///
   /// and returns a corresponding value based on whether the node is:
   ///
   /// - Above the target
@@ -99,44 +100,19 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   /// - [whenAbove]: Callback that returns the value when the dragged node is above the target
   /// - [whenInside]: Callback that returns the value when the dragged node is inside the target
   /// - [whenBelow]: Callback that returns the value when the dragged node is below the target
-  ///
-  /// - [boundsMultiplier]: Determines the size of the upper detection zone.
-  ///   Defaults to 0.3 (30% of widget height). This affects how close to the top
-  ///   the dragged node needs to be to be considered "above".
-  ///
-  /// - [insideMultiplier]: Adjusts the size of the middle detection zone.
-  ///   Defaults to 2 (making the middle zone 60% of height when combined with default boundsMultiplier).
-  ///   Increase/Decreate this value to expand/compress the "inside" detection area.
-  ///
-  /// - [isAbove]: Optional custom function to override the default "above" detection logic.
-  ///   Receives the current drop position and calculated one-third height.
-  ///   Return true to force "above" detection.
-  ///
-  /// - [isInside]: Optional custom function to override the default "inside" detection logic.
-  ///   Receives the current drop position and calculated one-third height.
-  ///   Return true to force "inside" detection.
-  ///
-  /// The default behavior divides the widget into three logical sections:
-  ///
-  /// 1. Top section (above): 0 - 30% of height (when boundsMultiplier is 0.3)
-  /// 2. Middle section (inside): 30% - 60% of height
-  /// 3. Bottom section (below): remaining 60% - 100% of height
   P mapDropPosition<P>({
     required P Function() whenAbove,
     required P Function() whenInside,
     required P Function() whenBelow,
-    double boundsMultiplier = 0.3,
-    double insideMultiplier = 2,
+    double upperBoundsLimiter = 5,
+    double lowerBoundsLimiter = 5,
   }) {
     final double maxHeight = globalTargetNodeOffset.dy;
     final double pointerVerticalOffset = globalDropPosition.dy;
-    final double upperBoundsPart = globalTargetNodeOffset.dy - 4;
-    final double lowerBoundsPart = (maxHeight + targetBounds.height) - 15;
-    print('Target offset: $globalTargetNodeOffset');
-    print('Third: $upperBoundsPart');
-    print('Lower: $lowerBoundsPart');
-    print('User point: $pointerVerticalOffset');
-    print('Limit height: $maxHeight');
+    final double upperBoundsPart =
+        globalTargetNodeOffset.dy + upperBoundsLimiter;
+    final double lowerBoundsPart =
+        (maxHeight + targetBounds.height) - lowerBoundsLimiter;
 
     if (pointerVerticalOffset < upperBoundsPart) {
       return whenAbove();

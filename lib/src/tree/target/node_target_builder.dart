@@ -95,8 +95,13 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
   /// [draggedNode]: The node being dragged
   /// [pointer]: Current pointer position in global coordinates
   /// Returns detailed drop information including position and bounds
-  NovDragAndDropDetails<Node> _getDropDetails(
-      Node draggedNode, Offset pointer) {
+  NovDragAndDropDetails<Node>? _getDropDetails(
+    Node draggedNode,
+    Offset pointer,
+  ) {
+    if (draggedNode.id == widget.node.id) {
+      return null;
+    }
     final RenderBox renderBox = context.findRenderObject()! as RenderBox;
     if (!renderBox.attached) {
       throw StateError(
@@ -107,13 +112,21 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     final Vector3 vectorPosition =
         renderBox.getTransformTo(null).getTranslation();
     final Offset offset = Offset(vectorPosition.x, vectorPosition.y);
+    print('VectorPosition: ${vectorPosition.toString()}');
+    print('RenderBox offset: $offset');
+    final listener = DraggableListener.of(context);
+    print('User cursor offset: $pointer');
+    print(
+        'User Drag cursor offset in listener: ${listener.dragListener.globalPosition}');
 
     return NovDragAndDropDetails<Node>(
-      draggedNode: draggedNode,
+      draggedNode: listener.dragListener.draggedNode ?? draggedNode,
       globalTargetNodeOffset: offset,
       targetNode: widget.node,
-      dropPosition: renderBox.globalToLocal(pointer),
-      globalDropPosition: pointer,
+      dropPosition: renderBox.globalToLocal(
+        listener.dragListener.globalPosition ?? pointer,
+      ),
+      globalDropPosition: listener.dragListener.globalPosition ?? pointer,
       targetBounds: Offset.zero & renderBox.size,
     );
   }
@@ -129,7 +142,10 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     if (_details != null && details.data != _details!.draggedNode) return;
 
     setState(() {
-      _details = _getDropDetails(details.data, details.offset);
+      _details = _getDropDetails(
+        details.data,
+        details.offset,
+      );
     });
 
     _startOrCancelOnHoverExpansion();
@@ -251,10 +267,14 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     return Column(
       children: <Widget>[
         DragTarget<Node>(
-          onWillAcceptWithDetails: (DragTargetDetails<Node> details) =>
-              _onWillAccept(
-            details,
-          ),
+          onWillAcceptWithDetails: (DragTargetDetails<Node> details) {
+            if (details.data.id == widget.node.id) {
+              return false;
+            }
+            return _onWillAccept(
+              details,
+            );
+          },
           onAcceptWithDetails: (DragTargetDetails<Node> details) => _onAccept(
             details,
           ),
