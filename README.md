@@ -36,6 +36,7 @@ dependencies:
 
 ```dart
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 
 class LeafNode extends Node implements DragAndDropMixin {
   final String title;
@@ -61,6 +62,8 @@ class LeafNode extends Node implements DragAndDropMixin {
 
   @override
   bool isDropTarget() => true;
+
+  // ..rest of the mandatory methods
 }
 ```
 
@@ -71,16 +74,17 @@ class LeafNode extends Node implements DragAndDropMixin {
 
 ```dart
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 
-class Container extends NodeContainer implements DragAndDropMixin {
+class ExampleContainer extends NodeContainer implements DragAndDropMixin {
   final String title;
   bool _isExpanded;
 
-  Container({
+  ExampleContainer({
     required this.title,
-    bool isExpanded = false,
-    super.parent,
+    required super.details,
     super.children,
+    bool isExpanded = false,
   }) : _isExpanded = isExpanded;
 
   @override
@@ -108,6 +112,8 @@ class Container extends NodeContainer implements DragAndDropMixin {
     _isExpanded = forceOpen ? true : !_isExpanded;
     notify();
   }
+
+  // ..rest of the mandatory methods
 }
 ```
 
@@ -122,10 +128,10 @@ import 'package:flutter/material.dart' hide Container;
 // than NodeContainer
 //
 // See https://github.com/Novident/novident-tree-view/blob/master/example/lib/common/entities/root.dart
-final root = Container(
+final root = ExampleContainer(
   details: NodeDetails(level -1),
   children: [
-    Container(/* ... */),
+    ExampleContainer(/* ... */),
     LeafNode(/* ... */),
   ],
 );
