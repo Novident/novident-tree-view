@@ -34,17 +34,9 @@ class Directory extends NodeContainer implements DragAndDropMixin {
     void redepth(List<Node> unformattedChildren, int currentLevel) {
       for (int i = 0; i < unformattedChildren.length; i++) {
         final Node node = unformattedChildren.elementAt(i);
-        if (node is File) {
-          unformattedChildren[i] = node.copyWith(
-            details: node.details.copyWith(level: currentLevel + 1),
-          );
-        }
-
-        if (node is Directory) {
-          unformattedChildren[i] = node.copyWith(
-            details: node.details.copyWith(level: currentLevel + 1),
-          );
-        }
+        unformattedChildren[i] = node.cloneWithNewLevel(
+          currentLevel + 1,
+        );
         if (node is NodeContainer && node.isNotEmpty) {
           redepth(node.children, currentLevel + 1);
         }
@@ -107,7 +99,7 @@ class Directory extends NodeContainer implements DragAndDropMixin {
 
   @override
   String toString() {
-    return 'Directory(name: $name, isExpanded: $isExpanded, children: ${children.length})';
+    return 'Directory(name: $name, isExpanded: $isExpanded, count nodes: ${children.length}, depth: $level)';
   }
 
   @override
@@ -151,5 +143,14 @@ class Directory extends NodeContainer implements DragAndDropMixin {
       'children': children.map((Node e) => e.toJson()).toList(),
       'isExpanded': _isExpanded,
     };
+  }
+
+  @override
+  Directory cloneWithNewLevel(int level) {
+    return copyWith(
+      details: details.cloneWithNewLevel(
+        level,
+      ),
+    );
   }
 }

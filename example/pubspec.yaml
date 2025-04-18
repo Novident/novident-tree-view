@@ -14,7 +14,7 @@ dependencies:
   novident_tree_view:
      path: ../
 
-  novident_nodes: ^1.0.0
+  novident_nodes: ^1.0.2
   flutter_quill: ^11.2.0
   cupertino_icons: ^1.0.8
   collection: ^1.19.1
@@ -25,7 +25,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^3.0.0
+  flutter_lints: ^5.0.0
 
 flutter:
 

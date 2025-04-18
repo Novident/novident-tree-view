@@ -33,19 +33,6 @@ class TreeView extends StatefulWidget {
   /// Bottom padding for the scrollable area
   final double bottomInsets;
 
-  /// Creates a tree view component
-  ///
-  /// Required parameters:
-  /// [root]: Root node container of the tree
-  /// [configuration]: Tree behavior and styling configuration
-  ///
-  /// Optional parameters:
-  /// [bottomInsets]: Bottom padding (default: 30)
-  /// [shrinkWrap]: Whether to shrink-wrap content (default: true)
-  /// [scrollController]: External scroll controller
-  /// [primary]: Primary scroll view flag
-  /// [clipBehavior]: Content clipping strategy
-  /// [focusNode]: Keyboard focus control
   TreeView({
     required this.root,
     required this.configuration,
@@ -103,14 +90,12 @@ class _TreeViewState extends State<TreeView> {
                         node: node,
                         depth: 0,
                         owner: widget.root,
-                        configuration: widget.configuration,
                       );
                     } else {
                       return ContainerBuilder(
                         nodeContainer: node,
                         depth: 0,
                         owner: widget.root,
-                        configuration: widget.configuration,
                       );
                     }
                   },

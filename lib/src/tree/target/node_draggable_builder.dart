@@ -214,13 +214,13 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   Widget build(BuildContext context) {
     super.build(context);
     if (widget.node is! DragAndDropMixin ||
-        (widget.node is DragAndDropMixin &&
-            !widget.node.cast<DragAndDropMixin>().isDraggable()) ||
+        !widget.node.cast<DragAndDropMixin>().isDraggable() ||
         !widget.configuration.activateDragAndDropFeature) {
       return widget.child;
     }
 
-    if (widget.configuration.draggableConfigurations.preferLongPressDraggable) {
+    if (widget.configuration.draggableConfigurations.preferLongPressDraggable ||
+        widget.configuration.draggableConfigurations.longPressDelay > 0) {
       return LongPressDraggable<Node>(
         data: widget.node,
         maxSimultaneousDrags: 1,
@@ -241,7 +241,9 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
             .configuration.draggableConfigurations.childDragAnchorStrategy,
         feedbackOffset:
             widget.configuration.draggableConfigurations.feedbackOffset,
-        delay: widget.configuration.draggableConfigurations.longPressDelay,
+        delay: Duration(
+            milliseconds:
+                widget.configuration.draggableConfigurations.longPressDelay),
         child: widget.child,
       );
     }

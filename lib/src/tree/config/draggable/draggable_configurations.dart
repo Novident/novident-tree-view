@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
+const int kLongPressTimeout = 500;
+
 @immutable
 class DraggableConfigurations {
   /// Constructs the visual feedback widget displayed during a drag operation.
@@ -12,9 +14,18 @@ class DraggableConfigurations {
   /// - [node]: The node that is being dragged.
   /// - Returns: A widget that represents the visual feedback during the drag operation.
   final Widget Function(Node node) buildDragFeedbackWidget;
+
+  /// Display the feedback anchored at the position of the original child.
+  ///
+  /// If feedback is identical to the child, then this means the feedback will
+  /// exactly overlap the original child when the drag starts.
   final DragAnchorStrategy childDragAnchorStrategy;
   final Offset feedbackOffset;
-  final Duration longPressDelay;
+
+  /// The duration that a user has to press down before a long press is registered.
+  ///
+  /// Defaults to [kLongPressTimeout].
+  final int longPressDelay;
   final Axis? axis;
 
   final bool allowAutoExpandOnHover;
@@ -33,11 +44,11 @@ class DraggableConfigurations {
 
   DraggableConfigurations({
     required this.buildDragFeedbackWidget,
-    required this.childDragAnchorStrategy,
-    required this.allowAutoExpandOnHover,
-    required this.preferLongPressDraggable,
+    this.allowAutoExpandOnHover = true,
+    this.preferLongPressDraggable = false,
+    this.childDragAnchorStrategy = _childDragAnchorStrategy,
     this.feedbackOffset = Offset.zero,
-    this.longPressDelay = Duration.zero,
+    this.longPressDelay = kLongPressTimeout,
     this.axis,
     this.childWhenDraggingBuilder,
   });
@@ -46,7 +57,7 @@ class DraggableConfigurations {
     Widget Function(Node node)? buildDragFeedbackWidget,
     DragAnchorStrategy? childDragAnchorStrategy,
     Offset? feedbackOffset,
-    Duration? longPressDelay,
+    int? longPressDelay,
     Axis? axis,
     bool? allowAutoExpandOnHover,
     bool? preferLongPressDraggable,
@@ -71,7 +82,16 @@ class DraggableConfigurations {
 
   @override
   String toString() {
-    return 'DraggableConfigurations(buildDragFeedbackWidget: $buildDragFeedbackWidget, childDragAnchorStrategy: $childDragAnchorStrategy, feedbackOffset: $feedbackOffset, longPressDelay: $longPressDelay, axis: $axis, allowAutoExpandOnHover: $allowAutoExpandOnHover, preferLongPressDraggable: $preferLongPressDraggable, childWhenDraggingBuilder: $childWhenDraggingBuilder)';
+    return 'DraggableConfigurations('
+        'buildDragFeedbackWidget: $buildDragFeedbackWidget, '
+        'childDragAnchorStrategy: $childDragAnchorStrategy, '
+        'feedbackOffset: $feedbackOffset, '
+        'longPressDelay: $longPressDelay, '
+        'axis: $axis, '
+        'allowAutoExpandOnHover: $allowAutoExpandOnHover, '
+        'preferLongPressDraggable: $preferLongPressDraggable, '
+        'childWhenDraggingBuilder: $childWhenDraggingBuilder'
+        ')';
   }
 
   @override
@@ -99,4 +119,26 @@ class DraggableConfigurations {
         preferLongPressDraggable.hashCode ^
         childWhenDraggingBuilder.hashCode;
   }
+}
+
+/// Display the feedback anchored at the position of the original child.
+///
+/// If feedback is identical to the child, then this means the feedback will
+/// exactly overlap the original child when the drag starts.
+///
+/// This is the default [DragAnchorStrategy].
+///
+/// See also:
+///
+///  * [DragAnchorStrategy], the typedef that this function implements.
+///  * [Draggable.dragAnchorStrategy], for which this is a built-in value.
+///
+/// Copied from Flutter
+Offset _childDragAnchorStrategy(
+  Draggable<Object> draggable,
+  BuildContext context,
+  Offset position,
+) {
+  final RenderBox renderObject = context.findRenderObject()! as RenderBox;
+  return renderObject.globalToLocal(position);
 }

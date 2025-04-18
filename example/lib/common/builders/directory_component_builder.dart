@@ -1,9 +1,9 @@
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/default_configurations/directory_widget.dart';
 import 'package:example/common/entities/directory.dart';
-import 'package:example/common/entities/file.dart';
 import 'package:example/common/entities/root.dart';
 import 'package:example/common/extensions/node_ext.dart';
+import 'package:example/common/extensions/num_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
@@ -21,12 +21,14 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
     if (context.details != null) {
       // Add a border to indicate in which portion of the target's height
       // the dragging node will be inserted.
+      final border = context.details?.mapDropPosition<BoxBorder?>(
+        whenAbove: () => Border(top: borderSide),
+        whenInside: () => Border.fromBorderSide(borderSide),
+        whenBelow: () => Border(bottom: borderSide),
+      );
       decoration = BoxDecoration(
-        border: context.details?.mapDropPosition<BoxBorder?>(
-          whenAbove: () => Border(top: borderSide),
-          whenInside: () => Border.fromBorderSide(borderSide),
-          whenBelow: () => Border(bottom: borderSide),
-        ),
+        border: border,
+        color: border == null ? null : Colors.blueAccent,
       );
     }
 
@@ -67,8 +69,6 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
   @override
   NodeDragGestures buildGestures(ComponentContext context) {
     final Node node = context.node;
-    final TreeController controller =
-        context.extraArgs['controller'] as TreeController;
     return NodeDragGestures(
       onWillAcceptWithDetails: (
         NovDragAndDropDetails<Node>? details,
@@ -85,13 +85,48 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       ) {
         if (details != null) {
           details.mapDropPosition<void>(
-            whenAbove: () {},
-            whenInside: () {
-              if (target is File) {
-                return;
+            whenAbove: () {
+              final NodeContainer parent = target.owner as NodeContainer;
+              final NodeContainer dragParent =
+                  details.draggedNode.owner as NodeContainer;
+              dragParent.removeWhere(
+                (n) => n.id == details.draggedNode.id,
+              );
+              final int index = target.index;
+              if (index != -1) {
+                parent.insert(
+                  index,
+                  details.draggedNode,
+                );
               }
             },
-            whenBelow: () {},
+            whenInside: () {
+              final NodeContainer dragParent =
+                  details.draggedNode.owner as NodeContainer;
+              dragParent.removeWhere(
+                (n) => n.id == details.draggedNode.id,
+                shouldNotify: true,
+              );
+              dragParent.notify();
+              (target as NodeContainer).add(details.draggedNode);
+            },
+            whenBelow: () {
+              final NodeContainer parent = target.owner as NodeContainer;
+              final NodeContainer dragParent =
+                  details.draggedNode.owner as NodeContainer;
+              dragParent.removeWhere(
+                (n) => n.id == details.draggedNode.id,
+              );
+              final int index = target.index;
+              if (index != -1) {
+                parent.insert(
+                  (index + 1).exactByLimit(
+                    parent.length,
+                  ),
+                  details.draggedNode,
+                );
+              }
+            },
           );
           return;
         }

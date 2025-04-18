@@ -3,23 +3,24 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:provider/provider.dart';
 
 /// Represents the leaf [Node] into the Tree
 class LeafNodeBuilder extends StatefulWidget {
-  final int depth;
-
   /// The [ContainerTreeNode] item
   final Node node;
 
   /// The owner of this [NodeContainer]
   final NodeContainer owner;
 
-  final TreeConfiguration configuration;
+  /// The depth of the current node
+  ///
+  /// shouldn't be different than the Node level
+  final int depth;
 
   LeafNodeBuilder({
     required this.node,
     required this.owner,
-    required this.configuration,
     required this.depth,
     super.key,
   });
@@ -31,11 +32,13 @@ class LeafNodeBuilder extends StatefulWidget {
 class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   @override
   Widget build(BuildContext context) {
+    final TreeConfiguration configuration =
+        Provider.of<TreeConfiguration>(context);
     return ListenableBuilder(
       listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
         final NodeComponentBuilder? builder =
-            widget.configuration.components.firstWhereOrNull(
+            configuration.components.firstWhereOrNull(
           (NodeComponentBuilder b) => b.validate(widget.node),
         );
         if (builder == null) {
@@ -48,19 +51,15 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           node: widget.node,
           depth: widget.depth,
           builder: builder,
-          configuration: widget.configuration,
+          configuration: configuration,
           child: NodeTargetBuilder(
             builder: builder,
             depth: widget.depth,
             node: widget.node,
-            configuration: widget.configuration,
+            configuration: configuration,
             owner: widget.owner,
           ),
         );
-
-        if (widget.configuration.addRepaintBoundaries) {
-          child = RepaintBoundary(child: child);
-        }
 
         final NodeConfiguration? nodeConfig =
             builder.buildConfigurations(ComponentContext(
@@ -68,7 +67,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           nodeContext: context,
           node: widget.node,
           details: null,
-          extraArgs: widget.configuration.extraArgs,
+          extraArgs: configuration.extraArgs,
         ));
 
         if (nodeConfig == null) {
@@ -93,10 +92,13 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
         }
 
         if (!nodeConfig.makeTappable) {
+          if (configuration.addRepaintBoundaries) {
+            child = RepaintBoundary(child: child);
+          }
           return child;
         }
 
-        return InkWell(
+        child = InkWell(
           onFocusChange: nodeConfig.onFocusChange,
           focusNode: nodeConfig.focusNode,
           focusColor: nodeConfig.focusColor,
@@ -141,6 +143,12 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           enableFeedback: true,
           child: wrapper ?? child,
         );
+
+        if (configuration.addRepaintBoundaries) {
+          child = RepaintBoundary(child: child);
+        }
+
+        return child;
       },
     );
   }

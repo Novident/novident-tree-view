@@ -16,9 +16,7 @@ class Root extends NodeContainer {
     void redepth(List<Node> unformattedChildren, int currentLevel) {
       for (int i = 0; i < unformattedChildren.length; i++) {
         final Node node = unformattedChildren.elementAt(i);
-        unformattedChildren[i] = node.copyWith(
-          details: node.details.copyWith(level: currentLevel + 1),
-        );
+        unformattedChildren[i] = node.cloneWithNewLevel(currentLevel + 1);
         if (node is NodeContainer && node.isNotEmpty) {
           redepth(node.children, currentLevel + 1);
         }
@@ -91,5 +89,14 @@ class Root extends NodeContainer {
             .toList(),
       }
     };
+  }
+
+  @override
+  Root cloneWithNewLevel(int level) {
+    return copyWith(
+      details: details.cloneWithNewLevel(
+        level,
+      ),
+    );
   }
 }

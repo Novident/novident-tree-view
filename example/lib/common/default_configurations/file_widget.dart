@@ -34,7 +34,7 @@ class _DirectoryTileState extends State<FileTile> {
           ),
           Expanded(
             child: Text(
-              widget.file.name,
+              "${widget.file.name}${widget.file.level}",
               maxLines: 1,
               softWrap: true,
               overflow: TextOverflow.fade,

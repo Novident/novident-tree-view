@@ -49,7 +49,7 @@ class _DirectoryTileState extends State<DirectoryTile> {
               ),
               Expanded(
                 child: Text(
-                  widget.directory.name,
+                  "${widget.directory.name}${widget.directory.level}",
                   maxLines: 1,
                   softWrap: true,
                   overflow: TextOverflow.fade,

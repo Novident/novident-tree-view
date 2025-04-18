@@ -23,7 +23,7 @@ TreeConfiguration treeConfigurationBuilder(
       extraArgs: <String, dynamic>{
         'controller': controller,
       },
-      indentConfiguration: IndentConfiguration(
+      indentConfiguration: IndentConfiguration.basic(
         indentPerLevel: 10,
         // we need to build a different indentation
         // for files, since folders has a leading

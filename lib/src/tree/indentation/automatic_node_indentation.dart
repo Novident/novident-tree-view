@@ -20,7 +20,6 @@ class AutomaticNodeIndentation extends StatelessWidget {
   /// Creates an indentation widget for tree nodes
   ///
   /// [node]: The tree node to determine indentation level
-  /// [configuration]: Indentation settings to apply
   /// [child]: The content widget to be indented
   const AutomaticNodeIndentation({
     required this.node,

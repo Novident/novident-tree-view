@@ -28,13 +28,20 @@ class IndentConfiguration {
   /// Nodes deeper than this level will be indented as if they were at this level
   final int maxLevel;
 
+  const IndentConfiguration({
+    required this.indentPerLevel,
+    required this.padding,
+    this.indentPerLevelBuilder,
+    this.maxLevel = largestIndentAccepted,
+  });
+
   /// Creates an indentation configuration
   ///
   /// [indentPerLevel]: Space per level (default 40px)
   /// [indentPerLevelBuilder]: Space per level that can be builded dynamically
   /// [maxLevel]: Maximum indentation level (default unlimited)
   /// [padding]: Additional padding around nodes (default zero)
-  IndentConfiguration({
+  const IndentConfiguration.basic({
     this.indentPerLevel = 20,
     this.indentPerLevelBuilder,
     this.maxLevel = largestIndentAccepted,

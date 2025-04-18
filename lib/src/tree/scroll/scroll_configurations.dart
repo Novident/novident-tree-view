@@ -22,7 +22,7 @@ class ScrollConfigs {
   ///
   /// [autoScrollSensitivity]: Controls how close to the edge auto-scrolling
   /// activates during drag operations (default: 100.0)
-  ScrollConfigs({
+  const ScrollConfigs({
     this.autoScrollSensitivity = 100.0,
   });
 

@@ -43,8 +43,10 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   /// child of [targetNode], a sibling, its parent, etc.
   final Offset dropPosition;
 
-  //
+  /// The exact global hovering position of [draggedNode] inside [targetBounds].
   final Offset globalDropPosition;
+
+  /// The exact global position of the targetBounds on the screen.
   final Offset globalTargetNodeOffset;
 
   /// The widget bounding box of [targetNode].
@@ -86,42 +88,86 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     );
   }
 
-  /// Determines the relative position of a dragged node with respect to a target widget
+  /// Determines the relative vertical position of a dragged node relative to a target widget
+  /// and returns a value based on the current drop position.
   ///
-  /// and returns a corresponding value based on whether the node is:
+  /// This method provides a flexible way to handle different drop zones by:
   ///
-  /// - Above the target
-  /// - Inside the target
-  /// - Below the target
+  /// 1. Calculating vertical position boundaries with customizable thresholds
+  /// 2. Evaluating the current drag position against these boundaries
+  /// 3. Executing the appropriate callback based on the position zone
   ///
-  /// The method divides the target widget's height into logical sections to determine
-  /// the position. The calculations can be customized using the provided parameters.
+  /// ## Parameters
   ///
-  /// - [whenAbove]: Callback that returns the value when the dragged node is above the target
-  /// - [whenInside]: Callback that returns the value when the dragged node is inside the target
-  /// - [whenBelow]: Callback that returns the value when the dragged node is below the target
-  P mapDropPosition<P>({
+  /// - [whenAbove]: Callback executed when node is in the upper threshold zone
+  /// - [whenInside]: Callback executed when node is in the main content zone
+  /// - [whenBelow]: Callback executed when node is in the lower threshold zone
+  /// - [aboveZoneHeight]: Size of the upper threshold zone (default: 7 logical pixels)
+  /// - [belowZoneHeight]: Size of the lower threshold zone (default: 5 logical pixels)
+  ///
+  /// ## Visual Representation
+  /// ```
+  /// ┌───────────────────────────────┐
+  /// │          Above Zone           │ (above zone height)
+  /// ├───────────────────────────────┤
+  /// │                               │
+  /// │                               │
+  /// │         Inside Zone           │ (main content area)
+  /// │                               │
+  /// │                               │
+  /// ├───────────────────────────────┤
+  /// │          Below Zone           │ (below zone height)
+  /// └───────────────────────────────┘
+  /// ```
+  ///
+  /// ## Usage Example
+  /// ```dart
+  /// final dropAction = details.mapDropPosition(
+  ///   whenAbove: () => 'InsertBefore',
+  ///   whenInside: () => 'AddAsChild',
+  ///   whenBelow: () => 'InsertAfter',
+  ///   aboveZoneHeight: 10,
+  ///   belowZoneHeight: 10,
+  /// );
+  /// ```
+  P? mapDropPosition<P>({
     required P Function() whenAbove,
     required P Function() whenInside,
     required P Function() whenBelow,
-    double upperBoundsLimiter = 5,
-    double lowerBoundsLimiter = 5,
+    bool ignoreInsideZone = false,
+    bool ignoreAboveZone = false,
+    bool ignoreBelowZone = false,
+    double aboveZoneHeight = 7,
+    double belowZoneHeight = 5,
   }) {
-    final double maxHeight = globalTargetNodeOffset.dy;
-    final double pointerVerticalOffset = globalDropPosition.dy;
-    final double upperBoundsPart =
-        globalTargetNodeOffset.dy + upperBoundsLimiter;
-    final double lowerBoundsPart =
-        (maxHeight + targetBounds.height) - lowerBoundsLimiter;
+    final double cursorPos = globalDropPosition.dy;
+    if (cursorPos < globalTargetNodeOffset.dy ||
+        cursorPos > (globalTargetNodeOffset.dy + targetBounds.height)) {
+      return null;
+    }
+    assert(aboveZoneHeight >= 0, 'Above zone cannot be negative');
+    assert(belowZoneHeight >= 0, 'Below zone cannot be negative');
+    final double effectiveAboveZone =
+        globalTargetNodeOffset.dy + aboveZoneHeight;
+    final double effectiveBelowZone =
+        (globalTargetNodeOffset.dy + targetBounds.height) - belowZoneHeight;
+    final bool isInAboveZone = cursorPos <= effectiveAboveZone;
+    final bool isInBelowZone = cursorPos >= effectiveBelowZone;
+    final bool isInsideZone = !isInAboveZone && !isInBelowZone;
 
-    if (pointerVerticalOffset < upperBoundsPart) {
+    if (isInAboveZone) {
+      if (ignoreAboveZone) return null;
       return whenAbove();
-    } else if (pointerVerticalOffset > upperBoundsPart &&
-        pointerVerticalOffset < lowerBoundsPart) {
+    }
+    if (isInsideZone) {
+      if (ignoreInsideZone) return null;
       return whenInside();
-    } else {
+    }
+    if (isInBelowZone) {
+      if (ignoreBelowZone) return null;
       return whenBelow();
     }
+    return null;
   }
 
   @override
@@ -131,6 +177,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
       ..add(DiagnosticsProperty<T>('draggedNode', draggedNode))
       ..add(DiagnosticsProperty<T>('targetNode', targetNode))
       ..add(DiagnosticsProperty<Offset>('dropPosition', dropPosition))
+      ..add(DiagnosticsProperty<Offset>(
+          'globalTargetNodeOffset', globalTargetNodeOffset))
       ..add(
           DiagnosticsProperty<Offset>('globalDropPosition', globalDropPosition))
       ..add(DiagnosticsProperty<Rect>('targetBounds', targetBounds));

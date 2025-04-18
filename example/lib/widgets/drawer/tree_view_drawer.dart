@@ -41,8 +41,10 @@ class TreeViewDrawer extends HookWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 5),
                   child: TreeView(
                     root: controller.root,
-                    configuration:
-                        treeConfigurationBuilder(controller, context),
+                    configuration: treeConfigurationBuilder(
+                      controller,
+                      context,
+                    ),
                   ),
                 ),
               ],

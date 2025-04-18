@@ -41,7 +41,6 @@ class NodeTargetBuilder extends StatefulWidget {
   State<NodeTargetBuilder> createState() => _NodeTargetBuilderState();
 }
 
-/// The state class for [NodeTargetBuilder] that manages drag-and-drop operations
 class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     with TickerProviderStateMixin<NodeTargetBuilder> {
   late NodeDragGestures _gestures;
@@ -68,7 +67,6 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
 
   @override
   void dispose() {
-    // Clean up the timer when the widget is disposed
     if (mounted) {
       timer?.cancel();
       timer = null;
@@ -78,7 +76,6 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
 
   /// Determines whether a dragged node can be accepted by this target
   ///
-  /// [gestures]: The drag gesture handlers
   /// [details]: Information about the dragged node
   /// Returns true if the node can be accepted
   bool _onWillAccept(DragTargetDetails<Node> details) {
@@ -90,50 +87,68 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     );
   }
 
-  /// Calculates drop position details based on current drag operation
+  /// Calculates precise drop position details during a drag-and-drop operation.
   ///
-  /// [draggedNode]: The node being dragged
-  /// [pointer]: Current pointer position in global coordinates
-  /// Returns detailed drop information including position and bounds
-  NovDragAndDropDetails<Node>? _getDropDetails(
-    Node draggedNode,
-    Offset pointer,
-  ) {
+  /// - [draggedNode] : The node currently being dragged. Must not be the same as the target node.
+  /// - [StateError] when:
+  ///   - The widget is not attached to the render tree
+  ///   - There's no active drag operation (inconsistent state)
+  NovDragAndDropDetails<Node>? _getDropDetails(Node draggedNode) {
+    // Prevent self-dropping scenarios
     if (draggedNode.id == widget.node.id) {
       return null;
     }
+
+    // Get the render box for coordinate conversions
     final RenderBox renderBox = context.findRenderObject()! as RenderBox;
+
+    // Safety check for widget attachment
     if (!renderBox.attached) {
       throw StateError(
         'The node ${widget.node.runtimeType}(${widget.node.id}) is '
         'not attached into the widgets tree',
       );
     }
+
+    // ## Coordinate Systems Explanation
+    // 1. `globalTargetNodeOffset`: Position of this widget in global coordinates
+    // 2. `dropPosition`: Cursor position converted to local widget coordinates
+    // 3. `globalDropPosition`: Raw cursor position in global coordinates
+    // 4. `targetBounds`: Size and position (at origin) of this widget
+    //
+    // Calculate this widget's global position using transform matrix
+    // More accurate than localToGlobal for widgets with transform ancestors
     final Vector3 vectorPosition =
         renderBox.getTransformTo(null).getTranslation();
     final Offset offset = Offset(vectorPosition.x, vectorPosition.y);
-    print('VectorPosition: ${vectorPosition.toString()}');
-    print('RenderBox offset: $offset');
-    final listener = DraggableListener.of(context);
-    print('User cursor offset: $pointer');
-    print(
-        'User Drag cursor offset in listener: ${listener.dragListener.globalPosition}');
 
+    // Access the drag state through our custom listener
+    //
+    // Note: We intentionally avoid DragTarget's position data due to inconsistencies
+    final DraggableListener listener = DraggableListener.of(context);
+
+    // Validate active drag state
+    if (!listener.dragListener.isDragging) {
+      throw StateError(
+        'NodeTarget receives a move event, but, '
+        'DraggableListener doesn\'t have any information about.',
+      );
+    }
+
+    // Compose all drop information
     return NovDragAndDropDetails<Node>(
-      draggedNode: listener.dragListener.draggedNode ?? draggedNode,
+      draggedNode: listener.dragListener.draggedNode!,
       globalTargetNodeOffset: offset,
       targetNode: widget.node,
-      dropPosition: renderBox.globalToLocal(
-        listener.dragListener.globalPosition ?? pointer,
-      ),
-      globalDropPosition: listener.dragListener.globalPosition ?? pointer,
+      dropPosition:
+          renderBox.globalToLocal(listener.dragListener.globalPosition!),
+      globalDropPosition: listener.dragListener.globalPosition!,
       targetBounds: Offset.zero & renderBox.size,
     );
   }
 
   /// Handles drag movement over the target area
   ///
-  /// [gestures]: The drag gesture handlers
   /// [details]: Information about the current drag operation
   void _onMove(DragTargetDetails<Node> details) {
     _startOrCancelOnHoverExpansion(cancel: true);
@@ -142,10 +157,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
     if (_details != null && details.data != _details!.draggedNode) return;
 
     setState(() {
-      _details = _getDropDetails(
-        details.data,
-        details.offset,
-      );
+      _details = _getDropDetails(details.data);
     });
 
     _startOrCancelOnHoverExpansion();
@@ -154,7 +166,6 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
 
   /// Handles node drop acceptance
   ///
-  /// [gestures]: The drag gesture handlers
   /// [details]: Information about the dropped node
   void _onAccept(DragTargetDetails<Node> details) {
     _startOrCancelOnHoverExpansion(cancel: true);
@@ -175,7 +186,6 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
 
   /// Handles when a dragged node leaves the target area
   ///
-  /// [gestures]: The drag gesture handlers
   /// [data]: The node that was being dragged
   void _onLeave(Node? data) {
     if (_details == null || data == null || _details!.draggedNode != data) {
@@ -205,13 +215,15 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
   ///
   /// [cancel]: If true, cancels any pending expansion
   void _startOrCancelOnHoverExpansion({bool cancel = false}) {
-    // Skip if auto-expansion is disabled or node isn't a container
-    if (!widget.configuration.draggableConfigurations.allowAutoExpandOnHover ||
-        widget.node is! NodeContainer) return;
-
-    if (cancel) {
+    if (cancel && timer != null) {
       timer?.cancel();
       timer = null;
+      return;
+    }
+
+    // Skip if auto-expansion is disabled or node isn't a container
+    if (!widget.configuration.draggableConfigurations.allowAutoExpandOnHover ||
+        widget.node is! NodeContainer) {
       return;
     }
 

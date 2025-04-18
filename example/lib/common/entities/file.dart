@@ -68,7 +68,7 @@ class File extends Node implements DragAndDropMixin {
 
   @override
   String toString() {
-    return 'File(name: $name)';
+    return 'File(name: $name, depth: $level)';
   }
 
   @override
@@ -83,12 +83,12 @@ class File extends Node implements DragAndDropMixin {
 
   @override
   int countAllNodes({required Predicate countNode}) {
-    return 1;
+    return countNode(this) ? 1 : 0;
   }
 
   @override
   int countNodes({required Predicate countNode}) {
-    return 1;
+    return countNode(this) ? 1 : 0;
   }
 
   @override
@@ -119,5 +119,12 @@ class File extends Node implements DragAndDropMixin {
   @override
   File? visitNode({required Predicate shouldGetNode}) {
     return shouldGetNode(this) ? this : null;
+  }
+
+  @override
+  File cloneWithNewLevel(int level) {
+    return copyWith(
+      details: details.cloneWithNewLevel(level),
+    );
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_tree_view/src/tree/builders/component_builder.dart';
 
 const int kDefaultExpandDelay = 625;
 
@@ -54,11 +53,6 @@ class TreeConfiguration {
   /// When true, shows a special section for adding nodes at the root level (level 0)
   final bool useRootSection;
 
-  /// Key generator for node widget state preservation
-  ///
-  /// Generates unique keys to maintain node state across rebuilds
-  final PageStorageKey<String>? Function(Node node)? nodeWidgetKey;
-
   /// Placeholder widget for empty root state
   ///
   /// Displayed when the tree has no root nodes and [useRootSection] is enabled
@@ -84,15 +78,14 @@ class TreeConfiguration {
   /// Creates a tree configuration
   const TreeConfiguration({
     required this.components,
-    required this.extraArgs,
-    required this.indentConfiguration,
-    required this.onHoverContainer,
-    required this.scrollConfigs,
     required this.draggableConfigurations,
+    this.indentConfiguration = const IndentConfiguration.basic(),
+    this.onHoverContainer,
+    this.scrollConfigs = const ScrollConfigs(),
+    this.extraArgs = const <String, dynamic>{},
     this.activateDragAndDropFeature = true,
     this.addRepaintBoundaries = false,
     this.activateAutoScrollFeature = false,
-    this.nodeWidgetKey,
     this.useRootSection = false,
     this.shouldDisplayNodeChildrenCount = false,
     this.onHoverContainerExpansionDelay = kDefaultExpandDelay,
@@ -114,7 +107,6 @@ class TreeConfiguration {
     bool? activateDragAndDropFeature,
     bool? useRootSection,
     bool? activateAutoScrollFeature,
-    PageStorageKey<String>? Function(Node node)? nodeWidgetKey,
     Widget? onDetectEmptyRoot,
     int? onHoverContainerExpansionDelay,
     IndentConfiguration? indentConfiguration,
@@ -134,7 +126,6 @@ class TreeConfiguration {
       activateDragAndDropFeature:
           activateDragAndDropFeature ?? this.activateDragAndDropFeature,
       useRootSection: useRootSection ?? this.useRootSection,
-      nodeWidgetKey: nodeWidgetKey ?? this.nodeWidgetKey,
       onDetectEmptyRoot: onDetectEmptyRoot ?? this.onDetectEmptyRoot,
       onHoverContainerExpansionDelay:
           onHoverContainerExpansionDelay ?? this.onHoverContainerExpansionDelay,
@@ -159,7 +150,6 @@ class TreeConfiguration {
             shouldDisplayNodeChildrenCount &&
         other.activateDragAndDropFeature == activateDragAndDropFeature &&
         other.useRootSection == useRootSection &&
-        other.nodeWidgetKey == nodeWidgetKey &&
         other.onDetectEmptyRoot == onDetectEmptyRoot &&
         other.onHoverContainerExpansionDelay ==
             onHoverContainerExpansionDelay &&
@@ -182,7 +172,6 @@ class TreeConfiguration {
       shouldDisplayNodeChildrenCount,
       activateDragAndDropFeature,
       useRootSection,
-      nodeWidgetKey,
       onDetectEmptyRoot,
       onHoverContainerExpansionDelay,
       indentConfiguration,
