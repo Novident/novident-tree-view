@@ -1,9 +1,5 @@
 ## ⛓️‍💥 Nodes declaration
 
-In this section we simply define which nodes will be used by the `TreeView` to display our file tree.
-
-_If you don't know nothing about `DragAndDropMixin` see [DragAndDropMixin](https://github.com/Novident/novident-tree-view/doc/nodes.md#Drag-and-Drop-capibility)._
-
 ### 📄 File
 
 As we know, a `File` is simply a type of file that has `content`, a `name` (you can add the rest yourself), and a `creation date`. It doesn't accept any type of `File`/`Node` insertion within it.

@@ -4,7 +4,9 @@ This package provides a flexible solution for displaying hierarchical data struc
 
 ## 💡 Motivation 
 
-We've investigated several alternatives that allow for convenient node tree creation with a standards-compliant implementation. However, we couldn't find one. Most of these implementations required initializing a controller or similar to allow for a proper flow of actions within the tree.
+We've investigated several alternatives that allow for convenient node tree creation with a standards-compliant implementation. 
+
+However, we couldn't find one. Most of these implementations required initializing a controller or similar to allow for a proper flow of actions within the tree.
 
 However, for **Novident**, this isn't what we're looking for. Our goal is to create a common solution that allows us to:
 
@@ -13,7 +15,9 @@ However, for **Novident**, this isn't what we're looking for. Our goal is to cre
 * Have a common operation flow (insert, delete, move, or update) for nodes within the tree that depends on the user's implementation and not the package (complete control over them)
 * Better support for Node configuration
 
-This is why we decided to create this package, which adds everything **Novident** requires in one place. In this package, we can simply add a few configurations and leave everything else to it, as our own logic can create a beautiful file/node tree without too much code or the need for drivers.
+This is why we decided to create this package, which adds everything **Novident** requires in one place. 
+
+In this package, we can simply add a few configurations and leave everything else to it, as our own logic can create a beautiful file/node tree without too much code or the need for drivers.
 
 ## 📦 Installation 
 
@@ -30,15 +34,15 @@ dependencies:
 
 Since there is too much to explain and implement, we prefer to give to every section a separate document to dedicate correctly explanations about them. 
 
-* [nodes](https://github.com/Novident/novident-tree-view/blob/main/doc/nodes.md)
-* [tree_configuration](https://github.com/Novident/novident-tree-view/blob/main/doc/tree_configuration.md)
-* [draggable_configurations](https://github.com/Novident/novident-tree-view/blob/main/doc/draggable_configurations.md)
-* [nodes_gestures](https://github.com/Novident/novident-tree-view/blob/main/doc/nodes_gestures.md)
-* [indentation_configuration](https://github.com/Novident/novident-tree-view/blob/main/doc/indentation_configuration.md)
+* [nodes](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes.md)
+* [tree_configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/tree_configuration.md)
+* [draggable_configurations](https://github.com/Novident/novident-tree-view/blob/master/doc/draggable_configurations.md)
+* [nodes_gestures](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes_gestures.md)
+* [indentation_configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/indentation_configuration.md)
 
 ### Recipes
 
-* [Tree Files](https://github.com/Novident/novident-tree-view/blob/main/doc/recipes/tree_files/)
+* [Tree Files](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/)
 
 _More recipes will be here later_
 
