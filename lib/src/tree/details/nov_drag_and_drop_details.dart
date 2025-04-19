@@ -147,26 +147,25 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     }
     assert(aboveZoneHeight >= 0, 'Above zone cannot be negative');
     assert(belowZoneHeight >= 0, 'Below zone cannot be negative');
-    final double effectiveAboveZone =
-        globalTargetNodeOffset.dy + aboveZoneHeight;
+    final double effectiveAboveZone = globalTargetNodeOffset.dy + aboveZoneHeight;
     final double effectiveBelowZone =
         (globalTargetNodeOffset.dy + targetBounds.height) - belowZoneHeight;
     final bool isInAboveZone = cursorPos <= effectiveAboveZone;
     final bool isInBelowZone = cursorPos >= effectiveBelowZone;
-    final bool isInsideZone = !isInAboveZone && !isInBelowZone;
+    final bool isInsideZone = ignoreBelowZone && ignoreAboveZone && !ignoreInsideZone
+        ? true
+        : !isInAboveZone && !isInBelowZone;
 
-    if (isInAboveZone) {
-      if (ignoreAboveZone) return null;
+    if (isInAboveZone && !ignoreAboveZone) {
       return whenAbove();
     }
-    if (isInsideZone) {
-      if (ignoreInsideZone) return null;
+    if (isInsideZone && !ignoreInsideZone) {
       return whenInside();
     }
-    if (isInBelowZone) {
-      if (ignoreBelowZone) return null;
+    if (isInBelowZone && !ignoreBelowZone) {
       return whenBelow();
     }
+
     return null;
   }
 
@@ -177,10 +176,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
       ..add(DiagnosticsProperty<T>('draggedNode', draggedNode))
       ..add(DiagnosticsProperty<T>('targetNode', targetNode))
       ..add(DiagnosticsProperty<Offset>('dropPosition', dropPosition))
-      ..add(DiagnosticsProperty<Offset>(
-          'globalTargetNodeOffset', globalTargetNodeOffset))
-      ..add(
-          DiagnosticsProperty<Offset>('globalDropPosition', globalDropPosition))
+      ..add(DiagnosticsProperty<Offset>('globalTargetNodeOffset', globalTargetNodeOffset))
+      ..add(DiagnosticsProperty<Offset>('globalDropPosition', globalDropPosition))
       ..add(DiagnosticsProperty<Rect>('targetBounds', targetBounds));
   }
 
@@ -197,8 +194,7 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     return NovDragAndDropDetails<T>(
       draggedNode: draggedNode ?? this.draggedNode,
       globalDropPosition: globalDropPosition ?? this.globalDropPosition,
-      globalTargetNodeOffset:
-          globalTargetNodeOffset ?? this.globalTargetNodeOffset,
+      globalTargetNodeOffset: globalTargetNodeOffset ?? this.globalTargetNodeOffset,
       targetNode: targetNode ?? this.targetNode,
       dropPosition: dropPosition ?? this.dropPosition,
       targetBounds: targetBounds ?? this.targetBounds,

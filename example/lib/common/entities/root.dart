@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
@@ -6,7 +7,9 @@ class Root extends NodeContainer {
     required super.children,
   }) : super(details: NodeDetails.byId(id: 'root', level: -1)) {
     for (final Node child in children) {
-      child.owner = this;
+      if (child.owner != this) {
+        child.owner = this;
+      }
     }
     redepthChildren(checkFirst: true);
   }
@@ -45,7 +48,7 @@ class Root extends NodeContainer {
       return false;
     }
     if (identical(this, other)) return true;
-    return listEquals(children, other.children);
+    return _equality.equals(children, other.children);
   }
 
   @override
@@ -100,3 +103,5 @@ class Root extends NodeContainer {
     );
   }
 }
+
+const ListEquality<Node> _equality = ListEquality<Node>();

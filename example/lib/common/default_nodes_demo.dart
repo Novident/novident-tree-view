@@ -5,7 +5,7 @@ import 'package:example/common/entities/directory.dart';
 import 'package:example/common/entities/file.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
-final List<Node> defaultNodes = [
+late final List<Node> defaultNodes = <Node>[
   Directory(
     details: NodeDetails.zero(),
     name: 'Directory',
@@ -36,7 +36,27 @@ final List<Node> defaultNodes = [
     details: NodeDetails.withLevel(0),
     name: 'Directory',
     createAt: DateTime.now(),
-    children: List.from([]),
+    children: List.from([
+      Directory(
+        children: [
+          File(
+            details: NodeDetails.withLevel(2),
+            name: 'Sub file',
+            content: r'[{"insert":"\n"}]',
+            createAt: DateTime.now(),
+          ),
+        ],
+        details: NodeDetails(level: 1),
+        name: 'Sub directory',
+        createAt: DateTime.now(),
+      ),
+      File(
+        details: NodeDetails.withLevel(1),
+        name: 'Sub file',
+        content: r'[{"insert":"\n"}]',
+        createAt: DateTime.now(),
+      ),
+    ]),
   ),
   File(
     details: NodeDetails.withLevel(0),

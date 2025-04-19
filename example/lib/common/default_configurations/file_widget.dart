@@ -13,10 +13,10 @@ class FileTile extends StatefulWidget {
   });
 
   @override
-  State<FileTile> createState() => _DirectoryTileState();
+  State<FileTile> createState() => _FileTileState();
 }
 
-class _DirectoryTileState extends State<FileTile> {
+class _FileTileState extends State<FileTile> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -34,7 +34,7 @@ class _DirectoryTileState extends State<FileTile> {
           ),
           Expanded(
             child: Text(
-              "${widget.file.name}${widget.file.level}",
+              "${widget.file.name} ${widget.file.level}",
               maxLines: 1,
               softWrap: true,
               overflow: TextOverflow.fade,

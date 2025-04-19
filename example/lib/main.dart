@@ -4,8 +4,7 @@ import 'package:example/common/default_nodes_demo.dart';
 import 'package:example/common/entities/root.dart';
 import 'package:example/widgets/views/android_view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart'
-    show FlutterQuillLocalizations;
+import 'package:flutter_quill/flutter_quill.dart' show FlutterQuillLocalizations;
 import 'widgets/views/desktop_view.dart';
 
 void main() {

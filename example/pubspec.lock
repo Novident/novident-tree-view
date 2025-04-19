@@ -369,10 +369,10 @@ packages:
     dependency: "direct main"
     description:
       name: novident_nodes
-      sha256: f6f6762c7b08eb869c6415c81421d674e72167b07c76c6454cb1cf01630cbacd
+      sha256: b1f586c25cc7dea09d02f4841d6664c70d21fbe69f38d52a2edb9ef6506b332b
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.4"
   novident_tree_view:
     dependency: "direct main"
     description:

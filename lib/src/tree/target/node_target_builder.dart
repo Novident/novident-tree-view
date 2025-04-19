@@ -41,8 +41,7 @@ class NodeTargetBuilder extends StatefulWidget {
   State<NodeTargetBuilder> createState() => _NodeTargetBuilderState();
 }
 
-class _NodeTargetBuilderState extends State<NodeTargetBuilder>
-    with TickerProviderStateMixin<NodeTargetBuilder> {
+class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   late NodeDragGestures _gestures;
 
   @override
@@ -276,38 +275,34 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder>
       );
     }
 
-    return Column(
-      children: <Widget>[
-        DragTarget<Node>(
-          onWillAcceptWithDetails: (DragTargetDetails<Node> details) {
-            if (details.data.id == widget.node.id) {
-              return false;
-            }
-            return _onWillAccept(
-              details,
-            );
-          },
-          onAcceptWithDetails: (DragTargetDetails<Node> details) => _onAccept(
-            details,
-          ),
-          onLeave: (Node? data) => _onLeave(
-            data,
-          ),
-          onMove: (DragTargetDetails<Node> details) => _onMove(
-            details,
-          ),
-          builder: (
-            BuildContext context,
-            List<Node?> candidateData,
-            List<dynamic> rejectedData,
-          ) {
-            return widget.builder.build(buildContext(
-              rejectedData,
-              candidateData,
-            ));
-          },
-        ),
-      ],
+    return DragTarget<Node>(
+      onWillAcceptWithDetails: (DragTargetDetails<Node> details) {
+        if (details.data.id == widget.node.id) {
+          return false;
+        }
+        return _onWillAccept(
+          details,
+        );
+      },
+      onAcceptWithDetails: (DragTargetDetails<Node> details) => _onAccept(
+        details,
+      ),
+      onLeave: (Node? data) => _onLeave(
+        data,
+      ),
+      onMove: (DragTargetDetails<Node> details) => _onMove(
+        details,
+      ),
+      builder: (
+        BuildContext context,
+        List<Node?> candidateData,
+        List<dynamic> rejectedData,
+      ) {
+        return widget.builder.build(buildContext(
+          rejectedData,
+          candidateData,
+        ));
+      },
     );
   }
 }

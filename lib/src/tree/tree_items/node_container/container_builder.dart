@@ -36,16 +36,15 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty('Tree depth', widget.depth));
     properties.add(DiagnosticsProperty('owner', widget.owner));
     properties.add(DiagnosticsProperty('container', widget.nodeContainer));
   }
 
   @override
   Widget build(BuildContext context) {
-    final TreeConfiguration configuration =
-        Provider.of<TreeConfiguration>(context);
-    final NodeComponentBuilder? builder =
-        configuration.components.firstWhereOrNull(
+    final TreeConfiguration configuration = Provider.of<TreeConfiguration>(context);
+    final NodeComponentBuilder? builder = configuration.components.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(widget.nodeContainer),
     );
     if (builder == null) {
@@ -59,33 +58,30 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       depth: widget.depth,
       builder: builder,
       configuration: configuration,
-      child: NodeTargetBuilder(
+      child: ListenableBuilder(
+          listenable: widget.nodeContainer,
+          builder: (context, snapshot) {
+            return NodeTargetBuilder(
+              depth: widget.depth,
+              builder: builder,
+              node: widget.nodeContainer,
+              configuration: configuration,
+              owner: widget.owner,
+            );
+          }),
+    );
+
+    final NodeConfiguration? nodeConfig = builder.buildConfigurations(
+      ComponentContext(
         depth: widget.depth,
-        builder: builder,
+        nodeContext: context,
         node: widget.nodeContainer,
-        configuration: configuration,
-        owner: widget.owner,
+        details: null,
+        extraArgs: configuration.extraArgs,
       ),
     );
 
-    final NodeConfiguration? nodeConfig =
-        builder.buildConfigurations(ComponentContext(
-      depth: widget.depth,
-      nodeContext: context,
-      node: widget.nodeContainer,
-      details: null,
-      extraArgs: configuration.extraArgs,
-    ));
     if (nodeConfig != null) {
-      final Widget? wrapper = nodeConfig.nodeWrapper?.call(
-        widget.nodeContainer,
-        context,
-        child,
-      );
-      if (wrapper != null) {
-        child = wrapper;
-      }
-
       if (nodeConfig.makeTappable) {
         child = InkWell(
           onFocusChange: nodeConfig.onFocusChange,
@@ -94,8 +90,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           onTap: () => nodeConfig.onTap?.call(context),
           onTapDown: (TapDownDetails details) =>
               nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) =>
-              nodeConfig.onTapUp?.call(details, context),
+          onTapUp: (TapUpDetails details) => nodeConfig.onTapUp?.call(details, context),
           onTapCancel: () => nodeConfig.onTapCancel?.call(context),
           onDoubleTap: nodeConfig.onDoubleTap == null
               ? null
@@ -117,8 +112,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null
               ? null
               : () => nodeConfig.onSecondaryTapCancel?.call(context),
-          onHover: (bool isHovered) =>
-              nodeConfig.onHover?.call(isHovered, context),
+          onHover: (bool isHovered) => nodeConfig.onHover?.call(isHovered, context),
           mouseCursor: nodeConfig.mouseCursor,
           hoverDuration: nodeConfig.hoverDuration,
           hoverColor: nodeConfig.hoverColor,
@@ -143,10 +137,10 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       }
     }
 
-    child = ListenableBuilder(
+    return ListenableBuilder(
       listenable: widget.nodeContainer,
-      builder: (BuildContext ctx, Widget? _) {
-        return Column(
+      builder: (BuildContext context, Widget? _) {
+        child = Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -158,43 +152,55 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
                     nodeContext: context,
                     node: widget.nodeContainer,
                     details: null,
+                    extraArgs: configuration.extraArgs,
                   ),
                 ) ??
                 Visibility(
                   visible: widget.nodeContainer.isExpanded,
+                  maintainSize: false,
+                  maintainState: false,
                   child: ListView.builder(
-                    shrinkWrap: true,
-                    scrollDirection: Axis.vertical,
                     physics: const NeverScrollableScrollPhysics(),
                     primary: false,
-                    itemCount: widget.nodeContainer.children.length,
+                    shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
+                    clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
+                        Clip.hardEdge,
+                    itemCount: widget.nodeContainer.length,
                     itemBuilder: (BuildContext context, int index) {
-                      final Node node =
-                          widget.nodeContainer.children.elementAt(index);
+                      final Node node = widget.nodeContainer.elementAt(
+                        index,
+                      );
                       if (node is! NodeContainer) {
                         return LeafNodeBuilder(
-                          depth: widget.depth + 1,
+                          depth: node.level + 1,
                           node: node,
                           owner: widget.nodeContainer,
                         );
                       } else
                         return ContainerBuilder(
-                          depth: widget.depth + 1,
-                          nodeContainer: node,
+                          depth: node.level + 1,
+                          // the owner is this container
                           owner: widget.nodeContainer,
+                          // the sub node
+                          nodeContainer: node,
                         );
                     },
                   ),
                 )
           ],
         );
+
+        final Widget? wrapper = nodeConfig?.nodeWrapper?.call(
+          widget.nodeContainer,
+          context,
+          child,
+        );
+
+        if (wrapper != null) {
+          child = wrapper;
+        }
+        return child;
       },
     );
-
-    if (configuration.addRepaintBoundaries) {
-      child = RepaintBoundary(child: child);
-    }
-
-    return child;
   }
 }

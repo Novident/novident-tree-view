@@ -17,7 +17,7 @@ dependencies:
   meta: ^1.16.0
   collection: ^1.19.1
   provider: ^6.1.4
-  novident_nodes: ^1.0.2
+  novident_nodes: ^1.0.4
   sliver_tools: ^0.2.12
 
 dev_dependencies:

@@ -48,10 +48,11 @@ class DraggableConfigurations {
     this.preferLongPressDraggable = false,
     this.childDragAnchorStrategy = _childDragAnchorStrategy,
     this.feedbackOffset = Offset.zero,
-    this.longPressDelay = kLongPressTimeout,
+    int? longPressDelay,
     this.axis,
     this.childWhenDraggingBuilder,
-  });
+  }) : longPressDelay =
+            longPressDelay ?? (preferLongPressDraggable ? kLongPressTimeout : 0);
 
   DraggableConfigurations copyWith({
     Widget Function(Node node)? buildDragFeedbackWidget,
@@ -64,19 +65,14 @@ class DraggableConfigurations {
     Widget Function(Node node)? childWhenDraggingBuilder,
   }) {
     return DraggableConfigurations(
-      buildDragFeedbackWidget:
-          buildDragFeedbackWidget ?? this.buildDragFeedbackWidget,
-      childDragAnchorStrategy:
-          childDragAnchorStrategy ?? this.childDragAnchorStrategy,
+      buildDragFeedbackWidget: buildDragFeedbackWidget ?? this.buildDragFeedbackWidget,
+      childDragAnchorStrategy: childDragAnchorStrategy ?? this.childDragAnchorStrategy,
       feedbackOffset: feedbackOffset ?? this.feedbackOffset,
       longPressDelay: longPressDelay ?? this.longPressDelay,
       axis: axis ?? this.axis,
-      allowAutoExpandOnHover:
-          allowAutoExpandOnHover ?? this.allowAutoExpandOnHover,
-      preferLongPressDraggable:
-          preferLongPressDraggable ?? this.preferLongPressDraggable,
-      childWhenDraggingBuilder:
-          childWhenDraggingBuilder ?? this.childWhenDraggingBuilder,
+      allowAutoExpandOnHover: allowAutoExpandOnHover ?? this.allowAutoExpandOnHover,
+      preferLongPressDraggable: preferLongPressDraggable ?? this.preferLongPressDraggable,
+      childWhenDraggingBuilder: childWhenDraggingBuilder ?? this.childWhenDraggingBuilder,
     );
   }
 

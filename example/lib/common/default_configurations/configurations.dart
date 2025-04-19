@@ -15,7 +15,6 @@ TreeConfiguration treeConfigurationBuilder(
     TreeConfiguration(
       activateDragAndDropFeature: true,
       addRepaintBoundaries: true,
-      activateAutoScrollFeature: false,
       components: <NodeComponentBuilder>[
         DirectoryComponentBuilder(),
         FileComponentBuilder(),
@@ -23,6 +22,10 @@ TreeConfiguration treeConfigurationBuilder(
       extraArgs: <String, dynamic>{
         'controller': controller,
       },
+      treeListViewConfigurations: ListViewConfigurations(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+      ),
       indentConfiguration: IndentConfiguration.basic(
         indentPerLevel: 10,
         // we need to build a different indentation
@@ -37,7 +40,6 @@ TreeConfiguration treeConfigurationBuilder(
           return null;
         },
       ),
-      scrollConfigs: ScrollConfigs(),
       onHoverContainer: (Node node) {
         if (node is NodeContainer) {
           node.asDirectory.openOrClose(forceOpen: true);
@@ -48,18 +50,9 @@ TreeConfiguration treeConfigurationBuilder(
         buildDragFeedbackWidget: (Node node) => Material(
           type: MaterialType.canvas,
           child: Text(
-            node.runtimeType.toString() + node.level.toString(),
+            '${node.runtimeType} ${node.level}',
           ),
         ),
-        childDragAnchorStrategy: (
-          Draggable<Object> draggable,
-          BuildContext context,
-          Offset position,
-        ) {
-          final RenderBox renderObject =
-              context.findRenderObject()! as RenderBox;
-          return renderObject.globalToLocal(position);
-        },
         allowAutoExpandOnHover: true,
         preferLongPressDraggable: isMobile,
       ),

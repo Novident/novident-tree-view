@@ -1,5 +1,4 @@
-import 'package:example/common/entities/file.dart';
-import 'package:flutter/foundation.dart';
+import 'package:collection/collection.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
@@ -16,7 +15,9 @@ class Directory extends NodeContainer implements DragAndDropMixin {
     bool isExpanded = false,
   }) : _isExpanded = isExpanded {
     for (final Node child in children) {
-      child.owner = this;
+      if (child.owner != this) {
+        child.owner = this;
+      }
     }
     redepthChildren(checkFirst: true);
   }
@@ -34,9 +35,7 @@ class Directory extends NodeContainer implements DragAndDropMixin {
     void redepth(List<Node> unformattedChildren, int currentLevel) {
       for (int i = 0; i < unformattedChildren.length; i++) {
         final Node node = unformattedChildren.elementAt(i);
-        unformattedChildren[i] = node.cloneWithNewLevel(
-          currentLevel + 1,
-        );
+        unformattedChildren[i] = node.cloneWithNewLevel(currentLevel + 1);
         if (node is NodeContainer && node.isNotEmpty) {
           redepth(node.children, currentLevel + 1);
         }
@@ -106,7 +105,7 @@ class Directory extends NodeContainer implements DragAndDropMixin {
   Directory clone() {
     return Directory(
       children: children,
-      details: NodeDetails.withLevel(level),
+      details: details,
       isExpanded: _isExpanded,
       name: name,
       createAt: createAt,
@@ -118,7 +117,8 @@ class Directory extends NodeContainer implements DragAndDropMixin {
     if (other is! Directory) {
       return false;
     }
-    return listEquals(children, other.children) &&
+    if (identical(this, other)) return true;
+    return _equality.equals(children, other.children) &&
         name == other.name &&
         details == other.details &&
         createAt == other.createAt &&
@@ -126,13 +126,12 @@ class Directory extends NodeContainer implements DragAndDropMixin {
   }
 
   @override
-  int get hashCode => Object.hashAllUnordered([
-        details,
-        createAt,
-        name,
-        details,
-        _isExpanded,
-      ]);
+  int get hashCode =>
+      details.hashCode ^
+      createAt.hashCode ^
+      name.hashCode ^
+      children.hashCode ^
+      _isExpanded.hashCode;
 
   @override
   Map<String, dynamic> toJson() {
@@ -148,9 +147,15 @@ class Directory extends NodeContainer implements DragAndDropMixin {
   @override
   Directory cloneWithNewLevel(int level) {
     return copyWith(
+      children: children,
+      isExpanded: isExpanded,
+      name: name,
+      createAt: createAt,
       details: details.cloneWithNewLevel(
         level,
       ),
     );
   }
 }
+
+const ListEquality<Node> _equality = ListEquality<Node>();

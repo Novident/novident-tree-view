@@ -50,6 +50,7 @@ class File extends Node implements DragAndDropMixin {
     if (other is! File) {
       return false;
     }
+    if(identical(this, other)) return true;
     return details == other.details &&
         content == other.content &&
         name == other.name &&
@@ -57,14 +58,11 @@ class File extends Node implements DragAndDropMixin {
   }
 
   @override
-  int get hashCode => Object.hashAllUnordered(
-        [
-          details,
-          content,
-          name,
-          createAt,
-        ],
-      );
+  int get hashCode =>
+      details.hashCode ^
+      createAt.hashCode ^
+      name.hashCode ^
+      content.hashCode;
 
   @override
   String toString() {

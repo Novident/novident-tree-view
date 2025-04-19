@@ -3,19 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-const int kDefaultExpandDelay = 625;
+const int _kDefaultExpandDelay = 625;
 
 /// Central configuration class for tree view behavior and operations
-///
-/// Controls all aspects of tree functionality including:
-/// - Node rendering and styling
-/// - Drag-and-drop behavior
-/// - Scroll interactions
-/// - Node lifecycle management
-/// - Visual customization
 @immutable
 class TreeConfiguration {
   final List<NodeComponentBuilder> components;
+  final ListViewConfigurations treeListViewConfigurations;
 
   /// These are args that usually we want to use in all node builders
   final Map<String, dynamic> extraArgs;
@@ -23,35 +17,18 @@ class TreeConfiguration {
   /// Whether to wrap each row in a RepaintBoundary.
   final bool addRepaintBoundaries;
 
-  /// Determine if we should autoscroll when necessary during
-  /// dragging events
-  final bool activateAutoScrollFeature;
-
   /// Callback when hovering over a NodeContainer
   ///
   /// Triggered when a drag operation hovers over a container node
   final void Function(NodeContainer node)? onHoverContainer;
 
-  /// Configuration parameters for scroll behavior
-  final ScrollConfigs scrollConfigs;
-
   /// Settings for drag-and-drop operations
   final DraggableConfigurations draggableConfigurations;
-
-  /// Toggles visibility of child count badges on NodeContainers
-  ///
-  /// When enabled, displays a count of child nodes in container headers
-  final bool shouldDisplayNodeChildrenCount;
 
   /// Master switch for drag-and-drop functionality
   ///
   /// Set to false to completely disable drag-and-drop features
   final bool activateDragAndDropFeature;
-
-  /// Enables/disables the root insertion area
-  ///
-  /// When true, shows a special section for adding nodes at the root level (level 0)
-  final bool useRootSection;
 
   /// Placeholder widget for empty root state
   ///
@@ -66,75 +43,53 @@ class TreeConfiguration {
   /// Indentation styling configuration
   final IndentConfiguration indentConfiguration;
 
-  /// Custom drop target area for root-level drops
-  ///
-  /// Widget displayed when dragging nodes outside normal node boundaries
-  final Widget Function(NovDragAndDropDetails<Node> details)?
-      rootTargetToDropSection;
-
-  /// Scroll physics for the main tree view
-  final ScrollPhysics? physics;
-
   /// Creates a tree configuration
-  const TreeConfiguration({
+  TreeConfiguration({
     required this.components,
     required this.draggableConfigurations,
+    this.treeListViewConfigurations = const ListViewConfigurations(),
     this.indentConfiguration = const IndentConfiguration.basic(),
     this.onHoverContainer,
-    this.scrollConfigs = const ScrollConfigs(),
     this.extraArgs = const <String, dynamic>{},
     this.activateDragAndDropFeature = true,
     this.addRepaintBoundaries = false,
-    this.activateAutoScrollFeature = false,
-    this.useRootSection = false,
-    this.shouldDisplayNodeChildrenCount = false,
-    this.onHoverContainerExpansionDelay = kDefaultExpandDelay,
-    this.rootTargetToDropSection,
-    this.physics,
+    this.onHoverContainerExpansionDelay = _kDefaultExpandDelay,
     this.onDetectEmptyRoot,
-  });
+  }) : assert(
+          components.isNotEmpty,
+          'Nodes cannot be rendered if there\'s no builders for them',
+        );
 
   /// Creates a modified copy of the configuration
   ///
   /// Any parameter not specified will retain its original value
   TreeConfiguration copyWith({
     List<NodeComponentBuilder>? components,
+    ListViewConfigurations? treeListViewConfigurations,
     Map<String, dynamic>? extraArgs,
     void Function(Node node)? onHoverContainer,
-    ScrollConfigs? scrollConfigs,
     DraggableConfigurations? draggableConfigurations,
-    bool? shouldDisplayNodeChildrenCount,
     bool? activateDragAndDropFeature,
-    bool? useRootSection,
-    bool? activateAutoScrollFeature,
+    bool? addRepaintBoundaries,
     Widget? onDetectEmptyRoot,
     int? onHoverContainerExpansionDelay,
     IndentConfiguration? indentConfiguration,
-    Widget Function(NovDragAndDropDetails<Node> details)?
-        rootTargetToDropSection,
-    ScrollPhysics? physics,
+    Widget Function(NovDragAndDropDetails<Node> details)? rootTargetToDropSection,
   }) {
     return TreeConfiguration(
       onHoverContainer: onHoverContainer ?? this.onHoverContainer,
       components: components ?? this.components,
+      treeListViewConfigurations:
+          treeListViewConfigurations ?? this.treeListViewConfigurations,
+      addRepaintBoundaries: addRepaintBoundaries ?? this.addRepaintBoundaries,
       extraArgs: extraArgs ?? this.extraArgs,
-      scrollConfigs: scrollConfigs ?? this.scrollConfigs,
-      draggableConfigurations:
-          draggableConfigurations ?? this.draggableConfigurations,
-      shouldDisplayNodeChildrenCount:
-          shouldDisplayNodeChildrenCount ?? this.shouldDisplayNodeChildrenCount,
+      draggableConfigurations: draggableConfigurations ?? this.draggableConfigurations,
       activateDragAndDropFeature:
           activateDragAndDropFeature ?? this.activateDragAndDropFeature,
-      useRootSection: useRootSection ?? this.useRootSection,
       onDetectEmptyRoot: onDetectEmptyRoot ?? this.onDetectEmptyRoot,
       onHoverContainerExpansionDelay:
           onHoverContainerExpansionDelay ?? this.onHoverContainerExpansionDelay,
       indentConfiguration: indentConfiguration ?? this.indentConfiguration,
-      rootTargetToDropSection:
-          rootTargetToDropSection ?? this.rootTargetToDropSection,
-      physics: physics ?? this.physics,
-      activateAutoScrollFeature:
-          activateDragAndDropFeature ?? this.activateAutoScrollFeature,
     );
   }
 
@@ -143,40 +98,28 @@ class TreeConfiguration {
     if (identical(this, other)) return true;
 
     return other.onHoverContainer == onHoverContainer &&
-        other.scrollConfigs == scrollConfigs &&
-        other.activateAutoScrollFeature == activateAutoScrollFeature &&
         other.draggableConfigurations == draggableConfigurations &&
-        other.shouldDisplayNodeChildrenCount ==
-            shouldDisplayNodeChildrenCount &&
+        other.treeListViewConfigurations == treeListViewConfigurations &&
         other.activateDragAndDropFeature == activateDragAndDropFeature &&
-        other.useRootSection == useRootSection &&
         other.onDetectEmptyRoot == onDetectEmptyRoot &&
-        other.onHoverContainerExpansionDelay ==
-            onHoverContainerExpansionDelay &&
+        other.onHoverContainerExpansionDelay == onHoverContainerExpansionDelay &&
         other.indentConfiguration == indentConfiguration &&
-        other.rootTargetToDropSection == rootTargetToDropSection &&
         listEquals<NodeComponentBuilder>(other.components, components) &&
-        mapEquals<String, dynamic>(other.extraArgs, extraArgs) &&
-        other.physics == physics;
+        mapEquals<String, dynamic>(other.extraArgs, extraArgs);
   }
 
   @override
   int get hashCode {
-    return Object.hashAll([
+    return Object.hashAll(<Object?>[
       components,
-      activateAutoScrollFeature,
       extraArgs,
       onHoverContainer,
-      scrollConfigs,
+      treeListViewConfigurations,
       draggableConfigurations,
-      shouldDisplayNodeChildrenCount,
       activateDragAndDropFeature,
-      useRootSection,
       onDetectEmptyRoot,
       onHoverContainerExpansionDelay,
       indentConfiguration,
-      rootTargetToDropSection,
-      physics,
     ]);
   }
 }

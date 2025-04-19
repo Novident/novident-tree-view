@@ -1,14 +1,14 @@
-import 'package:example/common/controller/tree_controller.dart';
-import 'package:example/common/default_configurations/directory_widget.dart';
-import 'package:example/common/entities/directory.dart';
-import 'package:example/common/entities/root.dart';
-import 'package:example/common/extensions/node_ext.dart';
-import 'package:example/common/extensions/num_ext.dart';
+## File Component Builder
+
+In this section we build the component that will define: the gesture configurations, the method in charge of rendering your node, and the **Drag and Drop** feature through `NodeDragGestures`.
+
+```dart
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:your/path/file.dart';
 
-class DirectoryComponentBuilder extends NodeComponentBuilder {
+class FileComponentBuilder extends NodeComponentBuilder {
   @override
   Widget build(ComponentContext context) {
     final Node node = context.node;
@@ -23,7 +23,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       // the dragging node will be inserted.
       final border = context.details?.mapDropPosition<BoxBorder?>(
         whenAbove: () => Border(top: borderSide),
-        whenInside: () => Border.fromBorderSide(borderSide),
+        whenInside: () => const Border(),
         whenBelow: () => Border(bottom: borderSide),
       );
       decoration = BoxDecoration(
@@ -34,33 +34,29 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
 
     return Container(
       decoration: decoration,
+      // [AutomaticNodeIndentation] adds the correct indentation
+      // for the [Node] using the [IndentConfiguration] passed
       child: AutomaticNodeIndentation(
         node: node,
-        child: DirectoryTile(
-          onTap: () {
-            node.asDirectory.openOrClose();
-          },
-          directory: node.asDirectory,
-          controller: context.extraArgs['controller'],
-        ),
+        child: FileTile(file: node.asFile),
       ),
     );
   }
 
   @override
   NodeConfiguration buildConfigurations(ComponentContext context) {
-    final TreeController controller = context.extraArgs['controller'] as TreeController;
-    final Node node = context.node;
+    // you need to make your implementation 
+    // to know if the node is selected
+    final bool isSelected = false; 
     return NodeConfiguration(
-      makeTappable: false,
+      makeTappable: true,
       decoration: BoxDecoration(
-        color: controller.selectedNode == node
+        color: isSelected == node
             ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)
             : null,
       ),
       onTap: (BuildContext context) {
-        if (node is Root) return;
-        controller.selectNode(node);
+        // select or focus your node
       },
     );
   }
@@ -74,9 +70,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
         DragTargetDetails<Node> dragDetails,
         Node target,
         Node? parent,
-      ) {
-        return details?.draggedNode != node;
-      },
+      ) => details?.draggedNode != node,
       onAcceptWithDetails: (
         NovDragAndDropDetails<Node>? details,
         Node target,
@@ -86,10 +80,10 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
           details.mapDropPosition<void>(
             whenAbove: () {
               final NodeContainer parent = target.owner as NodeContainer;
-              final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
+              final NodeContainer dragParent =
+                  details.draggedNode.owner as NodeContainer;
               dragParent.removeWhere(
                 (n) => n.id == details.draggedNode.id,
-                propagateNotifications: true,
               );
               final int index = target.index;
               if (index != -1) {
@@ -99,22 +93,14 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
                 );
               }
             },
-            whenInside: () {
-              final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-              dragParent
-                ..removeWhere(
-                  (n) => n.id == details.draggedNode.id,
-                  shouldNotify: false,
-                )
-                ..notify(propagate: true);
-              (details.targetNode as NodeContainer).add(details.draggedNode, propagateNotifications: true);
-            },
+            // we not need to define inside, since we don't use it
+            whenInside: () {},
             whenBelow: () {
               final NodeContainer parent = target.owner as NodeContainer;
-              final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-                dragParent.removeWhere(
+              final NodeContainer dragParent =
+                  details.draggedNode.owner as NodeContainer;
+              dragParent.removeWhere(
                 (n) => n.id == details.draggedNode.id,
-                propagateNotifications: true,
               );
               final int index = target.index;
               if (index != -1) {
@@ -126,6 +112,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
                 );
               }
             },
+            ignoreInsideZone: true,
           );
           return;
         }
@@ -137,5 +124,59 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
   Widget? buildChildren(ComponentContext context) => null;
 
   @override
-  bool validate(Node node) => node is Directory;
+  bool validate(Node node) => node is File;
 }
+
+extension on int {
+  int get oneIfZero => this <= 0 ? 1 : this;
+  int get zeroIfNegative => this < 0 ? 0 : this;
+  int exactByLimit(int limit) => this >= limit ? limit : this;
+}
+```
+
+### FileTile Widget
+
+```dart
+import 'package:your/path/file.dart';
+import 'package:flutter/cupertino.dart';
+
+class FileTile extends StatefulWidget {
+  final File file;
+  const FileTile({
+    required this.file,
+    super.key,
+  });
+
+  @override
+  State<FileTile> createState() => _FileTileState();
+}
+
+class _FileTileState extends State<FileTile> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 5),
+            child: Icon(
+              widget.file.content.isEmpty
+                  ? CupertinoIcons.doc_text
+                  : CupertinoIcons.doc_text_fill,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              "${widget.file.name}${widget.file.level}",
+              maxLines: 1,
+              softWrap: true,
+              overflow: TextOverflow.fade,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```

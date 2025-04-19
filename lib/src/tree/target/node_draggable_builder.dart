@@ -1,5 +1,3 @@
-import 'dart:math' show max, min;
-
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
@@ -66,10 +64,6 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   bool get isDragging => _isDragging;
   bool _isDragging = false;
 
-  EdgeDraggingAutoScroller? _autoScroller;
-
-  Offset? _dragPointer;
-
   NodeDragGestures get gestures => widget.builder.buildGestures(
         ComponentContext(
           depth: widget.depth,
@@ -93,80 +87,22 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     }
   }
 
-  void _createAutoScroller([ScrollableState? scrollable]) {
-    if (!widget.configuration.activateAutoScrollFeature) {
-      return;
-    }
-    _autoScroller = EdgeDraggingAutoScroller(
-      scrollable ?? Scrollable.of(context),
-      velocityScalar: 20,
-      onScrollViewScrolled: () {
-        if (_dragPointer != null) {
-          _autoScroll(_dragPointer!);
-        }
-      },
-    );
-  }
-
-  void _autoScroll(Offset offset) {
-    if (!widget.configuration.activateAutoScrollFeature) {
-      return;
-    }
-    if (_autoScroller == null) {
-      return;
-    }
-    _dragPointer = offset;
-    final scrollable = Scrollable.of(context);
-    final renderObject = scrollable.context.findRenderObject();
-
-    if (renderObject == null) return;
-
-    // Obtener el tamaño del viewport de manera correcta
-    final viewportSize = (renderObject as RenderBox).size;
-
-    // Calcular un tamaño mínimo sensato para el rectángulo de detección
-    final minDimension = min(viewportSize.width, viewportSize.height);
-    final sensitivity = max(
-      widget.configuration.scrollConfigs.autoScrollSensitivity,
-      minDimension * 0.3, // 30% del lado más pequeño como mínimo
-    );
-
-    _autoScroller?.startAutoScrollIfNecessary(
-      Rect.fromCenter(
-        center: offset,
-        width: sensitivity,
-        height: sensitivity,
-      ),
-    );
-  }
-
-  void _stopAutoScroll() {
-    if (!widget.configuration.activateAutoScrollFeature) {
-      return;
-    }
-    _dragPointer = null;
-    _autoScroller?.stopAutoScroll();
-  }
-
   void _endDrag() {
     isDragging = false;
-    _stopAutoScroll();
   }
 
   void onDragStarted() {
     isDragging = true;
-    _createAutoScroller();
     final renderBox = context.findRenderObject() as RenderBox;
     final cursorPosition = renderBox.localToGlobal(Offset.zero);
     DraggableListener.of(context).dragListener
       ..globalPosition = cursorPosition
       ..localPosition = null
       ..draggedNode = widget.node;
-    gestures.onDragStart?.call(widget.node);
+    gestures.onDragStart?.call(cursorPosition, widget.node);
   }
 
   void onDragUpdate(DragUpdateDetails details) {
-    _autoScroll(details.globalPosition);
     DraggableListener.of(context).dragListener
       ..globalPosition = details.globalPosition
       ..localPosition = details.localPosition
@@ -193,20 +129,8 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    late final ScrollableState scrollable = Scrollable.of(context);
-    if (_autoScroller != null && _autoScroller!.scrollable != scrollable) {
-      _createAutoScroller(scrollable);
-    }
-  }
-
-  @override
   void dispose() {
     isDragging = false;
-    _stopAutoScroll();
-    _autoScroller = null;
     super.dispose();
   }
 

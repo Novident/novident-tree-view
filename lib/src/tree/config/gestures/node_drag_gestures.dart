@@ -19,7 +19,7 @@ typedef NovOnAcceptOnNode = void Function(
 /// used drag operatons/gestures by the users
 @immutable
 class NodeDragGestures {
-  final void Function(Node node)? onDragStart;
+  final void Function(Offset offset, Node node)? onDragStart;
 
   final void Function(DragTargetDetails<Node> details)? onDragMove;
 

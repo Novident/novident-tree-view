@@ -30,6 +30,15 @@ class LeafNodeBuilder extends StatefulWidget {
 }
 
 class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty('Tree depth', widget.depth));
+    properties.add(DiagnosticsProperty('owner', widget.owner));
+    properties.add(DiagnosticsProperty('leaf', widget.node));
+  }
+
   @override
   Widget build(BuildContext context) {
     final TreeConfiguration configuration =
@@ -79,6 +88,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           context,
           child,
         );
+
         if (wrapper != null) {
           child = wrapper;
         }
@@ -92,13 +102,10 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
         }
 
         if (!nodeConfig.makeTappable) {
-          if (configuration.addRepaintBoundaries) {
-            child = RepaintBoundary(child: child);
-          }
           return child;
         }
 
-        child = InkWell(
+        return InkWell(
           onFocusChange: nodeConfig.onFocusChange,
           focusNode: nodeConfig.focusNode,
           focusColor: nodeConfig.focusColor,
@@ -143,21 +150,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           enableFeedback: true,
           child: wrapper ?? child,
         );
-
-        if (configuration.addRepaintBoundaries) {
-          child = RepaintBoundary(child: child);
-        }
-
-        return child;
       },
     );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty('owner', widget.owner));
-    properties
-        .add(DiagnosticsProperty('${widget.node.runtimeType}', widget.node));
   }
 }

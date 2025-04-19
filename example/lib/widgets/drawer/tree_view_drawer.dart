@@ -20,14 +20,16 @@ class TreeViewDrawer extends HookWidget {
     return SafeArea(
       top: true,
       child: Drawer(
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.zero)),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.zero)),
         width: size.width * 0.95,
         child: Container(
           decoration: BoxDecoration(
             border: Border(
-                right:
-                    BorderSide(color: Colors.black.withOpacity(0.4), width: 1)),
+              right: BorderSide(
+                color: Colors.black.withValues(alpha: 150),
+                width: 1,
+              ),
+            ),
           ),
           child: SingleChildScrollView(
             controller: scrollController,
