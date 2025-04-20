@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 /// - The node's depth level
 /// - The indentation configuration
 /// - Any additional padding specified
-class AutomaticNodeIndentation extends StatelessWidget {
+final class AutomaticNodeIndentation extends StatelessWidget {
   /// The widget to be indented (typically the node's content)
   final Widget child;
 

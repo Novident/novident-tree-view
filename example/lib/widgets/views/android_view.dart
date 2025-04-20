@@ -148,8 +148,8 @@ class _AndroidTreeViewExampleState extends State<AndroidTreeViewExample> {
                         children: [
                           Expanded(
                             child: Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 13, right: 13, top: 10),
+                              padding: const EdgeInsets.only(
+                                  left: 13, right: 13, top: 10),
                               child: MyEditor(
                                 controller: _controller,
                                 scrollController: _scrollController,
@@ -163,7 +163,8 @@ class _AndroidTreeViewExampleState extends State<AndroidTreeViewExample> {
                                   if (_lastNode == null) return;
                                   treeController ??= widget.controller;
                                   if (!_onChangeCalledFromSelectionHandler) {
-                                    final Delta currentDelta = document.toDelta();
+                                    final Delta currentDelta =
+                                        document.toDelta();
                                     // making this check, we avoid make a update when it does not
                                     // needed. OnChange also is called when the selection changes
                                     if (oldVersion != currentDelta) {

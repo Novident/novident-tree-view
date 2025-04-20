@@ -1,6 +1,6 @@
-## Tree Files
+## Tree File
 
-To have a Tree like this:
+To have a **Tree** like this:
 
 https://github.com/user-attachments/assets/0e24902e-26e9-40bd-bc38-769bda5dec7b
 
@@ -9,8 +9,6 @@ You'll need to check some parts and understand them:
 ### Nodes 
 
 In this section we simply define which nodes will be used by the `TreeView` to display our file tree.
-
-[Check DragAndDropMixin](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes.md#Drag-and-Drop-capibility)
 
 * [**File Node**](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/nodes_declaration.md#-file)
 * [**Directory Node**](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/nodes_declaration.md#-directory)
@@ -28,15 +26,8 @@ Typically, there isn't much to configure the tree, as most of the work is done t
 
 #### Indentation
 
-[See this](https://github.com/Novident/novident-tree-view/doc/recipes/tree_file/tree_configuration.md)
+The indent configuration used is:
 
-**Result:** 
-
-![Indent Preview](https://github.com/user-attachments/assets/2f40d4f7-e47f-4bc6-95be-498b842302ab)
-
-The indentation configuration used is:
-
-Code:
 ```dart
 final config = IndentConfiguration.basic(
    indentPerLevel: 10,
@@ -55,6 +46,8 @@ final config = IndentConfiguration.basic(
    },
 );
 ```
+
+![Indent Preview](https://github.com/user-attachments/assets/2f40d4f7-e47f-4bc6-95be-498b842302ab)
 
 #### Gestures
 
@@ -94,11 +87,11 @@ In this case, we'll use basic drag-and-drop configuration. We'll allow nodes to 
 > Keep in mind that it would be best to perform validations to avoid inserting nodes where 
 > they're not expected, but this depends on your implementation, so we'll skip that part.
 
-Our result should be and work like this:
+Our result should be like this:
 
 https://github.com/user-attachments/assets/f2feea09-bcd1-47aa-bdb7-02ee70558092
 
-_This is just an code sample, please, check [builders](https://github.com/Novident/novident-tree-view/doc/recipes/tree_file/builders/) instead to create a better a more concise configuration._
+_This is just a code sample, please, check [builders](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/builders/) instead, to create a better implementation._
 
 ```dart
 @override

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_builder.dart';
+import 'package:novident_tree_view/src/tree/wrapper/default_nodes_wrapper.dart';
 import 'package:provider/provider.dart';
 
 /// Represents the [NodeContainer] into the Tree
@@ -43,8 +44,10 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    final TreeConfiguration configuration = Provider.of<TreeConfiguration>(context);
-    final NodeComponentBuilder? builder = configuration.components.firstWhereOrNull(
+    final TreeConfiguration configuration =
+        Provider.of<TreeConfiguration>(context);
+    final NodeComponentBuilder? builder =
+        configuration.components.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(widget.nodeContainer),
     );
     if (builder == null) {
@@ -53,6 +56,14 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         'for ${widget.nodeContainer.runtimeType}(${widget.nodeContainer.id})',
       );
     }
+    final ComponentContext componentContext = ComponentContext(
+      depth: widget.depth,
+      nodeContext: context,
+      wrapWithDragGestures: wrapWithDragAndDropWidgets,
+      node: widget.nodeContainer,
+      details: null,
+      extraArgs: configuration.extraArgs,
+    );
     Widget child = NodeDraggableBuilder(
       node: widget.nodeContainer,
       depth: widget.depth,
@@ -60,7 +71,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       configuration: configuration,
       child: ListenableBuilder(
           listenable: widget.nodeContainer,
-          builder: (context, snapshot) {
+          builder: (BuildContext context, Widget? snapshot) {
             return NodeTargetBuilder(
               depth: widget.depth,
               builder: builder,
@@ -72,13 +83,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     );
 
     final NodeConfiguration? nodeConfig = builder.buildConfigurations(
-      ComponentContext(
-        depth: widget.depth,
-        nodeContext: context,
-        node: widget.nodeContainer,
-        details: null,
-        extraArgs: configuration.extraArgs,
-      ),
+      componentContext,
     );
 
     if (nodeConfig != null) {
@@ -90,7 +95,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           onTap: () => nodeConfig.onTap?.call(context),
           onTapDown: (TapDownDetails details) =>
               nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) => nodeConfig.onTapUp?.call(details, context),
+          onTapUp: (TapUpDetails details) =>
+              nodeConfig.onTapUp?.call(details, context),
           onTapCancel: () => nodeConfig.onTapCancel?.call(context),
           onDoubleTap: nodeConfig.onDoubleTap == null
               ? null
@@ -112,7 +118,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null
               ? null
               : () => nodeConfig.onSecondaryTapCancel?.call(context),
-          onHover: (bool isHovered) => nodeConfig.onHover?.call(isHovered, context),
+          onHover: (bool isHovered) =>
+              nodeConfig.onHover?.call(isHovered, context),
           mouseCursor: nodeConfig.mouseCursor,
           hoverDuration: nodeConfig.hoverDuration,
           hoverColor: nodeConfig.hoverColor,
@@ -140,32 +147,54 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     return ListenableBuilder(
       listenable: widget.nodeContainer,
       builder: (BuildContext context, Widget? _) {
-        child = Column(
+        Widget container = Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             child,
             builder.buildChildren(
-                  ComponentContext(
-                    depth: widget.depth,
-                    nodeContext: context,
-                    node: widget.nodeContainer,
-                    details: null,
-                    extraArgs: configuration.extraArgs,
-                  ),
+                  componentContext,
                 ) ??
                 Visibility(
                   visible: widget.nodeContainer.isExpanded,
                   maintainSize: false,
                   maintainState: false,
                   child: ListView.builder(
+                    scrollDirection: Axis.vertical,
                     physics: const NeverScrollableScrollPhysics(),
                     primary: false,
-                    shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
-                    clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
-                        Clip.hardEdge,
+                    shrinkWrap:
+                        configuration.treeListViewConfigurations.shrinkWrap,
+                    clipBehavior:
+                        configuration.treeListViewConfigurations.clipBehavior ??
+                            Clip.hardEdge,
                     itemCount: widget.nodeContainer.length,
+                    reverse: configuration.treeListViewConfigurations.reverse,
+                    itemExtent:
+                        configuration.treeListViewConfigurations.itemExtent,
+                    itemExtentBuilder: configuration
+                        .treeListViewConfigurations.itemExtentBuilder,
+                    prototypeItem:
+                        configuration.treeListViewConfigurations.prototypeItem,
+                    findChildIndexCallback: configuration
+                        .treeListViewConfigurations.findChildIndexCallback,
+                    addAutomaticKeepAlives: configuration
+                        .treeListViewConfigurations.addSemanticIndexes,
+                    addSemanticIndexes: configuration
+                        .treeListViewConfigurations.addSemanticIndexes,
+                    cacheExtent:
+                        configuration.treeListViewConfigurations.cacheExtent,
+                    semanticChildCount: configuration
+                        .treeListViewConfigurations.semanticChildCount,
+                    dragStartBehavior: configuration
+                        .treeListViewConfigurations.dragStartBehavior,
+                    keyboardDismissBehavior: configuration
+                        .treeListViewConfigurations.keyboardDismissBehavior,
+                    restorationId:
+                        configuration.treeListViewConfigurations.restorationId,
+                    hitTestBehavior: configuration
+                        .treeListViewConfigurations.hitTestBehavior,
                     itemBuilder: (BuildContext context, int index) {
                       final Node node = widget.nodeContainer.elementAt(
                         index,
@@ -193,13 +222,13 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         final Widget? wrapper = nodeConfig?.nodeWrapper?.call(
           widget.nodeContainer,
           context,
-          child,
+          container,
         );
 
         if (wrapper != null) {
-          child = wrapper;
+          container = wrapper;
         }
-        return child;
+        return container;
       },
     );
   }

@@ -5,8 +5,11 @@ export 'src/tree/config/node/node_configuration.dart';
 // interfaces
 export 'src/interfaces/draggable_node.dart';
 // utils
-export 'src/entities/enums/drag_handler_position.dart';
+export 'src/enums/drag_handler_position.dart';
 export 'src/tree/target/listeners/draggable_listener.dart';
+// widgets
+export 'src/tree/tree_items/node_container/container_builder.dart';
+export 'src/tree/tree_items/leaf_node/leaf_node_builder.dart';
 // tree
 export 'src/tree/tree.dart';
 export 'src/tree/config/list_view_configurations.dart';

@@ -55,7 +55,6 @@ final configs = TreeConfiguration(
          '${node.runtimeType} ${node.level}',
        ),
      ),
-     allowAutoExpandOnHover: true,
      preferLongPressDraggable: isMobile,
    ),
 );

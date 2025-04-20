@@ -3,7 +3,7 @@ description: "A flexible Novident Flutter library for visualizing hierarchical s
 version: 1.0.0
 homepage: https://github.com/Novident/novident-tree-view/
 repository: https://github.com/Novident/novident-tree-view/ 
-documentation: https://github.com/Novident/novident-tree-view/ 
+documentation: https://github.com/Novident/novident-tree-view/doc/ 
 issue_tracker: https://github.com/Novident/novident-tree-view/issues
 
 environment:
@@ -18,7 +18,6 @@ dependencies:
   collection: ^1.19.1
   provider: ^6.1.4
   novident_nodes: ^1.0.4
-  sliver_tools: ^0.2.12
 
 dev_dependencies:
   flutter_test:

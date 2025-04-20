@@ -1,5 +1,7 @@
 # 🌳 Novident Tree View 
 
+![Image](https://github.com/user-attachments/assets/f8900c61-438b-4742-b0aa-c383eb269b3e)
+
 This package provides a flexible solution for displaying hierarchical data structures while giving developers full control over node management. Unlike traditional tree implementations that enforce controller-based architectures, this package operates on simple data types that you extend to create your node hierarchy. Nodes become self-aware of their state changes through `Listenable` patterns, enabling reactive updates without complex state management.
 
 ## 💡 Motivation 
@@ -32,19 +34,21 @@ dependencies:
 
 ## 🔎 Resources
 
-Since there is too much to explain and implement, we prefer to give to every section a separate document to dedicate correctly explanations about them. 
+Since there's a lot to explain and implement, we prefer to provide a separate document for each section to explain more concretely and accurately what each point entails.
 
-* [nodes](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes.md)
-* [tree_configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/tree_configuration.md)
-* [draggable_configurations](https://github.com/Novident/novident-tree-view/blob/master/doc/draggable_configurations.md)
-* [nodes_gestures](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes_gestures.md)
-* [indentation_configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/indentation_configuration.md)
+* [✍️ Nodes Gestures](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes_gestures.md)
+* [📲 Components](https://github.com/Novident/novident-tree-view/blob/master/doc/components.md)
+* [🌱 Nodes](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes.md)
+* [🌲 Tree Configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/tree_configuration.md)
+* [📜 Drag and Drop details](https://github.com/Novident/novident-tree-view/blob/master/doc/drag_and_drop_details.md)
+* [🤏 Draggable Configurations](https://github.com/Novident/novident-tree-view/blob/master/doc/draggable_configurations.md)
+* [📏 Indentation Configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/indentation_configuration.md)
 
-### Recipes
+## 📝 Recipes
 
-* [Tree Files](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/)
+* [🗃️ Tree Files](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/)
 
-_More recipes will be here later_
+_More recipes will be added later_
 
 ## 🌳 Contributing
 

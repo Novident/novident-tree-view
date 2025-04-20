@@ -171,7 +171,8 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                                     if (_lastNode == null) return;
                                     treeController ??= widget.controller;
                                     if (!_onChangeCalledFromSelectionHandler) {
-                                      final Delta currentDelta = document.toDelta();
+                                      final Delta currentDelta =
+                                          document.toDelta();
                                       // making this check, we avoid make a update when it does not
                                       // needed. OnChange also is called when the selection changes
                                       if (oldVersion != currentDelta) {

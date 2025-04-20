@@ -21,10 +21,11 @@ abstract class NodeComponentBuilder {
   bool validate(Node node);
 
   /// Creates gesture handlers for drag operations on this node.
-  NodeDragGestures buildGestures(ComponentContext context);
+  NodeDragGestures buildDragGestures(ComponentContext context);
 
   /// Builds the node's interaction configuration.
-  NodeConfiguration? buildConfigurations(ComponentContext context);
+  NodeConfiguration? buildConfigurations(ComponentContext context) =>
+      NodeConfiguration(makeTappable: false);
 
   /// Constructs the visual representation of the node.
   ///

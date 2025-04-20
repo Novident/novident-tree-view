@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_tree_view/src/tree/wrapper/default_nodes_wrapper.dart';
 import 'package:provider/provider.dart';
 
 /// Represents the leaf [Node] into the Tree
@@ -30,7 +31,6 @@ class LeafNodeBuilder extends StatefulWidget {
 }
 
 class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
-
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
@@ -73,6 +73,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
         final NodeConfiguration? nodeConfig =
             builder.buildConfigurations(ComponentContext(
           depth: widget.depth,
+          wrapWithDragGestures: wrapWithDragAndDropWidgets,
           nodeContext: context,
           node: widget.node,
           details: null,

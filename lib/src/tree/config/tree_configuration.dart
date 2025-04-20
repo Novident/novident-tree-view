@@ -7,7 +7,7 @@ const int _kDefaultExpandDelay = 625;
 
 /// Central configuration class for tree view behavior and operations
 @immutable
-class TreeConfiguration {
+final class TreeConfiguration {
   final List<NodeComponentBuilder> components;
   final ListViewConfigurations treeListViewConfigurations;
 
@@ -74,7 +74,8 @@ class TreeConfiguration {
     Widget? onDetectEmptyRoot,
     int? onHoverContainerExpansionDelay,
     IndentConfiguration? indentConfiguration,
-    Widget Function(NovDragAndDropDetails<Node> details)? rootTargetToDropSection,
+    Widget Function(NovDragAndDropDetails<Node> details)?
+        rootTargetToDropSection,
   }) {
     return TreeConfiguration(
       onHoverContainer: onHoverContainer ?? this.onHoverContainer,
@@ -83,7 +84,8 @@ class TreeConfiguration {
           treeListViewConfigurations ?? this.treeListViewConfigurations,
       addRepaintBoundaries: addRepaintBoundaries ?? this.addRepaintBoundaries,
       extraArgs: extraArgs ?? this.extraArgs,
-      draggableConfigurations: draggableConfigurations ?? this.draggableConfigurations,
+      draggableConfigurations:
+          draggableConfigurations ?? this.draggableConfigurations,
       activateDragAndDropFeature:
           activateDragAndDropFeature ?? this.activateDragAndDropFeature,
       onDetectEmptyRoot: onDetectEmptyRoot ?? this.onDetectEmptyRoot,
@@ -102,7 +104,8 @@ class TreeConfiguration {
         other.treeListViewConfigurations == treeListViewConfigurations &&
         other.activateDragAndDropFeature == activateDragAndDropFeature &&
         other.onDetectEmptyRoot == onDetectEmptyRoot &&
-        other.onHoverContainerExpansionDelay == onHoverContainerExpansionDelay &&
+        other.onHoverContainerExpansionDelay ==
+            onHoverContainerExpansionDelay &&
         other.indentConfiguration == indentConfiguration &&
         listEquals<NodeComponentBuilder>(other.components, components) &&
         mapEquals<String, dynamic>(other.extraArgs, extraArgs);

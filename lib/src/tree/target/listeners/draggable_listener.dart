@@ -1,6 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
+/// A controller class that manages drag-and-drop operations within a tree structure.
+///
+/// Tracks the state of a dragged node and its position information during drag operations.
+///
+/// ## Properties
+/// - [draggedNode]: The currently dragged tree node (null when not dragging)
+/// - [globalPosition]: The drag position in global coordinates (screen-relative)
+/// - [localPosition]: The drag position in local coordinates (widget-relative)
+///
+/// ## State Check
+/// - [isDragging]: Returns true when a valid drag operation is in progress
+///
+/// ## Usage
+/// ```dart
+/// final dragListener = DragListener(
+///   draggedNode: currentlyDraggedNode,
+///   globalPosition: Offset(100, 200),
+///   localPosition: Offset(50, 75)
+/// );
+///
+/// if (dragListener.isDragging) {
+///   // Handle active drag
+/// }
+/// ```
 class DragListener {
   Node? draggedNode;
   Offset? globalPosition;
@@ -12,42 +36,58 @@ class DragListener {
     this.localPosition,
   });
 
+  /// Returns true when a valid drag operation is active:
   bool get isDragging => draggedNode != null && globalPosition != null;
 }
 
+/// An InheritedWidget that provides drag state management to descendant widgets.
+///
+/// ## Usage
+/// ```dart
+/// DraggableListener(
+///   dragListener: DragListener(),
+///   child: YourWidgetTree()
+/// )
+/// ```
+///
+/// ## Accessing the Listener
+///
+/// ```dart
+/// final listener = DraggableListener.of(context);
+/// if (listener.dragListener.isDragging) {
+///   // React to drag state
+/// }
+/// ```
 class DraggableListener extends InheritedWidget {
+  /// The drag state controller instance
   final DragListener dragListener;
+
   DraggableListener({
     required super.child,
     DragListener? dragListener,
     super.key,
   }) : dragListener = dragListener ?? DragListener();
 
+  /// Retrieves the nearest [DraggableListener] instance from the widget tree
+  ///
+  /// - [context]: Build context for tree traversal
+  /// - [listen]: When true (default), registers build dependency
   static DraggableListener of(BuildContext context, {bool listen = true}) {
     if (!context.mounted) {
-      throw Exception(
-        'An unmounted widget '
-        'is not valid to use for '
-        'get instance of DraggableListener.',
-      );
+      throw Exception('Cannot access DraggableListener from unmounted context');
     }
-    final DraggableListener? listener = !listen
-        ? context.getInheritedWidgetOfExactType<DraggableListener>()
-        : context.dependOnInheritedWidgetOfExactType<DraggableListener>();
+
+    final DraggableListener? listener = listen
+        ? context.dependOnInheritedWidgetOfExactType<DraggableListener>()
+        : context.getInheritedWidgetOfExactType<DraggableListener>();
+
     if (listener == null) {
-      throw FlutterErrorDetails(
-        exception: Exception('MissingDraggableListener'),
-        library: 'novident_tree_view',
-        context: ErrorDescription(
-          'DraggableListener was not founded into the widget '
-          'tree. Please, ensure that you wrap your '
-          'MaterialApp/Widget where TreeView is used with '
-          'DraggableListener '
-          'to avoid seeing these type of errors.',
-        ),
-        silent: true,
-      );
+      throw FlutterError(
+          'DraggableListener not found. Wrap your tree with DraggableListener.\n'
+          'Ensure your TreeView is within a MaterialApp/CupertinoApp that '
+          'contains a DraggableListener in its widget ancestry.');
     }
+
     return listener;
   }
 

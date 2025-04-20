@@ -1,10 +1,8 @@
-# 📐 `TreeConfiguration` - Centralized Tree Behavior Configuration
+# 📐 Tree Configuration
 
-Immutable class that serves as the centralized configuration hub for all interactive tree view behaviors and operations.
+`TreeConfiguration` serves as the centralized configuration hub for all interactive tree view behaviors and operations.
 
-## 🏗️ Core Structure
-
-### 🔧 Configurable Properties
+## 🏗️ Properties 
 
 | Property | Type | Description | Default Value |
 |----------|------|-------------|---------------|
@@ -20,6 +18,7 @@ Immutable class that serves as the centralized configuration hub for all interac
 | `indentConfiguration` | `IndentConfiguration` | Indentation styling | `IndentConfiguration.basic()` |
 
 ## � Example Usage
+
 ```dart
 TreeConfiguration(
   components: [MyNodeBuilder(), AnotherNodeBuilder()],

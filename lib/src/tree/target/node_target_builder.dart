@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/src/foundation/diagnostics.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:novident_tree_view/src/extensions/cast_nodes.dart';
+import 'package:novident_tree_view/src/tree/wrapper/default_nodes_wrapper.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 /// [NodeTargetBuilder] handles drag-and-drop operations for tree nodes
@@ -24,15 +26,16 @@ class NodeTargetBuilder extends StatefulWidget {
     required this.owner,
     required this.depth,
     required this.node,
+    this.child,
     super.key,
   });
 
   /// Configuration settings for the tree view
   final TreeConfiguration configuration;
-
+  final Widget? child;
   final int depth;
-  final NodeComponentBuilder builder;
   final Node node;
+  final NodeComponentBuilder builder;
 
   /// The container that owns and manages this node
   final NodeContainer owner;
@@ -45,13 +48,27 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   late NodeDragGestures _gestures;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Node>('node', widget.node));
+    properties.add(DiagnosticsProperty<Node>('owner', widget.owner));
+    properties.add(DiagnosticsProperty<Widget?>('child', widget.child));
+    properties.add(DiagnosticsProperty<TreeConfiguration>(
+        'configuration', widget.configuration));
+    properties.add(DiagnosticsProperty<int>('depth', widget.depth));
+    properties.add(
+        DiagnosticsProperty<NodeComponentBuilder>('builder', widget.builder));
+  }
+
+  @override
   void initState() {
-    _gestures = widget.builder.buildGestures(
+    _gestures = widget.builder.buildDragGestures(
       ComponentContext(
         depth: widget.depth,
         nodeContext: context,
         node: widget.node,
         details: _details,
+        wrapWithDragGestures: wrapWithDragAndDropWidgets,
         extraArgs: widget.configuration.extraArgs,
       ),
     );
@@ -78,10 +95,10 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   /// [details]: Information about the dragged node
   /// Returns true if the node can be accepted
   bool _onWillAccept(DragTargetDetails<Node> details) {
+    _details ??= _getDropDetails(details.data);
     return _gestures.onWillAcceptWithDetails(
       _details,
       details,
-      widget.node,
       widget.owner,
     );
   }
@@ -168,13 +185,13 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   /// [details]: Information about the dropped node
   void _onAccept(DragTargetDetails<Node> details) {
     _startOrCancelOnHoverExpansion(cancel: true);
+    _details ??= _getDropDetails(details.data);
 
     if (_details == null || _details!.draggedNode != details.data) return;
 
     // Notify about the accepted drop
     _gestures.onAcceptWithDetails.call(
       _details!,
-      widget.node,
       widget.owner,
     );
 
@@ -227,7 +244,9 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     }
 
     // Don't expand if already expanded
-    if (widget.node.castToContainer().isExpanded) return;
+    if (widget.node.castToContainer().isExpanded ||
+        (_details != null &&
+            _details!.exactPosition() != DragHandlerPosition.into)) return;
 
     // Start new timer if none exists or current one isn't active
     bool? isActive = timer?.isActive;
@@ -253,6 +272,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
       nodeContext: context,
       node: widget.node,
       extraArgs: widget.configuration.extraArgs,
+      wrapWithDragGestures: wrapWithDragAndDropWidgets,
       details: candidateData == null
           ? _details
           : _details?.applyData(candidateData, rejectedData!),
@@ -298,10 +318,13 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
         List<Node?> candidateData,
         List<dynamic> rejectedData,
       ) {
-        return widget.builder.build(buildContext(
-          rejectedData,
-          candidateData,
-        ));
+        return widget.child ??
+            widget.builder.build(
+              buildContext(
+                rejectedData,
+                candidateData,
+              ),
+            );
       },
     );
   }

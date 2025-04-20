@@ -20,7 +20,8 @@ class TreeViewDrawer extends HookWidget {
     return SafeArea(
       top: true,
       child: Drawer(
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.zero)),
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.zero)),
         width: size.width * 0.95,
         child: Container(
           decoration: BoxDecoration(

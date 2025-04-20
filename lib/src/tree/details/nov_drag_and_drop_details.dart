@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
 import 'package:novident_nodes/novident_nodes.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// The details of the drag-and-drop relationship of [TreeDraggable] and
 /// [TreeDragTarget].
@@ -88,6 +89,14 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     );
   }
 
+  DragHandlerPosition exactPosition() {
+    return mapDropPosition(
+            whenAbove: () => DragHandlerPosition.above,
+            whenInside: () => DragHandlerPosition.into,
+            whenBelow: () => DragHandlerPosition.below) ??
+        DragHandlerPosition.unknown;
+  }
+
   /// Determines the relative vertical position of a dragged node relative to a target widget
   /// and returns a value based on the current drop position.
   ///
@@ -103,7 +112,7 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   /// - [whenInside]: Callback executed when node is in the main content zone
   /// - [whenBelow]: Callback executed when node is in the lower threshold zone
   /// - [aboveZoneHeight]: Size of the upper threshold zone (default: 7 logical pixels)
-  /// - [belowZoneHeight]: Size of the lower threshold zone (default: 5 logical pixels)
+  /// - [belowZoneHeight]: Size of the lower threshold zone (default: 7 logical pixels)
   ///
   /// ## Visual Representation
   /// ```
@@ -147,14 +156,16 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     }
     assert(aboveZoneHeight >= 0, 'Above zone cannot be negative');
     assert(belowZoneHeight >= 0, 'Below zone cannot be negative');
-    final double effectiveAboveZone = globalTargetNodeOffset.dy + aboveZoneHeight;
+    final double effectiveAboveZone =
+        globalTargetNodeOffset.dy + aboveZoneHeight;
     final double effectiveBelowZone =
         (globalTargetNodeOffset.dy + targetBounds.height) - belowZoneHeight;
     final bool isInAboveZone = cursorPos <= effectiveAboveZone;
     final bool isInBelowZone = cursorPos >= effectiveBelowZone;
-    final bool isInsideZone = ignoreBelowZone && ignoreAboveZone && !ignoreInsideZone
-        ? true
-        : !isInAboveZone && !isInBelowZone;
+    final bool isInsideZone =
+        ignoreBelowZone && ignoreAboveZone && !ignoreInsideZone
+            ? true
+            : !isInAboveZone && !isInBelowZone;
 
     if (isInAboveZone && !ignoreAboveZone) {
       return whenAbove();
@@ -176,8 +187,10 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
       ..add(DiagnosticsProperty<T>('draggedNode', draggedNode))
       ..add(DiagnosticsProperty<T>('targetNode', targetNode))
       ..add(DiagnosticsProperty<Offset>('dropPosition', dropPosition))
-      ..add(DiagnosticsProperty<Offset>('globalTargetNodeOffset', globalTargetNodeOffset))
-      ..add(DiagnosticsProperty<Offset>('globalDropPosition', globalDropPosition))
+      ..add(DiagnosticsProperty<Offset>(
+          'globalTargetNodeOffset', globalTargetNodeOffset))
+      ..add(
+          DiagnosticsProperty<Offset>('globalDropPosition', globalDropPosition))
       ..add(DiagnosticsProperty<Rect>('targetBounds', targetBounds));
   }
 
@@ -194,7 +207,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     return NovDragAndDropDetails<T>(
       draggedNode: draggedNode ?? this.draggedNode,
       globalDropPosition: globalDropPosition ?? this.globalDropPosition,
-      globalTargetNodeOffset: globalTargetNodeOffset ?? this.globalTargetNodeOffset,
+      globalTargetNodeOffset:
+          globalTargetNodeOffset ?? this.globalTargetNodeOffset,
       targetNode: targetNode ?? this.targetNode,
       dropPosition: dropPosition ?? this.dropPosition,
       targetBounds: targetBounds ?? this.targetBounds,

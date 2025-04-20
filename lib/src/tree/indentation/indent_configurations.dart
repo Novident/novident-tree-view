@@ -1,4 +1,4 @@
-import 'package:flutter/rendering.dart';
+import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
 /// Configuration class that defines how tree nodes should be indented
@@ -7,7 +7,8 @@ import 'package:novident_nodes/novident_nodes.dart';
 /// - The amount of indentation per level
 /// - Maximum indentation level
 /// - Additional padding around nodes
-class IndentConfiguration {
+@immutable
+final class IndentConfiguration {
   /// Largest possible integer value used to represent unlimited indentation levels
   static const int largestIndentAccepted = -1 >>> 1;
 
@@ -67,8 +68,12 @@ class IndentConfiguration {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(indentPerLevel, padding, maxLevel, indentPerLevelBuilder);
+  int get hashCode => Object.hash(
+        indentPerLevel,
+        padding,
+        maxLevel,
+        indentPerLevelBuilder,
+      );
 
   @override
   operator ==(covariant IndentConfiguration other) {

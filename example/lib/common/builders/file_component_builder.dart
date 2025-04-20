@@ -46,7 +46,8 @@ class FileComponentBuilder extends NodeComponentBuilder {
 
   @override
   NodeConfiguration buildConfigurations(ComponentContext context) {
-    final TreeController controller = context.extraArgs['controller'] as TreeController;
+    final TreeController controller =
+        context.extraArgs['controller'] as TreeController;
     final Node node = context.node;
     return NodeConfiguration(
       makeTappable: true,
@@ -64,7 +65,8 @@ class FileComponentBuilder extends NodeComponentBuilder {
 
   @override
   NodeDragGestures buildDragGestures(ComponentContext context) {
-    final TreeController controller = context.extraArgs['controller'] as TreeController;
+    final TreeController controller =
+        context.extraArgs['controller'] as TreeController;
     final Node node = context.node;
     return NodeDragGestures(
       onWillAcceptWithDetails: (
@@ -82,7 +84,8 @@ class FileComponentBuilder extends NodeComponentBuilder {
         details.mapDropPosition<void>(
           whenAbove: () {
             final NodeContainer parent = target.owner as NodeContainer;
-            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
+            final NodeContainer dragParent =
+                details.draggedNode.owner as NodeContainer;
             dragParent.removeWhere(
               (n) => n.id == details.draggedNode.id,
             );
@@ -106,7 +109,8 @@ class FileComponentBuilder extends NodeComponentBuilder {
           whenInside: () {},
           whenBelow: () {
             final NodeContainer parent = target.owner as NodeContainer;
-            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
+            final NodeContainer dragParent =
+                details.draggedNode.owner as NodeContainer;
             dragParent.removeWhere(
               (n) => n.id == details.draggedNode.id,
             );

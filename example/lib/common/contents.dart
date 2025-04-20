@@ -7,7 +7,8 @@ final Delta exampleDelta = Delta()
   ..insert(
       'This package provides a flexible solution for displaying hierarchical data structures while giving developers full control over node management. Unlike traditional tree implementations that enforce controller-based architectures, this package operates on simple data types that you extend to create your node hierarchy. Nodes become self-aware of their state changes through ')
   ..insert('Listenable', {"code": true})
-  ..insert(' patterns, enabling reactive updates without complex state management.')
+  ..insert(
+      ' patterns, enabling reactive updates without complex state management.')
   ..insert('\n\n')
   ..insert('💡 Motivation')
   ..insert('\n', {"header": 2})
@@ -28,7 +29,8 @@ final Delta exampleDelta = Delta()
   ..insert('\n', {"list": "ul"})
   ..insert('Better support for Node configuration')
   ..insert('\n', {"list": "ul"})
-  ..insert('\nThis is why we decided to create this package, which adds everything ')
+  ..insert(
+      '\nThis is why we decided to create this package, which adds everything ')
   ..insert('Novident', {"bold": true})
   ..insert(
     ' requires in one place. \n\nIn this package, we can simply add a few '
@@ -67,7 +69,8 @@ final Delta exampleDelta = Delta()
   })
   ..insert('\n', {"list": "ul"})
   ..insert('🌱 Nodes', {
-    'link': 'https://github.com/Novident/novident-tree-view/blob/master/doc/nodes.md',
+    'link':
+        'https://github.com/Novident/novident-tree-view/blob/master/doc/nodes.md',
   })
   ..insert('\n', {"list": "ul"})
   ..insert('🌲 Tree Configuration', {
@@ -111,7 +114,8 @@ final Delta exampleDelta = Delta()
       'guidelines help ensure that everyone can understand '
       'and work with the code easier.\n\nSee ')
   ..insert('Contributing', {
-    "link": "https://github.com/Novident/novident-tree-view/blob/master/CONTRIBUTING.md"
+    "link":
+        "https://github.com/Novident/novident-tree-view/blob/master/CONTRIBUTING.md"
   })
   ..insert(' for more details.')
   ..insert('\n');

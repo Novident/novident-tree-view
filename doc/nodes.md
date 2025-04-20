@@ -1,15 +1,10 @@
 ## 📚 Nodes
 
-A Node is an abstract base class that represents a fundamental element in a hierarchical tree structure, with the following main characteristics:
+A Node is just a class that represents a fundamental element in a hierarchical tree structure.
 
 _This example code is copied from [novident-nodes](https://github.com/Novident/novident-nodes/) package._
 
 ```dart
-/// Abstract base class representing a node in a hierarchical tree structure.
-///
-/// This class combines notification capabilities ([NodeNotifier]), visitor pattern
-/// support ([NodeVisitor]), and cloning functionality ([ClonableMixin]).
-/// It serves as the foundation for all node types in the hierarchy.
 abstract class Node extends NodeNotifier with NodeVisitor, ClonableMixin<Node> {
   /// Contains metadata and identification information about this node
   final NodeDetails details;

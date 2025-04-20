@@ -4,7 +4,7 @@ import 'package:novident_nodes/novident_nodes.dart';
 const int kLongPressTimeout = 500;
 
 @immutable
-class DraggableConfigurations {
+final class DraggableConfigurations {
   /// Constructs the visual feedback widget displayed during a drag operation.
   ///
   /// This builder is used by [Draggable] and [LongPressDraggable] widgets to
@@ -51,8 +51,8 @@ class DraggableConfigurations {
     int? longPressDelay,
     this.axis,
     this.childWhenDraggingBuilder,
-  }) : longPressDelay =
-            longPressDelay ?? (preferLongPressDraggable ? kLongPressTimeout : 0);
+  }) : longPressDelay = longPressDelay ??
+            (preferLongPressDraggable ? kLongPressTimeout : 0);
 
   DraggableConfigurations copyWith({
     Widget Function(Node node)? buildDragFeedbackWidget,
@@ -65,14 +65,19 @@ class DraggableConfigurations {
     Widget Function(Node node)? childWhenDraggingBuilder,
   }) {
     return DraggableConfigurations(
-      buildDragFeedbackWidget: buildDragFeedbackWidget ?? this.buildDragFeedbackWidget,
-      childDragAnchorStrategy: childDragAnchorStrategy ?? this.childDragAnchorStrategy,
+      buildDragFeedbackWidget:
+          buildDragFeedbackWidget ?? this.buildDragFeedbackWidget,
+      childDragAnchorStrategy:
+          childDragAnchorStrategy ?? this.childDragAnchorStrategy,
       feedbackOffset: feedbackOffset ?? this.feedbackOffset,
       longPressDelay: longPressDelay ?? this.longPressDelay,
       axis: axis ?? this.axis,
-      allowAutoExpandOnHover: allowAutoExpandOnHover ?? this.allowAutoExpandOnHover,
-      preferLongPressDraggable: preferLongPressDraggable ?? this.preferLongPressDraggable,
-      childWhenDraggingBuilder: childWhenDraggingBuilder ?? this.childWhenDraggingBuilder,
+      allowAutoExpandOnHover:
+          allowAutoExpandOnHover ?? this.allowAutoExpandOnHover,
+      preferLongPressDraggable:
+          preferLongPressDraggable ?? this.preferLongPressDraggable,
+      childWhenDraggingBuilder:
+          childWhenDraggingBuilder ?? this.childWhenDraggingBuilder,
     );
   }
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
 @immutable
-class NodeConfiguration {
+final class NodeConfiguration {
   /// The color applied when hovering over the [Node].
   final Color? hoverColor;
 

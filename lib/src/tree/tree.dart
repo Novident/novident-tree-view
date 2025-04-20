@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart' show Node, NodeContainer;
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_builder.dart';
-import 'package:novident_tree_view/src/tree/tree_items/node_container/container_builder.dart';
 import 'package:provider/provider.dart';
 
 /// A customizable scrollable tree view component with drag-and-drop support
 ///
 /// Displays a hierarchical tree structure using a combination of ListViews
-class TreeView extends StatefulWidget {
+@immutable
+final class TreeView extends StatefulWidget {
   /// The root node container of the tree
   final NodeContainer root;
 
@@ -18,7 +17,7 @@ class TreeView extends StatefulWidget {
   /// Bottom padding for the scrollable area
   final double bottomInsets;
 
-  TreeView({
+  const TreeView({
     required this.root,
     required this.configuration,
     this.bottomInsets = 30,
@@ -40,12 +39,19 @@ class _TreeViewState extends State<TreeView> {
       child: Provider<TreeConfiguration>(
         create: (BuildContext context) => widget.configuration,
         child: ListView(
-          shrinkWrap: widget.configuration.treeListViewConfigurations.shrinkWrap,
-          controller: widget.configuration.treeListViewConfigurations.scrollController,
+          shrinkWrap:
+              widget.configuration.treeListViewConfigurations.shrinkWrap,
+          controller:
+              widget.configuration.treeListViewConfigurations.scrollController,
           primary: widget.configuration.treeListViewConfigurations.primary,
-          clipBehavior: widget.configuration.treeListViewConfigurations.clipBehavior ??
-              Clip.hardEdge,
+          clipBehavior:
+              widget.configuration.treeListViewConfigurations.clipBehavior ??
+                  Clip.hardEdge,
           addRepaintBoundaries: false,
+          addSemanticIndexes: widget
+              .configuration.treeListViewConfigurations.addSemanticIndexes,
+          addAutomaticKeepAlives: widget
+              .configuration.treeListViewConfigurations.addAutomaticKeepAlives,
           physics: widget.configuration.treeListViewConfigurations.physics ??
               const NeverScrollableScrollPhysics(),
           children: <Widget>[
@@ -55,16 +61,41 @@ class _TreeViewState extends State<TreeView> {
               builder: (BuildContext context, Widget? child) {
                 if (widget.root.isEmpty) return noNodesFoundWidget;
                 return ListView.builder(
-                  shrinkWrap: widget.configuration.treeListViewConfigurations.shrinkWrap,
+                  shrinkWrap: widget
+                      .configuration.treeListViewConfigurations.shrinkWrap,
                   scrollDirection: Axis.vertical,
                   physics: const NeverScrollableScrollPhysics(),
                   primary: false,
-                  clipBehavior:
-                      widget.configuration.treeListViewConfigurations.clipBehavior ??
-                          Clip.hardEdge,
+                  clipBehavior: widget.configuration.treeListViewConfigurations
+                          .clipBehavior ??
+                      Clip.hardEdge,
                   itemCount: widget.root.length,
-                  hitTestBehavior: HitTestBehavior.translucent,
-                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  reverse:
+                      widget.configuration.treeListViewConfigurations.reverse,
+                  itemExtent: widget
+                      .configuration.treeListViewConfigurations.itemExtent,
+                  itemExtentBuilder: widget.configuration
+                      .treeListViewConfigurations.itemExtentBuilder,
+                  prototypeItem: widget
+                      .configuration.treeListViewConfigurations.prototypeItem,
+                  findChildIndexCallback: widget.configuration
+                      .treeListViewConfigurations.findChildIndexCallback,
+                  addAutomaticKeepAlives: widget.configuration
+                      .treeListViewConfigurations.addSemanticIndexes,
+                  addSemanticIndexes: widget.configuration
+                      .treeListViewConfigurations.addSemanticIndexes,
+                  cacheExtent: widget
+                      .configuration.treeListViewConfigurations.cacheExtent,
+                  semanticChildCount: widget.configuration
+                      .treeListViewConfigurations.semanticChildCount,
+                  dragStartBehavior: widget.configuration
+                      .treeListViewConfigurations.dragStartBehavior,
+                  keyboardDismissBehavior: widget.configuration
+                      .treeListViewConfigurations.keyboardDismissBehavior,
+                  restorationId: widget
+                      .configuration.treeListViewConfigurations.restorationId,
+                  hitTestBehavior: widget
+                      .configuration.treeListViewConfigurations.hitTestBehavior,
                   itemBuilder: (BuildContext context, int index) {
                     final Node node = widget.root.children.elementAt(index);
                     // Build appropriate node type
@@ -99,14 +130,12 @@ class _TreeViewState extends State<TreeView> {
 }
 
 /// Default widget shown when no nodes are present in the tree
-///
-/// Used when [TreeConfiguration.onDetectEmptyRoot] is not provided
 Widget get _kDefaultNotFoundWidget => Column(
       children: <Widget>[
         Container(
           alignment: Alignment.bottomCenter,
           height: 200,
-          child: const Text("--|| No nodes yet ||--"),
+          child: const Text(" No nodes yet "),
         ),
       ],
     );
