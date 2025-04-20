@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:example/common/controller/tree_controller.dart';
-import 'package:example/common/default_nodes_demo.dart';
-import 'package:example/common/entities/root.dart';
+import 'package:example/common/constants/default_files_nodes.dart';
+import 'package:example/common/nodes/root.dart';
 import 'package:example/widgets/views/android_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart'

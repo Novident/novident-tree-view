@@ -110,8 +110,8 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
 
   void onDragStarted() {
     isDragging = true;
-    final renderBox = context.findRenderObject() as RenderBox;
-    final cursorPosition = renderBox.localToGlobal(Offset.zero);
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final Offset cursorPosition = renderBox.localToGlobal(Offset.zero);
     DraggableListener.of(context).dragListener
       ..globalPosition = cursorPosition
       ..localPosition = null

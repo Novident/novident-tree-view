@@ -21,7 +21,7 @@ class FileComponentBuilder extends NodeComponentBuilder {
     if (context.details != null) {
       // Add a border to indicate in which portion of the target's height
       // the dragging node will be inserted.
-      final border = context.details?.mapDropPosition<BoxBorder?>(
+      final BoxBorder? border = context.details?.mapDropPosition<BoxBorder?>(
         whenAbove: () => Border(top: borderSide),
         whenInside: () => const Border(),
         whenBelow: () => Border(bottom: borderSide),

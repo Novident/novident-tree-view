@@ -19,23 +19,23 @@ final Delta exampleDelta = Delta()
   ..insert(
       ', this isn\'t what we\'re looking for. Our goal is to create a common solution that allows us to:\n\n')
   ..insert('Listen for changes to Nodes manually')
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert('Send or force updates to specific Nodes')
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert('Have a common operation flow (insert, '
       'delete, move, or update) for nodes within the tree that depends '
       'on the user\'s implementation and not '
       'the package (complete control over them)')
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert('Better support for Node configuration')
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert(
       '\nThis is why we decided to create this package, which adds everything ')
   ..insert('Novident', {"bold": true})
   ..insert(
     ' requires in one place. \n\nIn this package, we can simply add a few '
     'configurations and leave everything '
-    'else to it, as our own logic can create a beautiful file/node tree '
+    'else to it, as our own logic can create a beautifbullet file/node tree '
     'without too much code or the need for drivers.',
   )
   ..insert('\n\n')
@@ -62,37 +62,37 @@ final Delta exampleDelta = Delta()
     'link':
         'https://github.com/Novident/novident-tree-view/blob/master/doc/nodes_gestures.md',
   })
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert('📲 Components', {
     'link':
         'https://github.com/Novident/novident-tree-view/blob/master/doc/components.md',
   })
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert('🌱 Nodes', {
     'link':
         'https://github.com/Novident/novident-tree-view/blob/master/doc/nodes.md',
   })
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert('🌲 Tree Configuration', {
     'link':
         'https://github.com/Novident/novident-tree-view/blob/master/doc/tree_configuration.md',
   })
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert('📜 Drag and Drop details', {
     'link':
         'https://github.com/Novident/novident-tree-view/blob/master/doc/drag_and_drop_details.md',
   })
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert('🤏 Draggable Configurations', {
     'link':
         'https://github.com/Novident/novident-tree-view/blob/master/doc/draggable_configurations.md',
   })
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert('📏 Indentation Configuration', {
     'link':
         'https://github.com/Novident/novident-tree-view/blob/master/doc/indentation_configuration.md',
   })
-  ..insert('\n', {"list": "ul"})
+  ..insert('\n', {"list": "bullet"})
   ..insert('\n')
   ..insert('📝 Recipes')
   ..insert('\n', {"header": 2})
@@ -101,7 +101,7 @@ final Delta exampleDelta = Delta()
     'link':
         'https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/'
   })
-  ..insert('\n', {'list': 'ul'})
+  ..insert('\n', {'list': 'bullet'})
   ..insert('\n')
   ..insert('More recipes will be added later', {"italic": true})
   ..insert('\n\n')

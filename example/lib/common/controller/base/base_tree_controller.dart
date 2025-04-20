@@ -1,4 +1,4 @@
-import 'package:example/common/entities/root.dart';
+import 'package:example/common/nodes/root.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 

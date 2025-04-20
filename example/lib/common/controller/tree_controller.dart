@@ -1,5 +1,5 @@
-import 'package:example/common/entities/root.dart';
-import 'package:example/common/extensions/node_ext.dart';
+import 'package:example/common/nodes/root.dart';
+import 'package:example/extensions/node_ext.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'base/base_tree_controller.dart';
 

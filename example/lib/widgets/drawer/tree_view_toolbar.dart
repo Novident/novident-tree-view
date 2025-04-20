@@ -3,8 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
-import '../../common/entities/directory.dart';
-import '../../common/entities/file.dart';
+import '../../common/nodes/directory.dart';
+import '../../common/nodes/file.dart';
 
 class TreeViewToolbar extends StatefulWidget {
   final TreeController controller;

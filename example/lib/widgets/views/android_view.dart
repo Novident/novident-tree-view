@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:example/common/controller/tree_controller.dart';
-import 'package:example/common/extensions/node_ext.dart';
+import 'package:example/extensions/node_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Node;
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
-import '../../common/entities/file.dart';
+import '../../common/nodes/file.dart';
 import '../drawer/tree_view_drawer.dart';
 import '../editor/my_editor.dart';
 

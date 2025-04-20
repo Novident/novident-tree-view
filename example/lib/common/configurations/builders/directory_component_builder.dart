@@ -1,6 +1,7 @@
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/configurations/widgets/directory_widget.dart';
 import 'package:example/common/nodes/directory.dart';
+import 'package:example/common/nodes/file.dart';
 import 'package:example/extensions/node_ext.dart';
 import 'package:example/extensions/num_ext.dart';
 import 'package:flutter/material.dart';
@@ -84,6 +85,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
         final Node target = details.targetNode;
         details.mapDropPosition<void>(
           whenAbove: () {
+            // we need to take in account that inserting inside/above/below need redepth
             final Node target = details.targetNode;
             final NodeContainer parent = target.owner as NodeContainer;
             final NodeContainer dragParent =
@@ -94,14 +96,16 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
             );
             final int index = target.index;
             if (index != -1) {
-              controller.selectNode(
-                details.draggedNode.copyWith(
-                  details: details.draggedNode.details.copyWith(
-                    level: parent.level,
-                    owner: parent,
+              if (details.draggedNode is File) {
+                controller.selectNode(
+                  details.draggedNode.copyWith(
+                    details: details.draggedNode.details.copyWith(
+                      level: parent.level,
+                      owner: parent,
+                    ),
                   ),
-                ),
-              );
+                );
+              }
               parent.insert(
                 index,
                 details.draggedNode,
@@ -117,14 +121,16 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
                 shouldNotify: false,
               )
               ..notify(propagate: true);
-            controller.selectNode(
-              details.draggedNode.copyWith(
-                details: details.draggedNode.details.copyWith(
-                  level: details.targetNode.level + 1,
-                  owner: details.targetNode,
+            if (details.draggedNode is File) {
+              controller.selectNode(
+                details.draggedNode.copyWith(
+                  details: details.draggedNode.details.copyWith(
+                    level: details.targetNode.level + 1,
+                    owner: details.targetNode,
+                  ),
                 ),
-              ),
-            );
+              );
+            }
             (details.targetNode as NodeContainer)
                 .add(details.draggedNode, propagateNotifications: true);
           },
@@ -138,14 +144,16 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
             );
             final int index = target.index;
             if (index != -1) {
-              controller.selectNode(
-                details.draggedNode.copyWith(
-                  details: details.draggedNode.details.copyWith(
-                    level: details.targetNode.level,
-                    owner: parent,
+              if (details.draggedNode is File) {
+                controller.selectNode(
+                  details.draggedNode.copyWith(
+                    details: details.draggedNode.details.copyWith(
+                      level: details.targetNode.level,
+                      owner: parent,
+                    ),
                   ),
-                ),
-              );
+                );
+              }
               parent.insert(
                 (index + 1).exactByLimit(
                   parent.length,
