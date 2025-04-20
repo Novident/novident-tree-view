@@ -28,7 +28,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       );
       decoration = BoxDecoration(
         border: border,
-        color: border == null ? null : Colors.blueAccent,
+        color: border == null ? null : Colors.grey.withValues(alpha: 130),
       );
     }
 
@@ -53,7 +53,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
     // you need to make your implementation 
     // to expand the node 
     return NodeConfiguration(
-      makeTappable: true,
+      makeTappable: false,
       onTap: (BuildContext context) {
         // open or close your node
       },
@@ -67,57 +67,53 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       onWillAcceptWithDetails: (
         NovDragAndDropDetails<Node>? details,
         DragTargetDetails<Node> dragDetails,
-        Node target,
         Node? parent,
       ) {
         return details?.draggedNode != node;
       },
       onAcceptWithDetails: (
-        NovDragAndDropDetails<Node>? details,
-        Node target,
+        NovDragAndDropDetails<Node> details,
         Node? parent,
       ) {
-        if (details != null) {
-          details.mapDropPosition<void>(
-            whenAbove: () {
-              final NodeContainer parent = target.owner as NodeContainer;
-              final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-              final int index = target.index;
-              if (index != -1) {
-                dragParent.moveNode(
-                  details.draggedNode, 
-                  parent,
-                  insertIndex: index, 
-                  propagate: true,
-                );
-              }
-            },
-            whenInside: () {
-              final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-              dragParent
-                ..removeWhere(
-                  (n) => n.id == details.draggedNode.id,
-                  shouldNotify: false,
-                )
-                ..notify(propagate: true);
-              (details.targetNode as NodeContainer).add(details.draggedNode, propagateNotifications: true);
-            },
-            whenBelow: () {
-              final int index = target.index;
-              if (index != -1) {
-                (details.draggedNode.owner as NodeContainer).moveNode(
-                  details.draggedNode, 
-                  target.owner as NodeContainer,
-                  insertIndex: (index + 1).exactByLimit(
-                    parent.length,
-                  ), 
-                  propagate: true,
-                );
-              }
-            },
-          );
-          return;
-        }
+        final Node target = details.targetNode; 
+        details.mapDropPosition<void>(
+          whenAbove: () {
+            final NodeContainer parent = target.owner as NodeContainer;
+            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
+            final int index = target.index;
+            if (index != -1) {
+              dragParent.moveNode(
+                details.draggedNode, 
+                parent,
+                insertIndex: index, 
+                propagate: true,
+              );
+            }
+          },
+          whenInside: () {
+            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
+            dragParent
+              ..removeWhere(
+                (n) => n.id == details.draggedNode.id,
+                shouldNotify: false,
+              )
+              ..notify(propagate: true);
+            (details.targetNode as NodeContainer).add(details.draggedNode, propagateNotifications: true);
+          },
+          whenBelow: () {
+            final int index = target.index;
+            if (index != -1) {
+              (details.draggedNode.owner as NodeContainer).moveNode(
+                details.draggedNode, 
+                target.owner as NodeContainer,
+                insertIndex: (index + 1).exactByLimit(
+                  parent.length,
+                ), 
+                propagate: true,
+              );
+            }
+          },
+        );
       },
     );
   }

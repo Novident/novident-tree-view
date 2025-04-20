@@ -28,7 +28,7 @@ class FileComponentBuilder extends NodeComponentBuilder {
       );
       decoration = BoxDecoration(
         border: border,
-        color: border == null ? null : Colors.blueAccent,
+        color: border == null ? null : Colors.grey.withValues(alpha: 130),
       );
     }
 
@@ -51,7 +51,7 @@ class FileComponentBuilder extends NodeComponentBuilder {
     return NodeConfiguration(
       makeTappable: true,
       decoration: BoxDecoration(
-        color: isSelected == node
+        color: isSelected
             ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)
             : null,
       ),
@@ -62,60 +62,58 @@ class FileComponentBuilder extends NodeComponentBuilder {
   }
 
   @override
-  NodeDragGestures buildGestures(ComponentContext context) {
+  NodeDragGestures buildDragGestures(ComponentContext context) {
     final Node node = context.node;
     return NodeDragGestures(
       onWillAcceptWithDetails: (
         NovDragAndDropDetails<Node>? details,
         DragTargetDetails<Node> dragDetails,
-        Node target,
         Node? parent,
       ) => details?.draggedNode != node,
       onAcceptWithDetails: (
-        NovDragAndDropDetails<Node>? details,
-        Node target,
+        NovDragAndDropDetails<Node> details,
         Node? parent,
       ) {
-        if (details != null) {
-          details.mapDropPosition<void>(
-            whenAbove: () {
-              final NodeContainer parent = target.owner as NodeContainer;
-              final NodeContainer dragParent =
-                  details.draggedNode.owner as NodeContainer;
-              dragParent.removeWhere(
-                (n) => n.id == details.draggedNode.id,
+        final Node target = details.targetNode;
+        details.mapDropPosition<void>(
+          whenAbove: () {
+            final NodeContainer parent = target.owner as NodeContainer;
+            final NodeContainer dragParent =
+                details.draggedNode.owner as NodeContainer;
+            dragParent.removeWhere(
+              (n) => n.id == details.draggedNode.id,
+            );
+            final int index = target.index;
+            if (index != -1) {
+              parent.insert(
+                index,
+                details.draggedNode,
+                propagateNotifications: true,
               );
-              final int index = target.index;
-              if (index != -1) {
-                parent.insert(
-                  index,
-                  details.draggedNode,
-                );
-              }
-            },
-            // we not need to define inside, since we don't use it
-            whenInside: () {},
-            whenBelow: () {
-              final NodeContainer parent = target.owner as NodeContainer;
-              final NodeContainer dragParent =
-                  details.draggedNode.owner as NodeContainer;
-              dragParent.removeWhere(
-                (n) => n.id == details.draggedNode.id,
+            }
+          },
+          // we not need to define inside, since we don't use it
+          whenInside: () {},
+          whenBelow: () {
+            final NodeContainer parent = target.owner as NodeContainer;
+            final NodeContainer dragParent =
+                details.draggedNode.owner as NodeContainer;
+            dragParent.removeWhere(
+              (n) => n.id == details.draggedNode.id,
+            );
+            final int index = target.index;
+            if (index != -1) {
+              parent.insert(
+                (index + 1).exactByLimit(
+                  parent.length,
+                ),
+                details.draggedNode,
+                propagateNotifications: true,
               );
-              final int index = target.index;
-              if (index != -1) {
-                parent.insert(
-                  (index + 1).exactByLimit(
-                    parent.length,
-                  ),
-                  details.draggedNode,
-                );
-              }
-            },
-            ignoreInsideZone: true,
-          );
-          return;
-        }
+            }
+          },
+          ignoreInsideZone: true,
+        );
       },
     );
   }
