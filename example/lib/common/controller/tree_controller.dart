@@ -3,9 +3,7 @@ import 'package:example/common/extensions/node_ext.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'base/base_tree_controller.dart';
 
-/// The [`TreeController`] manages a tree of nodes, allowing for the manipulation and querying of its structure.
-/// This includes the `insertion`, `deletion`, `updating`, and `movement` of nodes within the tree.
-/// Additionally, it supports operations on node selections and notifies subscribers when there are changes in the tree.
+/// The [`TreeController`] manages a tree of nodes, allowing for querying Nodes.
 class TreeController extends BaseTreeController {
   TreeController({required Root root}) : _root = root;
 

@@ -1,14 +1,13 @@
 import 'package:example/common/controller/tree_controller.dart';
-import 'package:example/common/default_configurations/file_widget.dart';
-import 'package:example/common/entities/file.dart';
-import 'package:example/common/entities/root.dart';
-import 'package:example/common/extensions/node_ext.dart';
-import 'package:example/common/extensions/num_ext.dart';
+import 'package:example/common/configurations/widgets/directory_widget.dart';
+import 'package:example/common/nodes/directory.dart';
+import 'package:example/extensions/node_ext.dart';
+import 'package:example/extensions/num_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-class FileComponentBuilder extends NodeComponentBuilder {
+class DirectoryComponentBuilder extends NodeComponentBuilder {
   @override
   Widget build(ComponentContext context) {
     final Node node = context.node;
@@ -23,7 +22,7 @@ class FileComponentBuilder extends NodeComponentBuilder {
       // the dragging node will be inserted.
       final border = context.details?.mapDropPosition<BoxBorder?>(
         whenAbove: () => Border(top: borderSide),
-        whenInside: () => const Border(),
+        whenInside: () => Border.fromBorderSide(borderSide),
         whenBelow: () => Border(bottom: borderSide),
       );
       decoration = BoxDecoration(
@@ -36,8 +35,11 @@ class FileComponentBuilder extends NodeComponentBuilder {
       decoration: decoration,
       child: AutomaticNodeIndentation(
         node: node,
-        child: FileTile(
-          file: node.asFile,
+        child: DirectoryTile(
+          onTap: () {
+            node.asDirectory.openOrClose();
+          },
+          directory: node.asDirectory,
           controller: context.extraArgs['controller'],
         ),
       ),
@@ -52,21 +54,18 @@ class FileComponentBuilder extends NodeComponentBuilder {
     return NodeConfiguration(
       makeTappable: true,
       decoration: BoxDecoration(
-        color: controller.selectedNode?.id == node.id
+        color: controller.selectedNode == node
             ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)
             : null,
       ),
       onTap: (BuildContext context) {
-        if (node is Root) return;
-        controller.selectNode(node);
+        node.asDirectory.openOrClose();
       },
     );
   }
 
   @override
   NodeDragGestures buildDragGestures(ComponentContext context) {
-    final TreeController controller =
-        context.extraArgs['controller'] as TreeController;
     final Node node = context.node;
     return NodeDragGestures(
       onWillAcceptWithDetails: (
@@ -80,14 +79,18 @@ class FileComponentBuilder extends NodeComponentBuilder {
         NovDragAndDropDetails<Node> details,
         Node? parent,
       ) {
+        final TreeController controller =
+            context.extraArgs['controller'] as TreeController;
         final Node target = details.targetNode;
         details.mapDropPosition<void>(
           whenAbove: () {
+            final Node target = details.targetNode;
             final NodeContainer parent = target.owner as NodeContainer;
             final NodeContainer dragParent =
                 details.draggedNode.owner as NodeContainer;
             dragParent.removeWhere(
               (n) => n.id == details.draggedNode.id,
+              propagateNotifications: true,
             );
             final int index = target.index;
             if (index != -1) {
@@ -102,24 +105,43 @@ class FileComponentBuilder extends NodeComponentBuilder {
               parent.insert(
                 index,
                 details.draggedNode,
-                propagateNotifications: true,
               );
             }
           },
-          whenInside: () {},
+          whenInside: () {
+            final NodeContainer dragParent =
+                details.draggedNode.owner as NodeContainer;
+            dragParent
+              ..removeWhere(
+                (n) => n.id == details.draggedNode.id,
+                shouldNotify: false,
+              )
+              ..notify(propagate: true);
+            controller.selectNode(
+              details.draggedNode.copyWith(
+                details: details.draggedNode.details.copyWith(
+                  level: details.targetNode.level + 1,
+                  owner: details.targetNode,
+                ),
+              ),
+            );
+            (details.targetNode as NodeContainer)
+                .add(details.draggedNode, propagateNotifications: true);
+          },
           whenBelow: () {
             final NodeContainer parent = target.owner as NodeContainer;
             final NodeContainer dragParent =
                 details.draggedNode.owner as NodeContainer;
             dragParent.removeWhere(
               (n) => n.id == details.draggedNode.id,
+              propagateNotifications: true,
             );
             final int index = target.index;
             if (index != -1) {
               controller.selectNode(
                 details.draggedNode.copyWith(
                   details: details.draggedNode.details.copyWith(
-                    level: parent.level,
+                    level: details.targetNode.level,
                     owner: parent,
                   ),
                 ),
@@ -129,11 +151,9 @@ class FileComponentBuilder extends NodeComponentBuilder {
                   parent.length,
                 ),
                 details.draggedNode,
-                propagateNotifications: true,
               );
             }
           },
-          ignoreInsideZone: true,
         );
         return;
       },
@@ -144,5 +164,5 @@ class FileComponentBuilder extends NodeComponentBuilder {
   Widget? buildChildren(ComponentContext context) => null;
 
   @override
-  bool validate(Node node) => node is File;
+  bool validate(Node node) => node is Directory;
 }

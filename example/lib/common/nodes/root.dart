@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
 class Root extends NodeContainer {

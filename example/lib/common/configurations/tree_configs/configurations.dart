@@ -1,8 +1,8 @@
-import 'package:example/common/builders/directory_component_builder.dart';
-import 'package:example/common/builders/file_component_builder.dart';
+import 'package:example/common/configurations/builders/directory_component_builder.dart';
+import 'package:example/common/configurations/builders/file_component_builder.dart';
 import 'package:example/common/controller/tree_controller.dart';
-import 'package:example/common/entities/file.dart';
-import 'package:example/common/extensions/node_ext.dart';
+import 'package:example/common/nodes/file.dart';
+import 'package:example/extensions/node_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/internal.dart';
 import 'package:novident_nodes/novident_nodes.dart';

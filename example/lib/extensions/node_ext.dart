@@ -1,6 +1,6 @@
-import 'package:example/common/entities/directory.dart';
-import 'package:example/common/entities/file.dart';
-import 'package:example/common/entities/root.dart';
+import 'package:example/common/nodes/directory.dart';
+import 'package:example/common/nodes/file.dart';
+import 'package:example/common/nodes/root.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
 extension NodeExt on Node {

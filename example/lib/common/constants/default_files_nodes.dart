@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:example/common/contents.dart';
-import 'package:example/common/entities/directory.dart';
-import 'package:example/common/entities/file.dart';
+import 'package:example/common/constants/example_delta_content.dart';
+import 'package:example/common/nodes/directory.dart';
+import 'package:example/common/nodes/file.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
 late final List<Node> defaultNodes = <Node>[

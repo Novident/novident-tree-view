@@ -1,5 +1,5 @@
 import 'package:example/common/controller/tree_controller.dart';
-import 'package:example/common/entities/directory.dart';
+import 'package:example/common/nodes/directory.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/internal.dart';
