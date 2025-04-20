@@ -230,6 +230,9 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                                       List<Node?> candidateData,
                                       List<dynamic> rejectedData,
                                     ) {
+                                      if(!isDragging) {
+                                        return const SizedBox.shrink();
+                                      }
                                       return Container(
                                         padding: EdgeInsets.only(
                                           left: size.width / 4,
