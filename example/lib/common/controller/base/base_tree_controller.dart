@@ -1,4 +1,3 @@
-import 'package:example/common/controller/extension/base_controller_helpers.dart';
 import 'package:example/common/entities/root.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
@@ -28,62 +27,6 @@ abstract class BaseTreeController extends ChangeNotifier {
 
   Node? get selectedNode => currentSelectedNode.value;
 
-  List<Node>? getAllNodeMatches(bool Function(Node node) predicate) {
-    final Set<Node> matchedNodes = {};
-
-    void matchNode(List<Node> children) {
-      for (var node in children) {
-        if (predicate(node)) {
-          matchedNodes.add(node);
-        } else if (node is NodeContainer && node.isNotEmpty) {
-          matchNode(node.children);
-        }
-      }
-    }
-
-    matchNode(root.children);
-
-    return matchedNodes.toList();
-  }
-
-  Node? getNodeWhere(bool Function(Node node) predicate) {
-    Node? foundedNode;
-
-    bool searchNode(List<Node> children) {
-      for (var node in children) {
-        if (predicate(node)) {
-          foundedNode = node;
-          return true;
-        } else if (node is NodeContainer && node.isNotEmpty) {
-          final wasFounded = searchNode(node.children);
-          if (wasFounded) return true;
-        }
-      }
-      return false;
-    }
-
-    searchNode(root.children);
-
-    return foundedNode;
-  }
-
-  List<Node>? getAllChildrenInNode(String nodeId) {
-    NodeContainer? node;
-    for (Node treenode in root.children) {
-      if (treenode is NodeContainer && treenode.details.id == nodeId) {
-        node = treenode;
-      } else if (treenode is NodeContainer && treenode.isNotEmpty) {
-        node = getMultiNodeHelper(nodeId, compositeNode: treenode);
-      }
-    }
-    if (node != null) return [...node.children];
-
-    throw Exception(
-      'The gived node: $nodeId is not founded on any part of the tree. '
-      'Please, ensure the node really exist into the Tree',
-    );
-  }
-
   /// selectNode just makes of the tree directory
   /// select a node
   void selectNode(Node? node) {
@@ -93,43 +36,6 @@ abstract class BaseTreeController extends ChangeNotifier {
       }
     }
     currentSelectedNode.value = node;
-  }
-
-  bool updateNodeAtWithCallback(String nodeId, Node Function(Node) callback) {
-    for (int i = 0; i < root.length; i++) {
-      final node = root.elementAt(i);
-      if (node.id == nodeId) {
-        var newChildState = callback(node);
-        newChildState = newChildState.copyWith(
-          details: newChildState.details.copyWith(
-            level: node.level,
-            owner: node.owner,
-          ),
-        );
-        // verify if the callback created by the dev
-        // does not change the node value of the tree node
-        if (newChildState.id != node.id) {
-          throw Exception(
-            'Invalid custom node builded ${newChildState.id} when was expected $nodeId. Please, ensure of create a '
-            'TreeNode valid with the same '
-            'Node of the passed as the argument',
-          );
-        }
-        root[i] = newChildState;
-        if (selectedNode?.id == newChildState.id) {
-          selectNode(newChildState);
-        }
-        return true;
-      } else if (node is NodeContainer && node.isNotEmpty) {
-        final wasUpdated =
-            updateSubNodesWithCallback(node.children, callback, nodeId);
-        if (wasUpdated) {
-          root[i] = node;
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   @override

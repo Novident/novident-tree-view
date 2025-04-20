@@ -11,6 +11,7 @@ extension NodeExt on Node {
   bool get isRoot => this is Root;
 
   Directory get asDirectory => this as Directory;
+  NodeContainer get asContainer => this as NodeContainer;
   File get asFile => this as File;
 }
 

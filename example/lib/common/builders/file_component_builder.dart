@@ -28,7 +28,7 @@ class FileComponentBuilder extends NodeComponentBuilder {
       );
       decoration = BoxDecoration(
         border: border,
-        color: border == null ? null : Colors.blueAccent,
+        color: border == null ? null : Colors.grey.withValues(alpha: 130),
       );
     }
 
@@ -46,13 +46,12 @@ class FileComponentBuilder extends NodeComponentBuilder {
 
   @override
   NodeConfiguration buildConfigurations(ComponentContext context) {
-    final TreeController controller =
-        context.extraArgs['controller'] as TreeController;
+    final TreeController controller = context.extraArgs['controller'] as TreeController;
     final Node node = context.node;
     return NodeConfiguration(
-      makeTappable: false,
+      makeTappable: true,
       decoration: BoxDecoration(
-        color: controller.selectedNode == node
+        color: controller.selectedNode?.id == node.id
             ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)
             : null,
       ),
@@ -64,61 +63,75 @@ class FileComponentBuilder extends NodeComponentBuilder {
   }
 
   @override
-  NodeDragGestures buildGestures(ComponentContext context) {
+  NodeDragGestures buildDragGestures(ComponentContext context) {
+    final TreeController controller = context.extraArgs['controller'] as TreeController;
     final Node node = context.node;
     return NodeDragGestures(
       onWillAcceptWithDetails: (
         NovDragAndDropDetails<Node>? details,
         DragTargetDetails<Node> dragDetails,
-        Node target,
         Node? parent,
       ) {
         return details?.draggedNode != node;
       },
       onAcceptWithDetails: (
-        NovDragAndDropDetails<Node>? details,
-        Node target,
+        NovDragAndDropDetails<Node> details,
         Node? parent,
       ) {
-        if (details != null) {
-          details.mapDropPosition<void>(
-            whenAbove: () {
-              final NodeContainer parent = target.owner as NodeContainer;
-              final NodeContainer dragParent =
-                  details.draggedNode.owner as NodeContainer;
-              dragParent.removeWhere(
-                (n) => n.id == details.draggedNode.id,
-              );
-              final int index = target.index;
-              if (index != -1) {
-                parent.insert(
-                  index,
-                  details.draggedNode,
-                );
-              }
-            },
-            whenInside: () {},
-            whenBelow: () {
-              final NodeContainer parent = target.owner as NodeContainer;
-              final NodeContainer dragParent =
-                  details.draggedNode.owner as NodeContainer;
-              dragParent.removeWhere(
-                (n) => n.id == details.draggedNode.id,
-              );
-              final int index = target.index;
-              if (index != -1) {
-                parent.insert(
-                  (index + 1).exactByLimit(
-                    parent.length,
+        final Node target = details.targetNode;
+        details.mapDropPosition<void>(
+          whenAbove: () {
+            final NodeContainer parent = target.owner as NodeContainer;
+            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
+            dragParent.removeWhere(
+              (n) => n.id == details.draggedNode.id,
+            );
+            final int index = target.index;
+            if (index != -1) {
+              controller.selectNode(
+                details.draggedNode.copyWith(
+                  details: details.draggedNode.details.copyWith(
+                    level: parent.level,
+                    owner: parent,
                   ),
-                  details.draggedNode,
-                );
-              }
-            },
-            ignoreInsideZone: true,
-          );
-          return;
-        }
+                ),
+              );
+              parent.insert(
+                index,
+                details.draggedNode,
+                propagateNotifications: true,
+              );
+            }
+          },
+          whenInside: () {},
+          whenBelow: () {
+            final NodeContainer parent = target.owner as NodeContainer;
+            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
+            dragParent.removeWhere(
+              (n) => n.id == details.draggedNode.id,
+            );
+            final int index = target.index;
+            if (index != -1) {
+              controller.selectNode(
+                details.draggedNode.copyWith(
+                  details: details.draggedNode.details.copyWith(
+                    level: parent.level,
+                    owner: parent,
+                  ),
+                ),
+              );
+              parent.insert(
+                (index + 1).exactByLimit(
+                  parent.length,
+                ),
+                details.draggedNode,
+                propagateNotifications: true,
+              );
+            }
+          },
+          ignoreInsideZone: true,
+        );
+        return;
       },
     );
   }

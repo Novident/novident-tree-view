@@ -28,7 +28,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       );
       decoration = BoxDecoration(
         border: border,
-        color: border == null ? null : Colors.blueAccent,
+        color: border == null ? null : Colors.grey.withValues(alpha: 130),
       );
     }
 
@@ -52,83 +52,106 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
     final TreeController controller = context.extraArgs['controller'] as TreeController;
     final Node node = context.node;
     return NodeConfiguration(
-      makeTappable: false,
+      makeTappable: true,
       decoration: BoxDecoration(
         color: controller.selectedNode == node
             ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)
             : null,
       ),
       onTap: (BuildContext context) {
-        if (node is Root) return;
-        controller.selectNode(node);
+        node.asDirectory.openOrClose();
       },
     );
   }
 
   @override
-  NodeDragGestures buildGestures(ComponentContext context) {
+  NodeDragGestures buildDragGestures(ComponentContext context) {
     final Node node = context.node;
     return NodeDragGestures(
       onWillAcceptWithDetails: (
         NovDragAndDropDetails<Node>? details,
         DragTargetDetails<Node> dragDetails,
-        Node target,
         Node? parent,
       ) {
         return details?.draggedNode != node;
       },
       onAcceptWithDetails: (
-        NovDragAndDropDetails<Node>? details,
-        Node target,
+        NovDragAndDropDetails<Node> details,
         Node? parent,
       ) {
-        if (details != null) {
-          details.mapDropPosition<void>(
-            whenAbove: () {
-              final NodeContainer parent = target.owner as NodeContainer;
-              final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-              dragParent.removeWhere(
-                (n) => n.id == details.draggedNode.id,
-                propagateNotifications: true,
-              );
-              final int index = target.index;
-              if (index != -1) {
-                parent.insert(
-                  index,
-                  details.draggedNode,
-                );
-              }
-            },
-            whenInside: () {
-              final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-              dragParent
-                ..removeWhere(
-                  (n) => n.id == details.draggedNode.id,
-                  shouldNotify: false,
-                )
-                ..notify(propagate: true);
-              (details.targetNode as NodeContainer).add(details.draggedNode, propagateNotifications: true);
-            },
-            whenBelow: () {
-              final NodeContainer parent = target.owner as NodeContainer;
-              final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-                dragParent.removeWhere(
-                (n) => n.id == details.draggedNode.id,
-                propagateNotifications: true,
-              );
-              final int index = target.index;
-              if (index != -1) {
-                parent.insert(
-                  (index + 1).exactByLimit(
-                    parent.length,
+        final TreeController controller = context.extraArgs['controller'] as TreeController;
+        final Node target = details.targetNode;
+        details.mapDropPosition<void>(
+          whenAbove: () {
+            final Node target = details.targetNode;
+            final NodeContainer parent = target.owner as NodeContainer;
+            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
+            dragParent.removeWhere(
+              (n) => n.id == details.draggedNode.id,
+              propagateNotifications: true,
+            );
+            final int index = target.index;
+            if (index != -1) {
+              controller.selectNode(
+                details.draggedNode.copyWith(
+                  details: details.draggedNode.details.copyWith(
+                    level: parent.level,
+                    owner: parent,
                   ),
-                  details.draggedNode,
-                );
-              }
-            },
-          );
-          return;
-        }
+                ),
+              );
+              parent.insert(
+                index,
+                details.draggedNode,
+              );
+            }
+          },
+          whenInside: () {
+            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
+            dragParent
+              ..removeWhere(
+                (n) => n.id == details.draggedNode.id,
+                shouldNotify: false,
+              )
+              ..notify(propagate: true);
+              controller.selectNode(
+                details.draggedNode.copyWith(
+                  details: details.draggedNode.details.copyWith(
+                    level: details.targetNode.level + 1,
+                    owner: details.targetNode,
+                  ),
+                ),
+              );
+            (details.targetNode as NodeContainer)
+                .add(details.draggedNode, propagateNotifications: true);
+          },
+          whenBelow: () {
+            final NodeContainer parent = target.owner as NodeContainer;
+            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
+            dragParent.removeWhere(
+              (n) => n.id == details.draggedNode.id,
+              propagateNotifications: true,
+            );
+            final int index = target.index;
+            if (index != -1) {
+              controller.selectNode(
+                details.draggedNode.copyWith(
+                  details: details.draggedNode.details.copyWith(
+                    level: details.targetNode.level,
+                    owner: parent,
+                  ),
+                ),
+              );
+              parent.insert(
+                (index + 1).exactByLimit(
+                  parent.length,
+                ),
+                details.draggedNode,
+              );
+            }
+          },
+        );
+        return;
       },
     );
   }

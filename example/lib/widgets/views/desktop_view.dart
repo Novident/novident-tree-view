@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:example/common/controller/tree_controller.dart';
+import 'package:example/common/extensions/node_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Node;
 import 'package:flutter_quill/quill_delta.dart';
@@ -72,7 +73,7 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
   }
 
   void _handleOnChangeSelection(Node? node) {
-    if (_lastNode?.id == node?.id) return;
+    if (_lastNode?.details == node?.details) return;
     if (node != null && node is! File) {
       _showNoFileToWatch = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -168,33 +169,21 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                                   focusNode: _focusNode,
                                   onChange: (Document document) {
                                     if (_lastNode == null) return;
+                                    treeController ??= widget.controller;
                                     if (!_onChangeCalledFromSelectionHandler) {
-                                      final Delta currentDelta =
-                                          document.toDelta();
+                                      final Delta currentDelta = document.toDelta();
                                       // making this check, we avoid make a update when it does not
                                       // needed. OnChange also is called when the selection changes
                                       if (oldVersion != currentDelta) {
                                         oldVersion = currentDelta;
-                                        final newNodeState =
-                                            _lastNode!.copyWith(
-                                          details: _lastNode!.details,
-                                          content: jsonEncode(
-                                            document.toDelta().toJson(),
+                                        _lastNode!.owner?.asContainer.update(
+                                          _lastNode!.copyWith(
+                                            details: _lastNode!.details,
+                                            content: jsonEncode(
+                                              document.toDelta().toJson(),
+                                            ),
                                           ),
                                         );
-                                        final bool wasNotFounded =
-                                            !treeController
-                                                .updateNodeAtWithCallback(
-                                          newNodeState.id,
-                                          (originalNode) {
-                                            return newNodeState;
-                                          },
-                                        );
-                                        if (wasNotFounded) {
-                                          throw Exception(
-                                            'The node ${newNodeState.name} not exist into the current Tree state',
-                                          );
-                                        }
                                       }
                                     }
                                   },

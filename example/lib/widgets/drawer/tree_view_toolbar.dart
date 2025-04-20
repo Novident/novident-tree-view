@@ -26,7 +26,7 @@ class _TreeViewToolbarState extends State<TreeViewToolbar> {
           padding: const EdgeInsets.only(left: 5),
           child: IconButton(
             onPressed: () {
-              widget.controller.insertAtRoot(
+              widget.controller.root.add(
                 File(
                   details: NodeDetails.withLevel(
                     0,
@@ -43,7 +43,7 @@ class _TreeViewToolbarState extends State<TreeViewToolbar> {
         ),
         IconButton(
           onPressed: () {
-            widget.controller.insertAtRoot(
+            widget.controller.root.add(
               Directory(
                 details: NodeDetails.withLevel(0, widget.controller.root),
                 children: [],
