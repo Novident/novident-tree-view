@@ -74,44 +74,35 @@ and returns a value based on the current drop position.
 
 ### 📊 Visual Representation of how works `mapDropPosition`
 
-Note that the higher the `aboveZoneHeight`, the greater the range in which the upper zone of the `Node` will be detected, and the same goes for `belowZoneHeight`. In any case, the default values are sufficient to simulate the standard behavior of all `Node` trees (that accept **drag and drop**).
+Take in account that the higher the `aboveZoneHeight`, the greater the range in which the upper zone of the `Node` will be detected, and the same goes for `belowZoneHeight`. In any case, the default values are sufficient to simulate the standard behavior of all `Node` trees (that accept **drag and drop**).
 
-```
-┌───────────────────────────────┐
-│          Above Zone           │ (above zone height)
-├───────────────────────────────┤
-│                               │
-│                               │
-│         Inside Zone           │ (main content area)
-│                               │
-│                               │
-├───────────────────────────────┤
-│          Below Zone           │ (below zone height)
-└───────────────────────────────┘
-```
+![Image](https://github.com/user-attachments/assets/ab95c634-f80f-4f23-b515-abcd70bd0d60)
 
-### 📑 Properties description 
+### 📑 Properties 
 
-* `whenAbove`: Callback executed when node is in the upper threshold zone
-* `whenInside`: Callback executed when node is in the main content zone
-* `whenBelow`: Callback executed when node is in the lower threshold zone
-* `aboveZoneHeight`: Size of the upper threshold zone (**default: 7 logical pixels**)
-* `belowZoneHeight`: Size of the lower threshold zone (**default: 5 logical pixels**)
-* `ignoreAboveZone`: Determine if the above sections will be completely ignored
-* `ignoreInsideZone`: Determine if the inside sections will be completely ignored
-* `ignoreBelowZone`: Determine if the below sections will be completely ignored
+| Property/Method        | Type/Default Value                     | Description |
+|------------------------|----------------------------------------|-------------|
+| `whenAbove`            | `P Function()`                         | Callback executed when node is in the upper threshold zone |
+| `whenInside`           | `P Function()`                         | Callback executed when node is in the main content zone |
+| `whenBelow`            | `P Function()`                         | Callback executed when node is in the lower threshold zone |
+| `aboveZoneHeight`      | `double` (**default: 7 logical pixels**) | Size of the upper threshold zone |
+| `belowZoneHeight`      | `double` (**default: 5 logical pixels**) | Size of the lower threshold zone |
+| `ignoreAboveZone`      | `bool` (**default: false**)            | Determines if the above sections will be completely ignored |
+| `ignoreInsideZone`     | `bool` (**default: false**)            | Determines if the inside sections will be completely ignored |
+| `ignoreBelowZone`      | `bool` (**default: false**)            | Determines if the below sections will be completely ignored |
 
-## 🔎 Method signature
+### 🔎 Method Signature
 
 ```dart
 P? mapDropPosition<P>({
- required P Function() whenAbove,
- required P Function() whenInside,
- required P Function() whenBelow,
- bool ignoreInsideZone = false,
- bool ignoreAboveZone = false,
- bool ignoreBelowZone = false,
- double aboveZoneHeight = 7,
- double belowZoneHeight = 5,
+  required P Function() whenAbove,
+  required P Function() whenInside,
+  required P Function() whenBelow,
+  bool ignoreInsideZone = false,
+  bool ignoreAboveZone = false,
+  bool ignoreBelowZone = false,
+  double aboveZoneHeight = 7,
+  double belowZoneHeight = 5,
 });
 ```
+
