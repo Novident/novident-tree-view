@@ -68,6 +68,11 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
         nodeContext: context,
         node: widget.node,
         details: _details,
+        marksNeedBuild: () {
+          if (context.mounted && mounted) {
+            setState(() {});
+          }
+        },
         wrapWithDragGestures: wrapWithDragAndDropWidgets,
         extraArgs: widget.configuration.extraArgs,
       ),
@@ -273,6 +278,11 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
       node: widget.node,
       extraArgs: widget.configuration.extraArgs,
       wrapWithDragGestures: wrapWithDragAndDropWidgets,
+      marksNeedBuild: () {
+        if (context.mounted && mounted) {
+          setState(() {});
+        }
+      },
       details: candidateData == null
           ? _details
           : _details?.applyData(candidateData, rejectedData!),

@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_tree_view/src/tree/tree_items/leaf_node/leaf_node_builder.dart';
 import 'package:novident_tree_view/src/tree/wrapper/default_nodes_wrapper.dart';
 import 'package:provider/provider.dart';
 
@@ -61,6 +60,11 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       nodeContext: context,
       wrapWithDragGestures: wrapWithDragAndDropWidgets,
       node: widget.nodeContainer,
+      marksNeedBuild: () {
+        if (context.mounted && mounted) {
+          setState(() {});
+        }
+      },
       details: null,
       extraArgs: configuration.extraArgs,
     );

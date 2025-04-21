@@ -75,6 +75,11 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           depth: widget.depth,
           wrapWithDragGestures: wrapWithDragAndDropWidgets,
           nodeContext: context,
+          marksNeedBuild: () {
+            if (context.mounted && mounted) {
+              setState(() {});
+            }
+          },
           node: widget.node,
           details: null,
           extraArgs: configuration.extraArgs,
@@ -90,10 +95,6 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           child,
         );
 
-        if (wrapper != null) {
-          child = wrapper;
-        }
-
         if (nodeConfig.decoration != null) {
           child = Container(
             decoration: nodeConfig.decoration!,
@@ -106,7 +107,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           return child;
         }
 
-        return InkWell(
+        child = InkWell(
           onFocusChange: nodeConfig.onFocusChange,
           focusNode: nodeConfig.focusNode,
           focusColor: nodeConfig.focusColor,
@@ -151,6 +152,12 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           enableFeedback: true,
           child: wrapper ?? child,
         );
+
+        if (wrapper != null) {
+          child = wrapper;
+        }
+
+        return child;
       },
     );
   }

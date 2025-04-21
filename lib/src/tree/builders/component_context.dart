@@ -32,6 +32,8 @@ class ComponentContext {
   /// Drag-and-drop operation details (nullable)
   final NovDragAndDropDetails<Node>? details;
 
+  final void Function() marksNeedBuild;
+
   /// Gesture wrapper factory for adding drag interactions
   ///
   /// - [context]: Current component context
@@ -54,6 +56,7 @@ class ComponentContext {
     required this.node,
     required this.details,
     required this.wrapWithDragGestures,
+    required this.marksNeedBuild,
     this.extraArgs = const <String, dynamic>{},
   });
 }

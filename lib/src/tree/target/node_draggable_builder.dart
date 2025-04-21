@@ -86,6 +86,11 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
           nodeContext: context,
           node: widget.node,
           details: null,
+          marksNeedBuild: () {
+            if (context.mounted && mounted) {
+              setState(() {});
+            }
+          },
           wrapWithDragGestures: wrapWithDragAndDropWidgets,
           extraArgs: widget.configuration.extraArgs,
         ),
