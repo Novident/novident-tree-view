@@ -92,14 +92,14 @@ Note that the higher the `aboveZoneHeight`, the greater the range in which the u
 
 ### 📑 Properties description 
 
-`whenAbove`: Callback executed when node is in the upper threshold zone
-`whenInside`: Callback executed when node is in the main content zone
-`whenBelow`: Callback executed when node is in the lower threshold zone
-`aboveZoneHeight`: Size of the upper threshold zone (**default: 7 logical pixels**)
-`belowZoneHeight`: Size of the lower threshold zone (**default: 5 logical pixels**)
-`ignoreAboveZone`: Determine if the above sections will be completely ignored
-`ignoreInsideZone`: Determine if the inside sections will be completely ignored
-`ignoreBelowZone`: Determine if the below sections will be completely ignored
+* `whenAbove`: Callback executed when node is in the upper threshold zone
+* `whenInside`: Callback executed when node is in the main content zone
+* `whenBelow`: Callback executed when node is in the lower threshold zone
+* `aboveZoneHeight`: Size of the upper threshold zone (**default: 7 logical pixels**)
+* `belowZoneHeight`: Size of the lower threshold zone (**default: 5 logical pixels**)
+* `ignoreAboveZone`: Determine if the above sections will be completely ignored
+* `ignoreInsideZone`: Determine if the inside sections will be completely ignored
+* `ignoreBelowZone`: Determine if the below sections will be completely ignored
 
 ## 🔎 Method signature
 
