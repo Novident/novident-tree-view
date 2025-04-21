@@ -6,9 +6,7 @@ This package provides a flexible solution for displaying hierarchical data struc
 
 ## 💡 Motivation 
 
-We've investigated several alternatives that allow for convenient node tree creation with a standards-compliant implementation. 
-
-However, we couldn't find one. Most of these implementations required initializing a controller or similar to allow for a proper flow of actions within the tree.
+We've investigated several alternatives that allow for convenient node tree creation with a standards-compliant implementation. But, we couldn't find one that satisfies our requirements. Most of these implementations required initializing a controller or similar to allow for a proper flow of actions within the tree.
 
 However, for **Novident**, this isn't what we're looking for. Our goal is to create a common solution that allows us to:
 
@@ -36,17 +34,23 @@ dependencies:
 
 Since there's a lot to explain and implement, we prefer to provide a separate document for each section to explain more concretely and accurately what each point entails.
 
-* [✍️ Nodes Gestures](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes_gestures.md)
-* [📲 Components](https://github.com/Novident/novident-tree-view/blob/master/doc/components.md)
-* [🌱 Nodes](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes.md)
-* [🌲 Tree Configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/tree_configuration.md)
-* [📜 Drag and Drop details](https://github.com/Novident/novident-tree-view/blob/master/doc/drag_and_drop_details.md)
-* [🤏 Draggable Configurations](https://github.com/Novident/novident-tree-view/blob/master/doc/draggable_configurations.md)
-* [📏 Indentation Configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/indentation_configuration.md)
+* [🌱 Nodes](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes.md): In this section, we explain what a `Node` is and where it comes from, as well as a special mixin: `DragAndDropMixin` that is necessary for nodes to be able to use the **Drag and Drop** feature. 
+
+* [📲 Components](https://github.com/Novident/novident-tree-view/blob/master/doc/components.md): In this section, we explain what a `NodeComponentBuilder` (which is responsible for rendering nodes) is, and how you can create your own versions so you can create your own implementations of each Node.
+
+* [🌲 Tree Configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/tree_configuration.md): In this section, we explain what a `TreeConfiguration` is and all the properties that allow this package to render and use your Nodes to show a more effective appearance that simulates a node tree.
+
+* [🤏 Draggable Configurations](https://github.com/Novident/novident-tree-view/blob/master/doc/draggable_configurations.md): In this section, we explain what a `DraggableConfiguration` is, and how you can use it to configure the visual appearance of your nodes during Drag and Drop events.
+
+* [📏 Indentation Configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/indentation_configuration.md): In this section, we explain what an `IndentConfiguration` is, and how you can use it to add indentation to your nodes in a simple yet effective way.
+
+* [📜 Drag and Drop details](https://github.com/Novident/novident-tree-view/blob/master/doc/drag_and_drop_details.md): In this section, we explain what a `NovDragAndDropDetails` is, and what it is typically used for (and even how it is used internally to calculate certain positions during drag and drop events).
+
+* [✍️ Nodes Gestures](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes_gestures.md): In this section, we explain what a `NodeDragGestures` is and how you can configure it quickly and easily.
 
 ## 📝 Recipes
 
-* [🗃️ Tree Files](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/)
+* [🗃️ Tree File](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/tree_file.md): We designed an example of how you could recreate a file tree using this package quickly and easily, without too much code, but that allows you to simulate the standard behaviors of a file tree.
 
 _More recipes will be added later_
 
