@@ -3,23 +3,17 @@ import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// A callback that determines whether a dragged node can be accepted by a target node.
-///
-/// [details] contains information about the dragged node and its original position.
-/// [dragDetails] provides information about the current drag operation.
-/// [parent] is the potential parent container where the node might be dropped.
-/// Returns `true` if the target node can accept the dragged node, `false` otherwise.
 typedef NovOnWillAcceptOnNode = bool Function(
   NovDragAndDropDetails<Node>? details,
   DragTargetDetails<Node> dragDetails,
+  Node target,
   NodeContainer? parent,
 );
 
 /// A callback that handles the acceptance of a dragged node by a target node.
-///
-/// [details] contains information about the dragged node and its original position.
-/// [parent] is the container where the node has been dropped.
 typedef NovOnAcceptOnNode = void Function(
   NovDragAndDropDetails<Node> details,
+  Node target,
   NodeContainer? parent,
 );
 

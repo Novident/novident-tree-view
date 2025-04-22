@@ -77,26 +77,6 @@ class File extends Node implements DragAndDropMixin {
   }
 
   @override
-  int countAllNodes({required Predicate countNode}) {
-    return countNode(this) ? 1 : 0;
-  }
-
-  @override
-  int countNodes({required Predicate countNode}) {
-    return countNode(this) ? 1 : 0;
-  }
-
-  @override
-  bool deepExist(String id) {
-    return this.id == id;
-  }
-
-  @override
-  bool exist(String id) {
-    return this.id == id;
-  }
-
-  @override
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'name': name,
@@ -104,16 +84,6 @@ class File extends Node implements DragAndDropMixin {
       'content': content,
       'createAt': createAt.millisecondsSinceEpoch,
     };
-  }
-
-  @override
-  Node? visitAllNodes({required Predicate shouldGetNode}) {
-    return shouldGetNode(this) ? this : null;
-  }
-
-  @override
-  File? visitNode({required Predicate shouldGetNode}) {
-    return shouldGetNode(this) ? this : null;
   }
 
   @override

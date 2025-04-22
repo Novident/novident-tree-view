@@ -1,6 +1,26 @@
-# 🎨 Visual configuration on Draggable Nodes  
+# 🎨 Draggable configurations  
 
-**Designs the visual DNA** of draggable elements in the tree hierarchy. Controls exactly *how* nodes appear and behave during drag operations.  
+This is a class that allows us to configure the appearance of the dragged nodes.
+
+It actually contains the parameters required by widgets like Draggable or LongPressDraggable.
+
+## 🎭 Example: Styled Drag Experience  
+
+```dart  
+DraggableConfigurations(  
+  buildDragFeedbackWidget: (Node node) => Transform.scale(  
+    scale: 0.9,  
+    child: Opacity(  
+      opacity: 0.7,  
+      child: node is YourContainer 
+        ? YourContainerWidget(node: node) 
+        : YourLeafWidget(node: node as YourLeaf),  
+  ),  
+  childWhenDraggingBuilder: (node) => Placeholder(color: Colors.blue.withValues(alpha: 100)),  
+  preferLongPressDraggable: false,  
+  axis: Axis.vertical, // Vertical-only dragging  
+)  
+```  
 
 ## 🖼️ Properties  
 
@@ -31,22 +51,4 @@ DraggableConfigurations({
   this.axis, // null = free movement  
   this.childWhenDraggingBuilder, // Optional disappearing act  
 })  
-```  
-
-## 🎭 Example: Styled Drag Experience  
-
-```dart  
-DraggableConfigurations(  
-  buildDragFeedbackWidget: (node) => Transform.scale(  
-    scale: 0.9,  
-    child: Opacity(  
-      opacity: 0.7,  
-      child: NodeWidget(node: node),  
-  ),  
-  childWhenDraggingBuilder: (node) => Placeholder(  
-    color: Colors.blue.withValues(alpha: 100),  
-  feedbackOffset: const Offset(-20, 10),  
-  preferLongPressDraggable: Platform.isAndroid,  
-  axis: Axis.vertical, // Vertical-only dragging  
-)  
 ```  

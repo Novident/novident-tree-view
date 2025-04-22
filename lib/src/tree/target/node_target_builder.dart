@@ -104,6 +104,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     return _gestures.onWillAcceptWithDetails(
       _details,
       details,
+      widget.node,
       widget.owner,
     );
   }
@@ -146,7 +147,8 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     // Access the drag state through our custom listener
     //
     // Note: We intentionally avoid DragTarget's position data due to inconsistencies
-    final DraggableListener listener = DraggableListener.of(context);
+    final DraggableListener listener =
+        DraggableListener.of(context, listen: false);
 
     // Validate active drag state
     if (!listener.dragListener.isDragging) {
@@ -181,7 +183,9 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
       _details = _getDropDetails(details.data);
     });
 
-    _startOrCancelOnHoverExpansion();
+    if (details.data.id != widget.node.id) {
+      _startOrCancelOnHoverExpansion();
+    }
     _gestures.onDragMove?.call(details);
   }
 
@@ -197,6 +201,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     // Notify about the accepted drop
     _gestures.onAcceptWithDetails.call(
       _details!,
+      widget.node,
       widget.owner,
     );
 
@@ -209,6 +214,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   ///
   /// [data]: The node that was being dragged
   void _onLeave(Node? data) {
+    DraggableListener.of(context)..dragListener.targetNode = null;
     if (_details == null || data == null || _details!.draggedNode != data) {
       return;
     }
@@ -236,7 +242,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   ///
   /// [cancel]: If true, cancels any pending expansion
   void _startOrCancelOnHoverExpansion({bool cancel = false}) {
-    if (cancel && timer != null) {
+    if (cancel) {
       timer?.cancel();
       timer = null;
       return;

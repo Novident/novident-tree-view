@@ -10,10 +10,8 @@ final class DraggableConfigurations {
   /// This builder is used by [Draggable] and [LongPressDraggable] widgets to
   /// create a visual representation of the dragged node. The feedback widget
   /// is typically shown under the user's finger or cursor while dragging.
-  ///
-  /// - [node]: The node that is being dragged.
-  /// - Returns: A widget that represents the visual feedback during the drag operation.
-  final Widget Function(Node node) buildDragFeedbackWidget;
+  final Widget Function(Node node, BuildContext context)
+      buildDragFeedbackWidget;
 
   /// Display the feedback anchored at the position of the original child.
   ///
@@ -55,7 +53,7 @@ final class DraggableConfigurations {
             (preferLongPressDraggable ? kLongPressTimeout : 0);
 
   DraggableConfigurations copyWith({
-    Widget Function(Node node)? buildDragFeedbackWidget,
+    Widget Function(Node, BuildContext)? buildDragFeedbackWidget,
     DragAnchorStrategy? childDragAnchorStrategy,
     Offset? feedbackOffset,
     int? longPressDelay,

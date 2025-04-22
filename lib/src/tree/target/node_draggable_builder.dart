@@ -120,6 +120,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     DraggableListener.of(context).dragListener
       ..globalPosition = cursorPosition
       ..localPosition = null
+      ..targetNode = widget.node
       ..draggedNode = widget.node;
     gestures.onDragStart?.call(cursorPosition, widget.node);
   }
@@ -137,6 +138,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     DraggableListener.of(context).dragListener
       ..globalPosition = null
       ..localPosition = null
+      ..targetNode = null
       ..draggedNode = null;
     gestures.onDragCanceled?.call(velocity, point);
   }
@@ -146,6 +148,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     DraggableListener.of(context).dragListener
       ..globalPosition = null
       ..localPosition = null
+      ..targetNode = null
       ..draggedNode = null;
     gestures.onDragCompleted?.call(widget.node);
   }
@@ -176,7 +179,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
         onDragEnd: gestures.onDragEnd,
         onDragCompleted: () => gestures.onDragCompleted?.call(widget.node),
         feedback: widget.configuration.draggableConfigurations
-            .buildDragFeedbackWidget(widget.node),
+            .buildDragFeedbackWidget(widget.node, context),
         axis: widget.configuration.draggableConfigurations.axis,
         childWhenDragging: widget
             .configuration.draggableConfigurations.childWhenDraggingBuilder
@@ -207,6 +210,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
       feedback:
           widget.configuration.draggableConfigurations.buildDragFeedbackWidget(
         widget.node,
+        context,
       ),
       axis: widget.configuration.draggableConfigurations.axis,
       childWhenDragging: widget

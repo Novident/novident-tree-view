@@ -27,6 +27,7 @@ import 'package:novident_nodes/novident_nodes.dart';
 /// ```
 class DragListener {
   Node? draggedNode;
+  Node? targetNode;
   Offset? globalPosition;
   Offset? localPosition;
 
@@ -34,6 +35,7 @@ class DragListener {
     this.draggedNode,
     this.globalPosition,
     this.localPosition,
+    this.targetNode,
   });
 
   /// Returns true when a valid drag operation is active:

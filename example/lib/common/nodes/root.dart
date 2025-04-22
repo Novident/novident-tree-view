@@ -101,6 +101,11 @@ class Root extends NodeContainer {
       ),
     );
   }
+
+  @override
+  String toString() {
+    return 'Root(children: $children)';
+  }
 }
 
 const ListEquality<Node> _equality = ListEquality<Node>();

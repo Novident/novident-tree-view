@@ -18,14 +18,24 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       width: 2.0,
     );
 
-    if (context.details != null) {
+    final NovDragAndDropDetails<Node>? details = context.details;
+    if (details != null) {
       // Add a border to indicate in which portion of the target's height
       // the dragging node will be inserted.
-      final border = context.details?.mapDropPosition<BoxBorder?>(
-        whenAbove: () => Border(top: borderSide),
-        whenInside: () => Border.fromBorderSide(borderSide),
-        whenBelow: () => Border(bottom: borderSide),
-      );
+      BoxBorder? border;
+      if (Node.canMoveTo(
+        node: details.draggedNode,
+        target: details.targetNode,
+        inside: details.exactPosition() == DragHandlerPosition.into,
+        isSwapMove: details.draggedNode.owner?.id == details.targetNode.id,
+      )) {
+        border = context.details?.mapDropPosition<BoxBorder?>(
+          whenAbove: () => Border(top: borderSide),
+          whenInside: () => Border.fromBorderSide(borderSide),
+          whenBelow: () => Border(bottom: borderSide),
+        );
+      }
+
       decoration = BoxDecoration(
         border: border,
         color: border == null ? null : Colors.grey.withValues(alpha: 130),
@@ -72,13 +82,19 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       onWillAcceptWithDetails: (
         NovDragAndDropDetails<Node>? details,
         DragTargetDetails<Node> dragDetails,
-        Node? parent,
+        Node target,
+        NodeContainer? parent,
       ) {
-        return details?.draggedNode != node;
+        return Node.canMoveTo(
+          node: dragDetails.data,
+          target: target,
+          inside: details?.exactPosition() == DragHandlerPosition.into,
+        );
       },
       onAcceptWithDetails: (
         NovDragAndDropDetails<Node> details,
-        Node? parent,
+        Node target,
+        NodeContainer? parent,
       ) {
         final TreeController controller =
             context.extraArgs['controller'] as TreeController;
@@ -86,7 +102,6 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
         details.mapDropPosition<void>(
           whenAbove: () {
             // we need to take in account that inserting inside/above/below need redepth
-            final Node target = details.targetNode;
             final NodeContainer parent = target.owner as NodeContainer;
             final NodeContainer dragParent =
                 details.draggedNode.owner as NodeContainer;
@@ -117,7 +132,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
                 details.draggedNode.owner as NodeContainer;
             dragParent
               ..removeWhere(
-                (n) => n.id == details.draggedNode.id,
+                (Node n) => n.id == details.draggedNode.id,
                 shouldNotify: false,
               )
               ..notify(propagate: true);
@@ -125,8 +140,8 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
               controller.selectNode(
                 details.draggedNode.copyWith(
                   details: details.draggedNode.details.copyWith(
-                    level: details.targetNode.level + 1,
-                    owner: details.targetNode,
+                    level: target.level + 1,
+                    owner: target as NodeContainer,
                   ),
                 ),
               );

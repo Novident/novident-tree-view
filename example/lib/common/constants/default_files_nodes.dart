@@ -8,7 +8,7 @@ import 'package:novident_nodes/novident_nodes.dart';
 late final List<Node> defaultNodes = <Node>[
   Directory(
     details: NodeDetails.zero(),
-    name: 'Directory',
+    name: 'Directory root',
     createAt: DateTime.now(),
     children: [
       Directory(
@@ -34,7 +34,7 @@ late final List<Node> defaultNodes = <Node>[
   ),
   Directory(
     details: NodeDetails.withLevel(0),
-    name: 'Directory',
+    name: 'Directory root 2 -',
     createAt: DateTime.now(),
     children: List.from([
       Directory(

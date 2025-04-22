@@ -1,5 +1,5 @@
 import 'package:example/common/controller/tree_controller.dart';
-import 'package:example/common/configurations/tree_configs/configurations.dart';
+import 'package:example/common/configurations/tree_configs/tree_configurations.dart';
 import 'package:example/widgets/drawer/drawer_header.dart';
 import 'package:example/widgets/drawer/tree_view_toolbar.dart';
 import 'package:flutter/material.dart';

@@ -18,14 +18,21 @@ class FileComponentBuilder extends NodeComponentBuilder {
       width: 2.0,
     );
 
-    if (context.details != null) {
+    final NovDragAndDropDetails<Node>? details = context.details;
+    if (details != null) {
       // Add a border to indicate in which portion of the target's height
       // the dragging node will be inserted.
-      final BoxBorder? border = context.details?.mapDropPosition<BoxBorder?>(
-        whenAbove: () => Border(top: borderSide),
-        whenInside: () => const Border(),
-        whenBelow: () => Border(bottom: borderSide),
-      );
+      BoxBorder? border;
+      if (Node.canMoveTo(
+          node: details.draggedNode,
+          target: details.targetNode,
+          inside: details.exactPosition() == DragHandlerPosition.into)) {
+        border = details?.mapDropPosition<BoxBorder?>(
+          whenAbove: () => Border(top: borderSide),
+          whenInside: () => const Border(),
+          whenBelow: () => Border(bottom: borderSide),
+        );
+      }
       decoration = BoxDecoration(
         border: border,
         color: border == null ? null : Colors.grey.withValues(alpha: 130),
@@ -73,12 +80,18 @@ class FileComponentBuilder extends NodeComponentBuilder {
       onWillAcceptWithDetails: (
         NovDragAndDropDetails<Node>? details,
         DragTargetDetails<Node> dragDetails,
+        Node target,
         Node? parent,
       ) {
-        return details?.draggedNode != node;
+        return Node.canMoveTo(
+          node: dragDetails.data,
+          target: target,
+          inside: details?.exactPosition() == DragHandlerPosition.into,
+        );
       },
       onAcceptWithDetails: (
         NovDragAndDropDetails<Node> details,
+        Node target,
         Node? parent,
       ) {
         final Node target = details.targetNode;

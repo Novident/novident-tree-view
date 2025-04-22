@@ -1,7 +1,12 @@
+import 'package:example/common/configurations/widgets/trailing_menu/trailing_menu_widget.dart';
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/nodes/file.dart';
+import 'package:example/extensions/node_ext.dart';
+import 'package:example/extensions/num_ext.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_quill/internal.dart';
+import 'package:novident_nodes/novident_nodes.dart';
 
 class FileTile extends StatefulWidget {
   final File file;
