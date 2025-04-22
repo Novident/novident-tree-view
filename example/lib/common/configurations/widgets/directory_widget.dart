@@ -2,6 +2,7 @@ import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/nodes/directory.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_quill/internal.dart';
 
 class DirectoryTile extends StatefulWidget {
@@ -29,13 +30,16 @@ class _DirectoryTileState extends State<DirectoryTile> {
         builder: (context, _) {
           return Row(
             children: <Widget>[
-              InkWell(
-                onTap: widget.onTap,
-                child: widget.directory.isExpanded
-                    ? const Icon(Icons.expand_less)
-                    : const Icon(
-                        Icons.expand_more,
-                      ),
+              OverflowBox(
+                fit: OverflowBoxFit.deferToChild,
+                child: InkWell(
+                  onTap: widget.onTap,
+                  child: widget.directory.isExpanded
+                      ? const Icon(Icons.expand_less)
+                      : const Icon(
+                          Icons.expand_more,
+                        ),
+                ),
               ),
               const SizedBox(width: 5),
               Padding(

@@ -51,8 +51,8 @@ TreeConfiguration treeConfigurationBuilder(
       },
       draggableConfigurations: DraggableConfigurations(
         buildDragFeedbackWidget: (Node node, BuildContext context) {
-          final DragListener listener =
-              DraggableListener.of(context).dragListener;
+          final DragAndDropDetailsListener listener =
+              DragAndDropDetailsListener.of(context);
           return Material(
             type: MaterialType.canvas,
             borderRadius: BorderRadius.circular(10),
@@ -96,6 +96,41 @@ TreeConfiguration treeConfigurationBuilder(
                         softWrap: true,
                         maxLines: null,
                       ),
+                    ),
+                    ValueListenableBuilder<NodeDragAndDropDetails?>(
+                      valueListenable: listener.details,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 4, top: 2.5),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
+                          ),
+                          child: Icon(
+                            Icons.error,
+                            color: Colors.white,
+                            size: 15,
+                          ),
+                        ),
+                      ),
+                      builder: (
+                        BuildContext ctx,
+                        NodeDragAndDropDetails? value,
+                        Widget? child,
+                      ) {
+                        if (value == null || value.targetNode == null) {
+                          return const SizedBox.shrink();
+                        }
+                        final canMove = Node.canMoveTo(
+                          node: value.draggedNode,
+                          target: value.targetNode!,
+                          inside: value.inside,
+                        );
+                        if (!canMove) {
+                          return child!;
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
                   ],
                 ),

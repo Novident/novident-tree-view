@@ -94,5 +94,10 @@ class DraggableListener extends InheritedWidget {
   }
 
   @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.debug}) {
+    return super.toString(minLevel: minLevel);
+  }
+
+  @override
   bool updateShouldNotify(covariant DraggableListener oldWidget) => false;
 }

@@ -3,7 +3,6 @@ import 'package:example/common/configurations/widgets/file_widget.dart';
 import 'package:example/common/nodes/file.dart';
 import 'package:example/common/nodes/root.dart';
 import 'package:example/extensions/node_ext.dart';
-import 'package:example/extensions/num_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
@@ -24,10 +23,11 @@ class FileComponentBuilder extends NodeComponentBuilder {
       // the dragging node will be inserted.
       BoxBorder? border;
       if (Node.canMoveTo(
-          node: details.draggedNode,
-          target: details.targetNode,
-          inside: details.exactPosition() == DragHandlerPosition.into)) {
-        border = details?.mapDropPosition<BoxBorder?>(
+        node: details.draggedNode,
+        target: details.targetNode,
+        inside: details.exactPosition() == DragHandlerPosition.into,
+      )) {
+        border = details.mapDropPosition<BoxBorder?>(
           whenAbove: () => Border(top: borderSide),
           whenInside: () => const Border(),
           whenBelow: () => Border(bottom: borderSide),
@@ -35,12 +35,13 @@ class FileComponentBuilder extends NodeComponentBuilder {
       }
       decoration = BoxDecoration(
         border: border,
-        color: border == null ? null : Colors.grey.withValues(alpha: 130),
+        color: border == null ? null : Colors.grey.withValues(alpha: 180),
       );
     }
 
-    return Container(
-      decoration: decoration,
+    return DecoratedBox(
+      decoration: decoration ?? BoxDecoration(),
+      position: DecorationPosition.foreground,
       child: AutomaticNodeIndentation(
         node: node,
         child: FileTile(
@@ -75,81 +76,11 @@ class FileComponentBuilder extends NodeComponentBuilder {
   NodeDragGestures buildDragGestures(ComponentContext context) {
     final TreeController controller =
         context.extraArgs['controller'] as TreeController;
-    final Node node = context.node;
-    return NodeDragGestures(
-      onWillAcceptWithDetails: (
-        NovDragAndDropDetails<Node>? details,
-        DragTargetDetails<Node> dragDetails,
-        Node target,
-        Node? parent,
-      ) {
-        return Node.canMoveTo(
-          node: dragDetails.data,
-          target: target,
-          inside: details?.exactPosition() == DragHandlerPosition.into,
-        );
-      },
-      onAcceptWithDetails: (
-        NovDragAndDropDetails<Node> details,
-        Node target,
-        Node? parent,
-      ) {
-        final Node target = details.targetNode;
-        details.mapDropPosition<void>(
-          whenAbove: () {
-            final NodeContainer parent = target.owner as NodeContainer;
-            final NodeContainer dragParent =
-                details.draggedNode.owner as NodeContainer;
-            dragParent.removeWhere(
-              (n) => n.id == details.draggedNode.id,
-            );
-            final int index = target.index;
-            if (index != -1) {
-              controller.selectNode(
-                details.draggedNode.copyWith(
-                  details: details.draggedNode.details.copyWith(
-                    level: parent.level,
-                    owner: parent,
-                  ),
-                ),
-              );
-              parent.insert(
-                index,
-                details.draggedNode,
-                propagateNotifications: true,
-              );
-            }
-          },
-          whenInside: () {},
-          whenBelow: () {
-            final NodeContainer parent = target.owner as NodeContainer;
-            final NodeContainer dragParent =
-                details.draggedNode.owner as NodeContainer;
-            dragParent.removeWhere(
-              (n) => n.id == details.draggedNode.id,
-            );
-            final int index = target.index;
-            if (index != -1) {
-              controller.selectNode(
-                details.draggedNode.copyWith(
-                  details: details.draggedNode.details.copyWith(
-                    level: parent.level,
-                    owner: parent,
-                  ),
-                ),
-              );
-              parent.insert(
-                (index + 1).exactByLimit(
-                  parent.length,
-                ),
-                details.draggedNode,
-                propagateNotifications: true,
-              );
-            }
-          },
-          ignoreInsideZone: true,
-        );
-        return;
+    return NodeDragGestures.standardDragAndDrop(
+      onWillInsert: (Node node) {
+        if (node is File && controller.selection.value?.id == node.id) {
+          controller.selectNode(node);
+        }
       },
     );
   }

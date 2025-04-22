@@ -25,28 +25,32 @@ class _FileTileState extends State<FileTile> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 5),
-            child: Icon(
-              widget.file.content.isEmpty
-                  ? CupertinoIcons.doc_text
-                  : CupertinoIcons.doc_text_fill,
-              size: isAndroid ? 20 : null,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              "${widget.file.name} ${widget.file.level}",
-              maxLines: 1,
-              softWrap: true,
-              overflow: TextOverflow.fade,
-            ),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: ListenableBuilder(
+          listenable: widget.file,
+          builder: (context, child) {
+            return Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 5),
+                  child: Icon(
+                    widget.file.content.isEmpty
+                        ? CupertinoIcons.doc_text
+                        : CupertinoIcons.doc_text_fill,
+                    size: isAndroid ? 20 : null,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    "${widget.file.name} ${widget.file.level}",
+                    maxLines: 1,
+                    softWrap: true,
+                    overflow: TextOverflow.fade,
+                  ),
+                ),
+              ],
+            );
+          }),
     );
   }
 }

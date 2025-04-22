@@ -3,7 +3,6 @@ import 'package:example/common/configurations/widgets/directory_widget.dart';
 import 'package:example/common/nodes/directory.dart';
 import 'package:example/common/nodes/file.dart';
 import 'package:example/extensions/node_ext.dart';
-import 'package:example/extensions/num_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
@@ -27,7 +26,6 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
         node: details.draggedNode,
         target: details.targetNode,
         inside: details.exactPosition() == DragHandlerPosition.into,
-        isSwapMove: details.draggedNode.owner?.id == details.targetNode.id,
       )) {
         border = context.details?.mapDropPosition<BoxBorder?>(
           whenAbove: () => Border(top: borderSide),
@@ -38,12 +36,13 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
 
       decoration = BoxDecoration(
         border: border,
-        color: border == null ? null : Colors.grey.withValues(alpha: 130),
+        color: border == null ? null : Colors.grey.withValues(alpha: 180),
       );
     }
 
-    return Container(
-      decoration: decoration,
+    return DecoratedBox(
+      decoration: decoration ?? BoxDecoration(),
+      position: DecorationPosition.foreground,
       child: AutomaticNodeIndentation(
         node: node,
         child: DirectoryTile(
@@ -77,108 +76,13 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
 
   @override
   NodeDragGestures buildDragGestures(ComponentContext context) {
-    final Node node = context.node;
-    return NodeDragGestures(
-      onWillAcceptWithDetails: (
-        NovDragAndDropDetails<Node>? details,
-        DragTargetDetails<Node> dragDetails,
-        Node target,
-        NodeContainer? parent,
-      ) {
-        return Node.canMoveTo(
-          node: dragDetails.data,
-          target: target,
-          inside: details?.exactPosition() == DragHandlerPosition.into,
-        );
-      },
-      onAcceptWithDetails: (
-        NovDragAndDropDetails<Node> details,
-        Node target,
-        NodeContainer? parent,
-      ) {
-        final TreeController controller =
-            context.extraArgs['controller'] as TreeController;
-        final Node target = details.targetNode;
-        details.mapDropPosition<void>(
-          whenAbove: () {
-            // we need to take in account that inserting inside/above/below need redepth
-            final NodeContainer parent = target.owner as NodeContainer;
-            final NodeContainer dragParent =
-                details.draggedNode.owner as NodeContainer;
-            dragParent.removeWhere(
-              (n) => n.id == details.draggedNode.id,
-              propagateNotifications: true,
-            );
-            final int index = target.index;
-            if (index != -1) {
-              if (details.draggedNode is File) {
-                controller.selectNode(
-                  details.draggedNode.copyWith(
-                    details: details.draggedNode.details.copyWith(
-                      level: parent.level,
-                      owner: parent,
-                    ),
-                  ),
-                );
-              }
-              parent.insert(
-                index,
-                details.draggedNode,
-              );
-            }
-          },
-          whenInside: () {
-            final NodeContainer dragParent =
-                details.draggedNode.owner as NodeContainer;
-            dragParent
-              ..removeWhere(
-                (Node n) => n.id == details.draggedNode.id,
-                shouldNotify: false,
-              )
-              ..notify(propagate: true);
-            if (details.draggedNode is File) {
-              controller.selectNode(
-                details.draggedNode.copyWith(
-                  details: details.draggedNode.details.copyWith(
-                    level: target.level + 1,
-                    owner: target as NodeContainer,
-                  ),
-                ),
-              );
-            }
-            (details.targetNode as NodeContainer)
-                .add(details.draggedNode, propagateNotifications: true);
-          },
-          whenBelow: () {
-            final NodeContainer parent = target.owner as NodeContainer;
-            final NodeContainer dragParent =
-                details.draggedNode.owner as NodeContainer;
-            dragParent.removeWhere(
-              (n) => n.id == details.draggedNode.id,
-              propagateNotifications: true,
-            );
-            final int index = target.index;
-            if (index != -1) {
-              if (details.draggedNode is File) {
-                controller.selectNode(
-                  details.draggedNode.copyWith(
-                    details: details.draggedNode.details.copyWith(
-                      level: details.targetNode.level,
-                      owner: parent,
-                    ),
-                  ),
-                );
-              }
-              parent.insert(
-                (index + 1).exactByLimit(
-                  parent.length,
-                ),
-                details.draggedNode,
-              );
-            }
-          },
-        );
-        return;
+    final TreeController controller =
+        context.extraArgs['controller'] as TreeController;
+    return NodeDragGestures.standardDragAndDrop(
+      onWillInsert: (Node node) {
+        if (node is File && controller.selection.value?.id == node.id) {
+          controller.selectNode(node);
+        }
       },
     );
   }

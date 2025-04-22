@@ -22,6 +22,7 @@ export 'src/tree/builders/component_builder.dart';
 export 'src/tree/builders/component_context.dart';
 // details
 export 'src/tree/details/nov_drag_and_drop_details.dart';
+export 'src/tree/target/listeners/node_target_details_listener.dart';
 // draggable configs
 export 'src/tree/config/draggable/draggable_configurations.dart';
 // widgets for drag and drop

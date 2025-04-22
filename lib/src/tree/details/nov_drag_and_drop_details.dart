@@ -112,7 +112,7 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   /// - [whenInside]: Callback executed when node is in the main content zone
   /// - [whenBelow]: Callback executed when node is in the lower threshold zone
   /// - [aboveZoneHeight]: Size of the upper threshold zone (default: 7 logical pixels)
-  /// - [belowZoneHeight]: Size of the lower threshold zone (default: 7 logical pixels)
+  /// - [belowZoneHeight]: Size of the lower threshold zone (default: 5.5 logical pixels)
   ///
   /// ## Visual Representation
   /// ```
@@ -147,7 +147,7 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     bool ignoreAboveZone = false,
     bool ignoreBelowZone = false,
     double aboveZoneHeight = 7,
-    double belowZoneHeight = 5,
+    double belowZoneHeight = 5.5,
   }) {
     final double cursorPos = globalDropPosition.dy;
     if (cursorPos < globalTargetNodeOffset.dy ||

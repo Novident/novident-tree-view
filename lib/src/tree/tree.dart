@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart' show Node, NodeContainer;
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_tree_view/src/tree/target/listeners/node_target_details_listener.dart';
 import 'package:provider/provider.dart';
 
 /// A customizable scrollable tree view component with drag-and-drop support
@@ -35,94 +36,96 @@ class _TreeViewState extends State<TreeView> {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableListener(
-      child: Provider<TreeConfiguration>(
-        create: (BuildContext context) => widget.configuration,
-        child: ListView(
-          shrinkWrap:
-              widget.configuration.treeListViewConfigurations.shrinkWrap,
-          controller:
-              widget.configuration.treeListViewConfigurations.scrollController,
-          primary: widget.configuration.treeListViewConfigurations.primary,
-          clipBehavior:
-              widget.configuration.treeListViewConfigurations.clipBehavior ??
-                  Clip.hardEdge,
-          addRepaintBoundaries: false,
-          addSemanticIndexes: widget
-              .configuration.treeListViewConfigurations.addSemanticIndexes,
-          addAutomaticKeepAlives: widget
-              .configuration.treeListViewConfigurations.addAutomaticKeepAlives,
-          physics: widget.configuration.treeListViewConfigurations.physics ??
-              const NeverScrollableScrollPhysics(),
-          children: <Widget>[
-            // Main tree content
-            ListenableBuilder(
-              listenable: widget.root,
-              builder: (BuildContext context, Widget? child) {
-                if (widget.root.isEmpty) return noNodesFoundWidget;
-                return ListView.builder(
-                  shrinkWrap: widget
-                      .configuration.treeListViewConfigurations.shrinkWrap,
-                  scrollDirection: Axis.vertical,
-                  physics: const NeverScrollableScrollPhysics(),
-                  primary: false,
-                  clipBehavior: widget.configuration.treeListViewConfigurations
-                          .clipBehavior ??
-                      Clip.hardEdge,
-                  itemCount: widget.root.length,
-                  reverse:
-                      widget.configuration.treeListViewConfigurations.reverse,
-                  itemExtent: widget
-                      .configuration.treeListViewConfigurations.itemExtent,
-                  itemExtentBuilder: widget.configuration
-                      .treeListViewConfigurations.itemExtentBuilder,
-                  prototypeItem: widget
-                      .configuration.treeListViewConfigurations.prototypeItem,
-                  findChildIndexCallback: widget.configuration
-                      .treeListViewConfigurations.findChildIndexCallback,
-                  addAutomaticKeepAlives: widget.configuration
-                      .treeListViewConfigurations.addSemanticIndexes,
-                  addSemanticIndexes: widget.configuration
-                      .treeListViewConfigurations.addSemanticIndexes,
-                  cacheExtent: widget
-                      .configuration.treeListViewConfigurations.cacheExtent,
-                  semanticChildCount: widget.configuration
-                      .treeListViewConfigurations.semanticChildCount,
-                  dragStartBehavior: widget.configuration
-                      .treeListViewConfigurations.dragStartBehavior,
-                  keyboardDismissBehavior: widget.configuration
-                      .treeListViewConfigurations.keyboardDismissBehavior,
-                  restorationId: widget
-                      .configuration.treeListViewConfigurations.restorationId,
-                  hitTestBehavior: widget
-                      .configuration.treeListViewConfigurations.hitTestBehavior,
-                  itemBuilder: (BuildContext context, int index) {
-                    final Node node = widget.root.children.elementAt(index);
-                    // Build appropriate node type
-                    if (node is! NodeContainer) {
-                      return LeafNodeBuilder(
-                        node: node,
-                        depth: 0,
-                        owner: widget.root,
-                      );
-                    } else {
-                      return ContainerBuilder(
-                        nodeContainer: node,
-                        depth: 0,
-                        owner: widget.root,
-                      );
-                    }
-                  },
-                );
-              },
-            ),
-            // Bottom padding spacer
-            Padding(
-              padding: EdgeInsets.only(
-                bottom: widget.bottomInsets,
+    return DragAndDropDetailsListener(
+      child: DraggableListener(
+        child: Provider<TreeConfiguration>(
+          create: (BuildContext context) => widget.configuration,
+          child: ListView(
+            shrinkWrap:
+                widget.configuration.treeListViewConfigurations.shrinkWrap,
+            controller: widget
+                .configuration.treeListViewConfigurations.scrollController,
+            primary: widget.configuration.treeListViewConfigurations.primary,
+            clipBehavior:
+                widget.configuration.treeListViewConfigurations.clipBehavior ??
+                    Clip.hardEdge,
+            addRepaintBoundaries: false,
+            addSemanticIndexes: widget
+                .configuration.treeListViewConfigurations.addSemanticIndexes,
+            addAutomaticKeepAlives: widget.configuration
+                .treeListViewConfigurations.addAutomaticKeepAlives,
+            physics: widget.configuration.treeListViewConfigurations.physics ??
+                const NeverScrollableScrollPhysics(),
+            children: <Widget>[
+              // Main tree content
+              ListenableBuilder(
+                listenable: widget.root,
+                builder: (BuildContext context, Widget? child) {
+                  if (widget.root.isEmpty) return noNodesFoundWidget;
+                  return ListView.builder(
+                    shrinkWrap: widget
+                        .configuration.treeListViewConfigurations.shrinkWrap,
+                    scrollDirection: Axis.vertical,
+                    physics: const NeverScrollableScrollPhysics(),
+                    primary: false,
+                    clipBehavior: widget.configuration
+                            .treeListViewConfigurations.clipBehavior ??
+                        Clip.hardEdge,
+                    itemCount: widget.root.length,
+                    reverse:
+                        widget.configuration.treeListViewConfigurations.reverse,
+                    itemExtent: widget
+                        .configuration.treeListViewConfigurations.itemExtent,
+                    itemExtentBuilder: widget.configuration
+                        .treeListViewConfigurations.itemExtentBuilder,
+                    prototypeItem: widget
+                        .configuration.treeListViewConfigurations.prototypeItem,
+                    findChildIndexCallback: widget.configuration
+                        .treeListViewConfigurations.findChildIndexCallback,
+                    addAutomaticKeepAlives: widget.configuration
+                        .treeListViewConfigurations.addSemanticIndexes,
+                    addSemanticIndexes: widget.configuration
+                        .treeListViewConfigurations.addSemanticIndexes,
+                    cacheExtent: widget
+                        .configuration.treeListViewConfigurations.cacheExtent,
+                    semanticChildCount: widget.configuration
+                        .treeListViewConfigurations.semanticChildCount,
+                    dragStartBehavior: widget.configuration
+                        .treeListViewConfigurations.dragStartBehavior,
+                    keyboardDismissBehavior: widget.configuration
+                        .treeListViewConfigurations.keyboardDismissBehavior,
+                    restorationId: widget
+                        .configuration.treeListViewConfigurations.restorationId,
+                    hitTestBehavior: widget.configuration
+                        .treeListViewConfigurations.hitTestBehavior,
+                    itemBuilder: (BuildContext context, int index) {
+                      final Node node = widget.root.children.elementAt(index);
+                      // Build appropriate node type
+                      if (node is! NodeContainer) {
+                        return LeafNodeBuilder(
+                          node: node,
+                          depth: 0,
+                          owner: widget.root,
+                        );
+                      } else {
+                        return ContainerBuilder(
+                          nodeContainer: node,
+                          depth: 0,
+                          owner: widget.root,
+                        );
+                      }
+                    },
+                  );
+                },
               ),
-            )
-          ],
+              // Bottom padding spacer
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: widget.bottomInsets,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

@@ -91,4 +91,131 @@ final class NodeDragGestures {
     this.onDragCanceled,
     this.onDragCompleted,
   });
+
+  /// Creates a standard and basic Drag and Drop gestures
+  ///
+  /// You can use [onWillInsert] property, to listen the new states of the nodes
+  /// that will be inserted into the new owner
+  factory NodeDragGestures.standardDragAndDrop({
+    NovOnWillAcceptOnNode? onWillAcceptWithDetails,
+    void Function(Node)? onWillInsert,
+    void Function(DragTargetDetails<Node> details)? onDragMove,
+    void Function(Offset offset, Node node)? onDragStart,
+    void Function(DragUpdateDetails details)? onDragUpdate,
+    void Function(Node data)? onLeave,
+    void Function(DraggableDetails)? onDragEnd,
+    void Function(Velocity velocity, Offset point)? onDragCanceled,
+    void Function(Node node)? onDragCompleted,
+  }) {
+    return NodeDragGestures(
+      onWillAcceptWithDetails: onWillAcceptWithDetails ?? _standardOnWillAccept,
+      onAcceptWithDetails: (details, target, parent) => _standardOnAccept(
+        details,
+        onWillInsert,
+        target,
+        parent,
+      ),
+      onDragMove: onDragMove,
+      onDragStart: onDragStart,
+      onLeave: onLeave,
+      onDragUpdate: onDragUpdate,
+      onDragEnd: onDragEnd,
+      onDragCanceled: onDragCanceled,
+      onDragCompleted: onDragCompleted,
+    );
+  }
+
+  static void _standardOnAccept(
+    NovDragAndDropDetails<Node> details,
+    void Function(Node)? onWillInsert,
+    Node target,
+    NodeContainer? parent,
+  ) {
+    final Node target = details.targetNode;
+    details.mapDropPosition<void>(
+      whenAbove: () {
+        final NodeContainer parent = target.owner as NodeContainer;
+        final NodeContainer dragParent =
+            details.draggedNode.owner as NodeContainer;
+        dragParent.removeWhere(
+          (n) => n.id == details.draggedNode.id,
+          propagateNotifications: true,
+        );
+        final int index = target.index;
+        if (index != -1) {
+          onWillInsert?.call(
+            details.draggedNode.copyWith(
+              details: details.draggedNode.details.copyWith(
+                level: parent.level,
+                owner: parent,
+              ),
+            ),
+          );
+          parent.insert(
+            index,
+            details.draggedNode,
+          );
+        }
+      },
+      whenInside: () {
+        final NodeContainer dragParent =
+            details.draggedNode.owner as NodeContainer;
+        dragParent
+          ..removeWhere(
+            (Node n) => n.id == details.draggedNode.id,
+            shouldNotify: false,
+          )
+          ..notify(propagate: true);
+        onWillInsert?.call(
+          details.draggedNode.copyWith(
+            details: details.draggedNode.details.copyWith(
+              level: target.level + 1,
+              owner: target as NodeContainer,
+            ),
+          ),
+        );
+        (details.targetNode as NodeContainer)
+            .add(details.draggedNode, propagateNotifications: true);
+      },
+      whenBelow: () {
+        final NodeContainer parent = target.owner as NodeContainer;
+        final NodeContainer dragParent =
+            details.draggedNode.owner as NodeContainer;
+        dragParent.removeWhere(
+          (n) => n.id == details.draggedNode.id,
+          propagateNotifications: true,
+        );
+        final int index = target.index;
+        if (index != -1) {
+          onWillInsert?.call(details.draggedNode.copyWith(
+            details: details.draggedNode.details.copyWith(
+              level: target.level,
+              owner: parent,
+            ),
+          ));
+          parent.insert(
+            index + 1 >= parent.length ? parent.length : index + 1,
+            details.draggedNode,
+          );
+        }
+      },
+      ignoreInsideZone: target is! NodeContainer,
+    );
+    return;
+  }
+
+  static bool _standardOnWillAccept(
+    NovDragAndDropDetails<Node>? details,
+    DragTargetDetails<Node> dragDetails,
+    Node target,
+    NodeContainer? parent,
+  ) {
+    return Node.canMoveTo(
+      node: details?.draggedNode ?? dragDetails.data,
+      target: details?.targetNode ?? target,
+      inside: details == null
+          ? true
+          : details.exactPosition() == DragHandlerPosition.into,
+    );
+  }
 }

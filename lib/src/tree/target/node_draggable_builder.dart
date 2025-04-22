@@ -119,7 +119,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     final Offset cursorPosition = renderBox.localToGlobal(Offset.zero);
     DraggableListener.of(context).dragListener
       ..globalPosition = cursorPosition
-      ..localPosition = null
+      ..localPosition = renderBox.globalToLocal(cursorPosition)
       ..targetNode = widget.node
       ..draggedNode = widget.node;
     gestures.onDragStart?.call(cursorPosition, widget.node);
@@ -140,6 +140,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
       ..localPosition = null
       ..targetNode = null
       ..draggedNode = null;
+    DragAndDropDetailsListener.of(context).details.value = null;
     gestures.onDragCanceled?.call(velocity, point);
   }
 
