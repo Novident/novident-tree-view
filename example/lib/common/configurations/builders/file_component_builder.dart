@@ -1,5 +1,6 @@
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/configurations/widgets/file_widget.dart';
+import 'package:example/common/nodes/directory.dart';
 import 'package:example/common/nodes/file.dart';
 import 'package:example/common/nodes/root.dart';
 import 'package:example/extensions/node_ext.dart';
@@ -77,9 +78,16 @@ class FileComponentBuilder extends NodeComponentBuilder {
     final TreeController controller =
         context.extraArgs['controller'] as TreeController;
     return NodeDragGestures.standardDragAndDrop(
-      onWillInsert: (Node node) {
+      onWillInsert: (Node node, NodeContainer owner, int level) {
+        if (node is Directory) {
+          node.redepthChildren(currentLevel: level);
+        }
         if (node is File && controller.selection.value?.id == node.id) {
-          controller.selectNode(node);
+          controller.selectNode(
+            node.copyWith(
+              details: node.details.copyWith(owner: owner, level: level),
+            ),
+          );
         }
       },
     );

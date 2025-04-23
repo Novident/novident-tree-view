@@ -76,51 +76,11 @@ class FileComponentBuilder extends NodeComponentBuilder {
     final Node node = context.node;
     // You can also use [NodeDragGestures.standardDragAndDrop] that 
     // already have this implementation
-    return NodeDragGestures(
-      onWillAcceptWithDetails: (
-        NovDragAndDropDetails<Node>? details,
-        DragTargetDetails<Node> dragDetails,
-        Node target,
-        NodeContainer? parent,
-      ) {
-        return Node.canMoveTo(
-          node: details?.draggedNode ?? dragDetails.data,
-          target: details?.targetNode ?? target,
-          inside: details == null 
-            ? true 
-            : details.exactPosition() == DragHandlerPosition.into,
-        );
-      },
-      onAcceptWithDetails: (
-        NovDragAndDropDetails<Node> details,
-        Node target,
-        NodeContainer? parent,
-      ) {
-        final int index = target.index;
-        details.mapDropPosition<void>(
-          ignoreInsideZone: true,
-          whenAbove: () {
-            if (index >= 0) {
-              Node.moveTo(
-                details.draggedNode,
-                target.owner!,
-                index: index,
-              );
-            }
-          },
-          whenInside: () {},
-          whenBelow: () {
-            if (index >= 0) {
-              Node.moveTo(
-                details.draggedNode,
-                target.owner!,
-                index: (index + 1).exactByLimit(
-                  parent.length,
-                ),
-              );
-            }
-          },
-        );
+    return NodeDragGestures.standardDragAndDrop(
+      onWillInsert: (Node node, NodeContainer newOwner, int newLevel) {
+        if (node is Directory) {
+          node.redepthChildren(currentLevel: newLevel);
+        }
       },
     );
   }

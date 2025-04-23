@@ -98,7 +98,7 @@ final class NodeDragGestures {
   /// that will be inserted into the new owner
   factory NodeDragGestures.standardDragAndDrop({
     NovOnWillAcceptOnNode? onWillAcceptWithDetails,
-    void Function(Node)? onWillInsert,
+    void Function(Node node, NodeContainer newOwner, int level)? onWillInsert,
     void Function(DragTargetDetails<Node> details)? onDragMove,
     void Function(Offset offset, Node node)? onDragStart,
     void Function(DragUpdateDetails details)? onDragUpdate,
@@ -132,7 +132,7 @@ final class NodeDragGestures {
 
   static void _standardOnAccept(
     NovDragAndDropDetails<Node> details,
-    void Function(Node)? onWillInsert,
+    void Function(Node node, NodeContainer newOwner, int level)? onWillInsert,
     Node target,
     NodeContainer? parent,
   ) {
@@ -148,12 +148,9 @@ final class NodeDragGestures {
         final int index = target.index;
         if (index != -1) {
           onWillInsert?.call(
-            details.draggedNode.copyWith(
-              details: details.draggedNode.details.copyWith(
-                level: parent.level,
-                owner: parent,
-              ),
-            ),
+            details.draggedNode,
+            parent,
+            parent.level + 1,
           );
           parent.insert(
             index,
@@ -170,12 +167,9 @@ final class NodeDragGestures {
           )
           ..notify(propagate: true);
         onWillInsert?.call(
-          details.draggedNode.copyWith(
-            details: details.draggedNode.details.copyWith(
-              level: target.level + 1,
-              owner: target as NodeContainer,
-            ),
-          ),
+          details.draggedNode,
+          target as NodeContainer,
+          target.level + 1,
         );
         (details.targetNode as NodeContainer)
             .add(details.draggedNode, propagateNotifications: true);
@@ -189,12 +183,11 @@ final class NodeDragGestures {
         );
         final int index = target.index;
         if (index != -1) {
-          onWillInsert?.call(details.draggedNode.copyWith(
-            details: details.draggedNode.details.copyWith(
-              level: target.level,
-              owner: parent,
-            ),
-          ));
+          onWillInsert?.call(
+            details.draggedNode,
+            parent,
+            parent.level,
+          );
           parent.insert(
             index + 1 >= parent.length ? parent.length : index + 1,
             details.draggedNode,

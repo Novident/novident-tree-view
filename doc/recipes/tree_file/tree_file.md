@@ -2,7 +2,7 @@
 
 To have a **Tree** like this:
 
-https://github.com/user-attachments/assets/0e24902e-26e9-40bd-bc38-769bda5dec7b
+https://github.com/user-attachments/assets/ce19a72f-65b2-4d02-9226-8f6ebe1895e2
 
 You'll need to check some parts and understand them:
 
@@ -51,7 +51,7 @@ final config = IndentConfiguration.basic(
 
 #### Visual Drag configurations
 
-The DraggableConfigurations used is:
+The `DraggableConfigurations` used is:
 
 ```dart
 final configs = DraggableConfigurations(
@@ -185,13 +185,9 @@ NodeConfiguration buildConfigurations(ComponentContext context) {
 
 In this case, we'll use basic drag-and-drop configuration. We'll allow nodes to be inserted both above and below their targets, as well as within their targets.
 
-> [!IMPORTANT]
-> Keep in mind that it would be best to perform validations to avoid inserting nodes where 
-> they're not expected, but this depends on your implementation, so we'll skip that part.
-
 Our result should be like this:
 
-https://github.com/user-attachments/assets/f2feea09-bcd1-47aa-bdb7-02ee70558092
+https://github.com/user-attachments/assets/4976240b-db8d-498c-a1df-60158eb0d808
 
 _This is just a code sample, please, check [builders](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/builders/) instead, to create a better implementation._
 
@@ -199,84 +195,14 @@ _This is just a code sample, please, check [builders](https://github.com/Noviden
 @override
 NodeDragGestures buildDragGestures(ComponentContext context) {
   final Node node = context.node;
-  return NodeDragGestures(
-    // make your own validations to know if we can accept
-    // that the dragged node can be inserted at any point of this Node
-    onWillAcceptWithDetails: (
-      NovDragAndDropDetails<Node>? details,
-      DragTargetDetails<Node> dragDetails,
-      Node? parent,
-    ) {
-      return details?.draggedNode != node;
-    },
-    onAcceptWithDetails: (
-      NovDragAndDropDetails<Node> details,
-      Node? parent,
-    ) {
-      final Node target = details.targetNode;
-      details.mapDropPosition<void>(
-         whenAbove: () {
-           final NodeContainer parent = target.owner as NodeContainer;
-           final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-           final int index = target.index;
-           // we need to maintain the _selectedNode updated into the drag events
-           _selectedNode.value = details.draggedNode.copyWith(
-             details: details.draggedNode.details.copyWith(
-               level: target.level,
-               owner: parent,
-             ),
-           );
-           if (index != -1) {
-             dragParent.moveNode(
-               details.draggedNode, 
-               parent,
-               insertIndex: index, 
-               propagate: true,
-             );
-           }
-         },
-         whenInside: () {
-           final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-           dragParent
-             ..removeWhere(
-               (n) => n.id == details.draggedNode.id,
-               shouldNotify: false,
-             )
-             ..notify(propagate: true);
-           // we need to maintain the _selectedNode updated into the drag events
-           _selectedNode.value = details.draggedNode.copyWith(
-             details: details.draggedNode.details.copyWith(
-               level: target.level + 1,
-               owner: target,
-             ),
-           );
-           (targetNode as NodeContainer).add(details.draggedNode, propagateNotifications: true);
-         },
-         whenBelow: () {
-           final NodeContainer parent = target.owner as NodeContainer;
-           final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-           final int index = target.index;
-           if (index != -1) {
-             // we need to maintain the _selectedNode updated into the drag events
-             _selectedNode.value = details.draggedNode.copyWith(
-               details: details.draggedNode.details.copyWith(
-                 level: target.level,
-                 owner: target.owner,
-               ),
-             );
-             dragParent.moveNode(
-               details.draggedNode, 
-               target.owner as NodeContainer,
-               insertIndex: (index + 1).exactByLimit(
-                 parent.length,
-               ), 
-               propagate: true,
-             );
-            }
-         },
-      );
-      return;
-    },
+  return NodeDragGestures.standardDragAndDrop(
+    onWillInsert: (Node node, NodeContainer newOwner, int newLevel) {
+      if(node is File && _selectedNode.value?.id == node.id) {
+        _selectedNode.value = node.copyWith(
+          details: node.details.copyWith(owner: owner, level: newLevel),
+        ),
+      }
+    }
   );
 }
 ```

@@ -79,9 +79,16 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
     final TreeController controller =
         context.extraArgs['controller'] as TreeController;
     return NodeDragGestures.standardDragAndDrop(
-      onWillInsert: (Node node) {
+      onWillInsert: (Node node, NodeContainer owner, int level) {
+        if (node is Directory) {
+          node.redepthChildren(currentLevel: level);
+        }
         if (node is File && controller.selection.value?.id == node.id) {
-          controller.selectNode(node);
+          controller.selectNode(
+            node.copyWith(
+              details: node.details.copyWith(owner: owner, level: level),
+            ),
+          );
         }
       },
     );

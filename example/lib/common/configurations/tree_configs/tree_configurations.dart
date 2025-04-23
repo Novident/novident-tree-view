@@ -30,14 +30,14 @@ TreeConfiguration treeConfigurationBuilder(
         addAutomaticKeepAlives: true,
       ),
       indentConfiguration: IndentConfiguration.basic(
-        indentPerLevel: 10,
+        indentPerLevel: 14,
         // we need to build a different indentation
         // for files, since folders has a leading
         // button
         indentPerLevelBuilder: (Node node) {
           if (node is File) {
             final double effectiveLeft =
-                node.level <= 0 ? 25 : (node.level * 10) + 30;
+                node.level <= 0 ? 29 : (node.level * 14) + 30;
             return effectiveLeft;
           }
           return null;
