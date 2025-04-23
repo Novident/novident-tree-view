@@ -34,13 +34,11 @@ dependencies:
 
 Since there's a lot to explain and implement, we prefer to provide a separate document for each section to explain more concretely and accurately what each point entails.
 
-* [🌱 Nodes](https://github.com/Novident/novident-tree-view/blob/master/doc/nodes.md): In this section, we explain what a `Node` is and where it comes from, as well as a special mixin: `DragAndDropMixin` that is necessary for nodes to be able to use the **Drag and Drop** feature. 
-
 * [📲 Components](https://github.com/Novident/novident-tree-view/blob/master/doc/components.md): In this section, we explain what a `NodeComponentBuilder` (which is responsible for rendering nodes) is, and how you can create your own versions so you can create your own implementations of each Node.
 
 * [🌲 Tree Configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/tree_configuration.md): In this section, we explain what a `TreeConfiguration` is and all the properties that allow this package to render and use your Nodes to show a more effective appearance that simulates a node tree.
 
-* [🤏 Draggable Configurations](https://github.com/Novident/novident-tree-view/blob/master/doc/draggable_configurations.md): In this section, we explain what a `DraggableConfiguration` is, and how you can use it to configure the visual appearance of your nodes during Drag and Drop events.
+* [🤏 Draggable Configurations](https://github.com/Novident/novident-tree-view/blob/master/doc/draggable_configuration.md): In this section, we explain what a `DraggableConfiguration` is, and how you can use it to configure the visual appearance of your nodes during Drag and Drop events.
 
 * [📏 Indentation Configuration](https://github.com/Novident/novident-tree-view/blob/master/doc/indentation_configuration.md): In this section, we explain what an `IndentConfiguration` is, and how you can use it to add indentation to your nodes in a simple yet effective way.
 
