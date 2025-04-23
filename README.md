@@ -1,6 +1,11 @@
 # 🌳 Novident Tree View 
 
-![Image](https://github.com/user-attachments/assets/f8900c61-438b-4742-b0aa-c383eb269b3e)
+<p>
+  <img 
+    src="https://github.com/user-attachments/assets/f8900c61-438b-4742-b0aa-c383eb269b3e" 
+    alt="Image of Novident Tree View example" 
+  />
+</p>
 
 This package provides a flexible solution for displaying hierarchical data structures while giving developers full control over node management. Unlike traditional tree implementations that enforce controller-based architectures, this package operates on simple data types that you extend to create your node hierarchy. Nodes become self-aware of their state changes through `Listenable` patterns, enabling reactive updates without complex state management.
 

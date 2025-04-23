@@ -5,7 +5,7 @@ import 'package:example/common/nodes/directory.dart';
 import 'package:example/common/nodes/file.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
-late final List<Node> defaultNodes = <Node>[
+final List<Node> defaultNodes = <Node>[
   Directory(
     details: NodeDetails.zero(),
     name: 'Directory root',

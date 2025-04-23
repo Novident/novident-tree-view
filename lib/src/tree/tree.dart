@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart' show Node, NodeContainer;
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_tree_view/src/tree/target/listeners/node_target_details_listener.dart';
 import 'package:provider/provider.dart';
 
 /// A customizable scrollable tree view component with drag-and-drop support

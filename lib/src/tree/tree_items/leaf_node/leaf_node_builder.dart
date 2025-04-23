@@ -19,7 +19,7 @@ class LeafNodeBuilder extends StatefulWidget {
   /// shouldn't be different than the Node level
   final int depth;
 
-  LeafNodeBuilder({
+  const LeafNodeBuilder({
     required this.node,
     required this.owner,
     required this.depth,

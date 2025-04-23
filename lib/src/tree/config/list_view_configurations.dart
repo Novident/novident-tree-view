@@ -203,7 +203,7 @@ final class ListViewConfigurations {
   }
 
   @override
-  int get hashCode => Object.hashAll([
+  int get hashCode => Object.hashAll(<Object?>[
         scrollController,
         shrinkWrap,
         primary,

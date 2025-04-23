@@ -1,5 +1,7 @@
 include: package:flutter_lints/flutter.yaml
 analyzer:
+  errors:
+    always_specify_types: ignore
   language:
     strict-raw-types: true 
 

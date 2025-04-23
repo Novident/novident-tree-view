@@ -28,7 +28,7 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     required this.globalDropPosition,
     required this.globalTargetNodeOffset,
     this.candidateData = const [],
-    this.rejectedData = const [],
+    this.rejectedData = const <dynamic>[],
   });
 
   /// The node that was dragged around and dropped on [targetNode].
