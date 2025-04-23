@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
+/// Contains all the details necessary to know
+/// what is the `draggedNode` and the `targetNode`
 class NodeDragAndDropDetails {
   final Node draggedNode;
   final Node? targetNode;
@@ -15,7 +17,6 @@ class NodeDragAndDropDetails {
 
 /// An InheritedWidget that provides drag and drop details state management to descendant widgets.
 class DragAndDropDetailsListener extends InheritedWidget {
-  /// The drag state controller instance
   final ValueNotifier<NodeDragAndDropDetails?> details;
 
   DragAndDropDetailsListener({
@@ -23,7 +24,7 @@ class DragAndDropDetailsListener extends InheritedWidget {
     super.key,
   }) : details = ValueNotifier<NodeDragAndDropDetails?>(null);
 
-  /// Retrieves the nearest  DragAndDropDetailsListener] instance from the widget tree
+  /// Retrieves the nearest [NodeDragAndDropDetails] instance from the widget tree
   ///
   /// - [context]: Build context for tree traversal
   /// - [listen]: When true (default), registers build dependency
