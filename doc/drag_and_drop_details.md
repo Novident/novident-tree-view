@@ -1,12 +1,14 @@
 ## 🏹 Drag And Drop Details
 
-The details of the drag-and-drop relationship of `TreeDraggable` and `TreeDragTarget`.
+The details of the **drag-and-drop** relationship of `NodeTargetBuilder` and `NodeDraggableBuilder`.
 
-Details are created and updated when a node `draggedNode` is hovering another node `targetNode`.
- 
-Contains the exact position where the drop ocurred `globalDropPosition` as well as the bounding box `targetBounds` of the target widget which enables many different ways for a node to adopt another node depending on where it was dropped.
- 
-The following example splits the height of `targetBounds` in three and decides where to drop `draggedNode` depending on the `dy` property of `globalDropPosition`:
+Details are created and updated when a node `draggedNode` starts being dragged or when it is hovering
+another node `targetNode`.
+
+Contains the exact position where the drop ocurred `globalDropPosition` as well
+as the bounding box `targetBounds` with `globalTargetNodeOffset` of the target widget 
+which enables many different ways for a node to adopt another node depending 
+on where it was dropped.
 
 ### 🔎 Class Declaration
 
@@ -86,7 +88,7 @@ Take in account that the higher the `aboveZoneHeight`, the greater the range in 
 | `whenInside`           | `P Function()`                         | Callback executed when node is in the main content zone |
 | `whenBelow`            | `P Function()`                         | Callback executed when node is in the lower threshold zone |
 | `aboveZoneHeight`      | `double` (**default: 7 logical pixels**) | Size of the upper threshold zone |
-| `belowZoneHeight`      | `double` (**default: 5 logical pixels**) | Size of the lower threshold zone |
+| `belowZoneHeight`      | `double` (**default: 5.5 logical pixels**) | Size of the lower threshold zone |
 | `ignoreAboveZone`      | `bool` (**default: false**)            | Determines if the above sections will be completely ignored |
 | `ignoreInsideZone`     | `bool` (**default: false**)            | Determines if the inside sections will be completely ignored |
 | `ignoreBelowZone`      | `bool` (**default: false**)            | Determines if the below sections will be completely ignored |
