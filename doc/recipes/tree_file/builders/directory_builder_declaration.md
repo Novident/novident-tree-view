@@ -18,22 +18,32 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       width: 2.0,
     );
 
-    if (context.details != null) {
+    final NovDragAndDropDetails<Node>? details = context.details;
+    if (details != null) {
       // Add a border to indicate in which portion of the target's height
       // the dragging node will be inserted.
-      final border = context.details?.mapDropPosition<BoxBorder?>(
-        whenAbove: () => Border(top: borderSide),
-        whenInside: () => Border.fromBorderSide(borderSide),
-        whenBelow: () => Border(bottom: borderSide),
-      );
+      BoxBorder? border;
+      if (Node.canMoveTo(
+        node: details.draggedNode,
+        target: details.targetNode,
+        inside: details.exactPosition() == DragHandlerPosition.into,
+      )) {
+        border = context.details?.mapDropPosition<BoxBorder?>(
+          whenAbove: () => Border(top: borderSide),
+          whenInside: () => Border.fromBorderSide(borderSide),
+          whenBelow: () => Border(bottom: borderSide),
+        );
+      }
+
       decoration = BoxDecoration(
         border: border,
-        color: border == null ? null : Colors.grey.withValues(alpha: 130),
+        color: border == null ? null : Colors.grey.withValues(alpha: 180),
       );
     }
 
-    return Container(
-      decoration: decoration,
+    return DecoratedBox(
+      decoration: decoration ?? BoxDecoration(),
+      position: DecorationPosition.foreground,
       // [AutomaticNodeIndentation] adds the correct indentation
       // for the [Node] using the [IndentConfiguration] passed
       child: AutomaticNodeIndentation(
@@ -51,65 +61,64 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
   @override
   NodeConfiguration buildConfigurations(ComponentContext context) {
     // you need to make your implementation 
-    // to expand the node 
+    // to expand the node   
+    final Node node = context.node;
     return NodeConfiguration(
-      makeTappable: false,
+      makeTappable: true,
       onTap: (BuildContext context) {
-        // open or close your node
+        (node as Directory).openOrClose();
       },
     );
   }
 
   @override
   NodeDragGestures buildGestures(ComponentContext context) {
-    final Node node = context.node;
     return NodeDragGestures(
       onWillAcceptWithDetails: (
         NovDragAndDropDetails<Node>? details,
         DragTargetDetails<Node> dragDetails,
-        Node? parent,
+        Node target,
+        NodeContainer? parent,
       ) {
-        return details?.draggedNode != node;
+        return Node.canMoveTo(
+          node: details?.draggedNode ?? dragDetails.data,
+          target: details?.targetNode ?? target,
+          inside: details == null 
+            ? true 
+            : details.exactPosition() == DragHandlerPosition.into,
+        );
       },
       onAcceptWithDetails: (
         NovDragAndDropDetails<Node> details,
-        Node? parent,
+        Node target,
+        NodeContainer? parent,
       ) {
-        final Node target = details.targetNode; 
+        final int index = target.index;
         details.mapDropPosition<void>(
           whenAbove: () {
-            final NodeContainer parent = target.owner as NodeContainer;
-            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-            final int index = target.index;
-            if (index != -1) {
-              dragParent.moveNode(
-                details.draggedNode, 
-                parent,
-                insertIndex: index, 
-                propagate: true,
+            if (index >= 0) {
+              Node.moveTo(
+                details.draggedNode,
+                target.owner,
+                index: index,
               );
             }
           },
           whenInside: () {
-            final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
-            dragParent
-              ..removeWhere(
-                (n) => n.id == details.draggedNode.id,
-                shouldNotify: false,
-              )
-              ..notify(propagate: true);
-            (details.targetNode as NodeContainer).add(details.draggedNode, propagateNotifications: true);
+            Node.moveTo(
+              details.draggedNode,
+              target,
+              index: null,
+            );
           },
           whenBelow: () {
-            final int index = target.index;
-            if (index != -1) {
-              (details.draggedNode.owner as NodeContainer).moveNode(
-                details.draggedNode, 
-                target.owner as NodeContainer,
-                insertIndex: (index + 1).exactByLimit(
+            if (index >= 0) {
+              Node.moveTo(
+                details.draggedNode,
+                target.owner,
+                index: (index + 1).exactByLimit(
                   parent.length,
-                ), 
-                propagate: true,
+                ),
               );
             }
           },

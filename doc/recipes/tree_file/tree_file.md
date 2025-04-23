@@ -49,6 +49,108 @@ final config = IndentConfiguration.basic(
 
 ![Indent Preview](https://github.com/user-attachments/assets/2f40d4f7-e47f-4bc6-95be-498b842302ab)
 
+#### Visual Drag configurations
+
+The DraggableConfigurations used is:
+
+```dart
+final configs = DraggableConfigurations(
+   buildDragFeedbackWidget: (Node node, BuildContext context) {
+     // This is a listener that the package give to us
+     final DragAndDropDetailsListener listener =
+         DragAndDropDetailsListener.of(context);
+     return Material(
+       type: MaterialType.canvas,
+       borderRadius: BorderRadius.circular(10),
+       clipBehavior: Clip.hardEdge,
+       child: Container(
+         constraints: BoxConstraints(minWidth: 80, minHeight: 20),
+         decoration: BoxDecoration(
+           borderRadius: BorderRadius.circular(10),
+         ),
+         child: Padding(
+           padding: const EdgeInsets.all(5),
+           child: Row(
+             mainAxisSize: MainAxisSize.min,
+             mainAxisAlignment: MainAxisAlignment.start,
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+               if (node.isFile)
+                 Padding(
+                   padding: const EdgeInsets.only(left: 5, right: 5),
+                   child: Icon(
+                     node.asFile.content.isEmpty
+                         ? CupertinoIcons.doc_text
+                         : CupertinoIcons.doc_text_fill,
+                     size: isAndroid ? 20 : null,
+                    ),
+                 ),
+                if (node.isDirectory)
+                 Padding(
+                   padding: const EdgeInsets.only(left: 5, right: 10),
+                   child: Icon(
+                      node.asDirectory.isExpanded &&
+                             node.asDirectory.isEmpty
+                          ? CupertinoIcons.folder_open
+                          : CupertinoIcons.folder_fill,
+                      size: isAndroid ? 20 : null,
+                    ),
+                  ),
+                Center(
+                  child: Text(
+                    node is File ? node.asFile.name : node.asDirectory.name,
+                    softWrap: true,
+                    maxLines: null,
+                  ),
+                ),
+                ValueListenableBuilder<NodeDragAndDropDetails?>(
+                  valueListenable: listener.details,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 4, top: 2.5),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red,
+                      ),
+                      child: Icon(
+                        Icons.error,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                    ),
+                  ),
+                  builder: (
+                    BuildContext ctx,
+                    NodeDragAndDropDetails? value,
+                    Widget? child,
+                  ) {
+                    if (value == null || value.targetNode == null) {
+                      return const SizedBox.shrink();
+                    }
+                    final canMove = Node.canMoveTo(
+                      node: value.draggedNode,
+                      target: value.targetNode!,
+                      inside: value.inside,
+                    );
+                    if (!canMove) {
+                      return child!;
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+   },
+   allowAutoExpandOnHover: true,
+   preferLongPressDraggable: Platform.isAndroid || Platform.isIOS,
+),
+```
+
+https://github.com/user-attachments/assets/f19e88d5-e49e-420f-aa2a-18e648402e6b
+
 #### Gestures
 
 To configure a gestures for: press, long press, or secundary press, just override `buildConfigurations()` into your `NodeComponentBuilder` implementation:

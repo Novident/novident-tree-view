@@ -13,8 +13,30 @@ class CustomComponentBuilder extends NodeComponentBuilder {
   // Visual Construction
   @override
   Widget build(ComponentContext context) {
-    return Container(
-      decoration: _buildDropIndicator(context),
+    // you can add a visual border to represent
+    // where will be inserted your node
+    Decoration? decoration;
+    final BorderSide borderSide = BorderSide(
+      color: Theme.of(context.nodeContext).colorScheme.outline,
+      width: 2.0,
+    );
+
+    if (context.details != null) {
+      // Add a border to indicate in which portion of the target's height
+      // the dragging node will be inserted.
+      final border = context.details?.mapDropPosition<BoxBorder?>(
+        whenAbove: () => Border(top: borderSide),
+        whenInside: () => const Border(),
+        whenBelow: () => Border(bottom: borderSide),
+      );
+      decoration = BoxDecoration(
+        border: border,
+        color: border == null ? null : Colors.grey.withValues(alpha: 130),
+      );
+    }
+    return DecoratedBox(
+      decoration: decoration ?? BoxDecoration(),
+      position: DecorationPosition.foreground,
       child: AutomaticNodeIndentation(
         child: YourNodeWidgetRepresentation(
           file: context.node as YourNode,
@@ -43,10 +65,7 @@ class CustomComponentBuilder extends NodeComponentBuilder {
   // Drag Gesture Handling
   @override
   NodeDragGestures buildDragGestures(ComponentContext context) {
-    return NodeDragGestures(
-      onWillAcceptWithDetails: (details, dragDetails, parent) => /* ... your implementation */,
-      onAcceptWithDetails: (details, parent) => /* ...your implementation */,
-    );
+    return NodeDragGestures.standardDragAndDrop();
   }
 }
 ```

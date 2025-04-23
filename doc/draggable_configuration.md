@@ -2,13 +2,13 @@
 
 This is a class that allows us to configure the appearance of the dragged nodes.
 
-It actually contains the parameters required by widgets like Draggable or LongPressDraggable.
+It actually contains the parameters required by widgets like `Draggable` or `LongPressDraggable`.
 
 ## 🎭 Example: Styled Drag Experience  
 
 ```dart  
 DraggableConfigurations(  
-  buildDragFeedbackWidget: (Node node) => Transform.scale(  
+  buildDragFeedbackWidget: (Node node, BuildContext context) => Transform.scale(  
     scale: 0.9,  
     child: Opacity(  
       opacity: 0.7,  
@@ -24,12 +24,12 @@ DraggableConfigurations(
 
 ## 🖼️ Properties  
 
-| Property | Type | Role | Default |  
-|----------|------|------|---------|  
-| `buildDragFeedbackWidget` | `Widget Function(Node)` | **(Required)** Creates the **ghost widget** following the cursor during drag | - |  
-| `childWhenDraggingBuilder` | `Widget Function(Node)?` | Builds the **placeholder** left behind when dragging starts | `null` |  
-| `feedbackOffset` | `Offset` | Pixel-perfect positioning of the drag ghost | `Offset.zero` |  
-| `childDragAnchorStrategy` | `DragAnchorStrategy` | Alignment logic for the drag ghost's pivot point | local implementation |  
+| Property | Role | Default |  
+|----------|------|------|  
+| `buildDragFeedbackWidget` | **(Required)** Creates the **ghost widget** following the cursor during drag | - |  
+| `childWhenDraggingBuilder` | Builds the **placeholder** left behind when dragging starts | `null` |  
+| `feedbackOffset` | Pixel-perfect positioning of the drag ghost | `Offset.zero` |  
+| `childDragAnchorStrategy` | Alignment logic for the drag ghost's pivot point | local implementation |  
 
 ## ⚙️ Interaction Tuners  
 

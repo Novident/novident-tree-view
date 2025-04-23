@@ -109,7 +109,12 @@ final class NodeDragGestures {
   }) {
     return NodeDragGestures(
       onWillAcceptWithDetails: onWillAcceptWithDetails ?? _standardOnWillAccept,
-      onAcceptWithDetails: (details, target, parent) => _standardOnAccept(
+      onAcceptWithDetails: (
+        NovDragAndDropDetails<Node> details,
+        Node target,
+        NodeContainer? parent,
+      ) =>
+          _standardOnAccept(
         details,
         onWillInsert,
         target,
@@ -135,8 +140,7 @@ final class NodeDragGestures {
     details.mapDropPosition<void>(
       whenAbove: () {
         final NodeContainer parent = target.owner as NodeContainer;
-        final NodeContainer dragParent =
-            details.draggedNode.owner as NodeContainer;
+        final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
         dragParent.removeWhere(
           (n) => n.id == details.draggedNode.id,
           propagateNotifications: true,
@@ -158,8 +162,7 @@ final class NodeDragGestures {
         }
       },
       whenInside: () {
-        final NodeContainer dragParent =
-            details.draggedNode.owner as NodeContainer;
+        final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
         dragParent
           ..removeWhere(
             (Node n) => n.id == details.draggedNode.id,
@@ -179,8 +182,7 @@ final class NodeDragGestures {
       },
       whenBelow: () {
         final NodeContainer parent = target.owner as NodeContainer;
-        final NodeContainer dragParent =
-            details.draggedNode.owner as NodeContainer;
+        final NodeContainer dragParent = details.draggedNode.owner as NodeContainer;
         dragParent.removeWhere(
           (n) => n.id == details.draggedNode.id,
           propagateNotifications: true,
@@ -213,9 +215,8 @@ final class NodeDragGestures {
     return Node.canMoveTo(
       node: details?.draggedNode ?? dragDetails.data,
       target: details?.targetNode ?? target,
-      inside: details == null
-          ? true
-          : details.exactPosition() == DragHandlerPosition.into,
+      inside:
+          details == null ? true : details.exactPosition() == DragHandlerPosition.into,
     );
   }
 }

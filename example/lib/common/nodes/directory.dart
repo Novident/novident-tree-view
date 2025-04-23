@@ -27,7 +27,7 @@ class Directory extends NodeContainer implements DragAndDropMixin {
 
   void openOrClose({bool forceOpen = false}) {
     _isExpanded = forceOpen ? true : !isExpanded;
-    notifyListeners();
+    notify();
   }
 
   /// adjust the depth level of the children

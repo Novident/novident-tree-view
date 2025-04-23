@@ -4,8 +4,6 @@
 
 As we know, a `File` is simply a type of file that has `content`, a `name` (you can add the rest yourself), and a `creation date`. It doesn't accept any type of `File`/`Node` insertion within it.
 
-_In this example we skip the definition of the NodeVisitor methods, since we want to make the example short and direct._
-
 A way to represent something similar for **Novident Tree View**:
 
 ```dart
@@ -44,8 +42,6 @@ class File extends Node implements DragAndDropMixin {
   /// Determine if this Node allows dropping other nodes into/above/below it 
   @override
   bool isDropTarget() => true;
-
-  // ... rest of these methods are the common used
 
   @override
   File copyWith({
@@ -89,8 +85,6 @@ class File extends Node implements DragAndDropMixin {
     };
   }
 
-  // ... rest of the needed methods related with [NodeVisitor] mixin
-
   @override
   bool operator ==(Object other) {
     if (other is! File) {
@@ -115,8 +109,6 @@ class File extends Node implements DragAndDropMixin {
 ### 📂 Directory
 
 As we know, a `Directory` is just a type of file that has a `name` (you can add the rest yourself), a `creation date`, and can contain `children`.
-
-_If you're wondering why we didn't add a comment here about skipping the definition of the `NodeVisitor` methods, it's because, by default, `NodeContainer` already defines these methods, which saves us from having to create them ourselves._
 
 ```dart
 import 'package:flutter/foundation.dart';
