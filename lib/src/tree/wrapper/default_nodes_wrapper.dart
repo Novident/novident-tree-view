@@ -22,7 +22,7 @@ Widget wrapWithDragAndDropWidgets(
       builder: builder,
       node: node,
       configuration: configuration,
-      owner: node.owner! as NodeContainer,
+      owner: node.owner!,
       child: child,
     ),
   );

@@ -17,8 +17,8 @@ dependencies:
   meta: ^1.16.0
   collection: ^1.19.1
   provider: ^6.1.4
+  vector_math: ^2.1.4
   novident_nodes: ^1.1.1
-  
 
 dev_dependencies:
   flutter_test:

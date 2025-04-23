@@ -21,7 +21,7 @@ class ContainerBuilder extends StatefulWidget {
   /// shouldn't be different than the Node level
   final int depth;
 
-  ContainerBuilder({
+  const ContainerBuilder({
     required this.nodeContainer,
     required this.owner,
     required this.depth,
@@ -36,9 +36,10 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty('Tree depth', widget.depth));
-    properties.add(DiagnosticsProperty('owner', widget.owner));
-    properties.add(DiagnosticsProperty('container', widget.nodeContainer));
+    properties.add(DiagnosticsProperty<int>('Tree depth', widget.depth));
+    properties.add(DiagnosticsProperty<NodeContainer>('owner', widget.owner));
+    properties.add(
+        DiagnosticsProperty<NodeContainer>('container', widget.nodeContainer));
   }
 
   @override
@@ -209,7 +210,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
                           node: node,
                           owner: widget.nodeContainer,
                         );
-                      } else
+                      } else {
                         return ContainerBuilder(
                           depth: node.level + 1,
                           // the owner is this container
@@ -217,6 +218,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
                           // the sub node
                           nodeContainer: node,
                         );
+                      }
                     },
                   ),
                 )

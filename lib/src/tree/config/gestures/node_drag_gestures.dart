@@ -143,7 +143,7 @@ final class NodeDragGestures {
         final NodeContainer dragParent =
             details.draggedNode.owner as NodeContainer;
         dragParent.removeWhere(
-          (n) => n.id == details.draggedNode.id,
+          (Node n) => n.id == details.draggedNode.id,
           propagateNotifications: true,
         );
         final int index = target.index;
@@ -181,7 +181,7 @@ final class NodeDragGestures {
         final NodeContainer dragParent =
             details.draggedNode.owner as NodeContainer;
         dragParent.removeWhere(
-          (n) => n.id == details.draggedNode.id,
+          (Node n) => n.id == details.draggedNode.id,
           propagateNotifications: true,
         );
         final int index = target.index;

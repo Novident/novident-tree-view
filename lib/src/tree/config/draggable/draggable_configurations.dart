@@ -40,7 +40,7 @@ final class DraggableConfigurations {
   /// moved, such as adding a shadow, changing opacity, or applying a preview style.
   final Widget Function(Node node)? childWhenDraggingBuilder;
 
-  DraggableConfigurations({
+  const DraggableConfigurations({
     required this.buildDragFeedbackWidget,
     this.allowAutoExpandOnHover = true,
     this.preferLongPressDraggable = false,

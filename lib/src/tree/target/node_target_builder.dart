@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/diagnostics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:novident_tree_view/src/extensions/cast_nodes.dart';
@@ -20,7 +20,7 @@ class NodeTargetBuilder extends StatefulWidget {
   /// [builder]: The target node for drag operations
   /// [configuration]: Tree configuration parameters
   /// [owner]: The container that owns this node
-  NodeTargetBuilder({
+  const NodeTargetBuilder({
     required this.builder,
     required this.configuration,
     required this.owner,
@@ -81,13 +81,13 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   }
 
   /// Timer used for delayed auto-expansion on hover
-  Timer? timer = null;
+  Timer? timer;
 
   /// Current drag-and-drop operation details
   NovDragAndDropDetails<Node>? __details;
 
   NovDragAndDropDetails<Node>? get _details => __details;
-  set _details(NovDragAndDropDetails? details) {
+  set _details(NovDragAndDropDetails<Node>? details) {
     __details = details;
     if (mounted && details != null) {
       DragAndDropDetailsListener.of(context).details.value =
