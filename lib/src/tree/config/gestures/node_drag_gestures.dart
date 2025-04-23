@@ -26,8 +26,8 @@ typedef NovOnAcceptOnNode = void Function(
 /// Example usage:
 /// ```dart
 /// NodeDragGestures(
-///   onWillAcceptWithDetails: (details, dragDetails, parent) => true,
-///   onAcceptWithDetails: (details, parent) => print('Node accepted'),
+///   onWillAcceptWithDetails: (details, dragDetails, target, parent) => true,
+///   onAcceptWithDetails: (details, target, parent) => print('Node accepted'),
 ///   onDragStart: (offset, node) => print('Drag started'),
 /// )
 /// ```
