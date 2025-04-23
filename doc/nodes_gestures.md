@@ -49,12 +49,14 @@ You can also use a standard file tree behavior for **Drag and Drop**:
 ```dart
 final ValueNotifier<Node?> _selectedNode = ValueNotifier<Node?>(/*your node selection*/);
 const NodeDragGestures.standardDragAndDrop(
-  onWillInsert: (Node node) {
+  onWillInsert: (Node node, NodeContainer owner, int level) {
     // you can use onWillInsert to update the state of the selected node
     // to avoid an our of sync selection (since the new node state could have 
     // a new owner and level)
     if (node is File && _selectedNode.value?.id == node.id) {
-      _selectedNode.value = node;
+      _selectedNode.value = node.copyWith(
+        details: node.details.copyWith(owner: owner, level: newLevel),
+      ),
     }
   },
 );
