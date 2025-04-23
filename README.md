@@ -34,6 +34,25 @@ dependencies:
   novident_nodes: <lastest_version>
 ```
 
+## Basic usage
+
+```dart
+import 'package:novident_tree_view/novident_tree_view.dart';
+
+final Widget tree = TreeView(
+   root: yourRootContainer,
+   configuration: TreeConfiguration(
+     components: [MyNodeBuilder(), AnotherNodeBuilder()],
+     draggableConfigurations: DraggableConfigurations(/*...*/),
+     indentConfiguration: IndentConfiguration.basic(/*...*/),
+     onHoverContainer: (node) => debugPrint('Hovering: ${node.details.id}'),
+     activateDragAndDropFeature: !kIsWeb, // Disable on web
+     addRepaintBoundaries: true,
+   ), 
+);
+
+```
+
 
 ## 🔎 Resources
 

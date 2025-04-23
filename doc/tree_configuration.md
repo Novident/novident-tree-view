@@ -20,10 +20,10 @@
 ## � Example Usage
 
 ```dart
-TreeConfiguration(
+final config = TreeConfiguration(
   components: [MyNodeBuilder(), AnotherNodeBuilder()],
-  draggableConfigurations: DraggableConfigurations(...),
-  indentConfiguration: IndentConfiguration.basic(...),
+  draggableConfigurations: DraggableConfigurations(/*...*/),
+  indentConfiguration: IndentConfiguration.basic(/*...*/),
   onHoverContainer: (node) => debugPrint('Hovering: ${node.details.id}'),
   activateDragAndDropFeature: !kIsWeb, // Disable on web
 );
