@@ -1,5 +1,7 @@
 ## Tree Configuration
 
+In this section, we adds all the builders, and configurations to build a [Tree like this](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/tree_file.md#tree-file).
+
 ```dart
 import 'package:your/path/to/builders/directory_component.dart';
 import 'package:your/path/to/builders/file_component.dart';

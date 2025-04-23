@@ -4,6 +4,49 @@ To have a **Tree** like this:
 
 https://github.com/user-attachments/assets/ce19a72f-65b2-4d02-9226-8f6ebe1895e2
 
+```dart
+import 'package:novident_tree_view/novident_tree_view.dart';
+
+final Widget tree = TreeView(
+   root: root,
+   configuration: config, // see [configs](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_configuration.md)
+);
+
+final Directory root = Directory(
+  details: NodeDetails.byId(level: -1, id: 'root'),
+  name: 'root',
+  createAt: DateTime.now(),
+  children: [
+    Directory(
+      details: NodeDetails.zero(),
+      name: 'Directory root',
+      createAt: DateTime.now(),
+      children: [
+        Directory(
+          children: [
+            File(
+              details: NodeDetails.withLevel(2),
+              name: 'Sub file',
+              content: '',
+              createAt: DateTime.now(),
+            ),
+          ],
+          details: NodeDetails.withlevel(1),
+          name: 'Sub directory',
+          createAt: DateTime.now(),
+        ),
+        File(
+          details: NodeDetails.withLevel(1),
+          name: 'Sub file',
+          content: '',
+          createAt: DateTime.now(),
+        ),
+      ],
+    ),
+  ],
+);
+```
+
 You'll need to check some parts and understand them:
 
 ### Nodes 
