@@ -103,6 +103,10 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           );
         }
 
+        if (configuration.addRepaintBoundaries) {
+          child = RepaintBoundary(child: child);
+        }
+
         if (!nodeConfig.makeTappable) {
           return child;
         }

@@ -149,6 +149,10 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       }
     }
 
+    if (configuration.addRepaintBoundaries) {
+      child = RepaintBoundary(child: child);
+    }
+
     return ListenableBuilder(
       listenable: widget.nodeContainer,
       builder: (BuildContext context, Widget? _) {
