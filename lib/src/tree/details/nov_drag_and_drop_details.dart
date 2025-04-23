@@ -4,20 +4,16 @@ import 'package:meta/meta.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-/// The details of the drag-and-drop relationship of [TreeDraggable] and
-/// [TreeDragTarget].
+/// The details of the drag-and-drop relationship of [NodeTargetBuilder] and
+/// [NodeDraggableBuilder].
 ///
-/// Details are created and updated when a node [draggedNode] is hovering
+/// Details are created and updated when a node [draggedNode] starts being dragged or when it is hovering
 /// another node [targetNode].
 ///
-/// Contains the exact position where the drop ocurred [dropPosition] as well
-/// as the bounding box [targetBounds] of the target widget which enables many
-/// different ways for a node to adopt another node depending on where it was
-/// dropped.
-///
-/// The following example splits the height of [targetBounds] in three and
-/// decides where to drop [draggedNode] depending on the `dy` property of
-/// [dropPosition]:
+/// Contains the exact position where the drop ocurred [globalDropPosition] as well
+/// as the bounding box [targetBounds] with [globalTargetNodeOffset] of the target widget 
+/// which enables many different ways for a node to adopt another node depending 
+/// on where it was dropped.
 class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   /// Creates a [NovDragAndDropDetails].
   const NovDragAndDropDetails({
