@@ -1,5 +1,5 @@
 name: novident_tree_view 
-description: "A flexible Novident Flutter library for visualizing hierarchical structures with full control over nodes. It allows you to create customizable trees without rigid architectures."
+description: "A flexible Novident internal library for visualizing hierarchical structures with full control over nodes"
 version: 1.0.0
 homepage: https://github.com/Novident/novident-tree-view/
 repository: https://github.com/Novident/novident-tree-view/ 
