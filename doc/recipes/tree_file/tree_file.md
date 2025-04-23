@@ -17,8 +17,8 @@ In this section we simply define which nodes will be used by the `TreeView` to d
 
 In this section we build the component that will define: the rendering of the nodes, the children rendering (optional), gesture configs, and the **Drag and Drop** feature through `NodeDragGestures`.
 
-* [**File Component Builder**](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/file_builder_declaration.md)
-* [**Directory Component Builder**](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/directory_builder_declaration.md)
+* [**File Component Builder**](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/builders/file_builder_declaration.md)
+* [**Directory Component Builder**](https://github.com/Novident/novident-tree-view/blob/master/doc/recipes/tree_file/builders/directory_builder_declaration.md)
 
 ### General configurations
 
