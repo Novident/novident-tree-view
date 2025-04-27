@@ -109,11 +109,11 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   }
 
   /// Determines whether a dragged node can be accepted by this target
-  ///
-  /// [details]: Information about the dragged node
-  /// Returns true if the node can be accepted
   bool _onWillAccept(DragTargetDetails<Node> details) {
-    _details ??= _getDropDetails(details.offset, details.data);
+    _details ??= _getDropDetails(
+      details.offset,
+      details.data,
+    );
     return _gestures.onWillAcceptWithDetails(
       _details,
       details,
@@ -159,20 +159,14 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     final DraggableListener listener =
         DraggableListener.of(context, listen: false);
 
-    // Sometimes, while onDragStart is being executed, DraggableListener has
-    // not yet the incoming data, so, we prefer ignoring it
-    if (!listener.dragListener.isDragging) {
-      return null;
-    }
-
     // Compose all drop information
     return NovDragAndDropDetails<Node>(
-      draggedNode: listener.dragListener.draggedNode!,
+      draggedNode: listener.dragListener.draggedNode ?? draggedNode,
       globalTargetNodeOffset: offset,
       targetNode: widget.node,
-      dropPosition:
-          renderBox.globalToLocal(listener.dragListener.globalPosition!),
-      globalDropPosition: listener.dragListener.globalPosition!,
+      dropPosition: renderBox
+          .globalToLocal(listener.dragListener.globalPosition ?? pointer),
+      globalDropPosition: listener.dragListener.globalPosition ?? offset,
       targetBounds: Offset.zero & renderBox.size,
     );
   }

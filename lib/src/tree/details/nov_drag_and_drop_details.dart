@@ -11,8 +11,8 @@ import 'package:novident_tree_view/novident_tree_view.dart';
 /// another node [targetNode].
 ///
 /// Contains the exact position where the drop ocurred [globalDropPosition] as well
-/// as the bounding box [targetBounds] with [globalTargetNodeOffset] of the target widget 
-/// which enables many different ways for a node to adopt another node depending 
+/// as the bounding box [targetBounds] with [globalTargetNodeOffset] of the target widget
+/// which enables many different ways for a node to adopt another node depending
 /// on where it was dropped.
 class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   /// Creates a [NovDragAndDropDetails].

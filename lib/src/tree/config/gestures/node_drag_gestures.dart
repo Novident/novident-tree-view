@@ -160,21 +160,24 @@ final class NodeDragGestures {
         }
       },
       whenInside: () {
-        final NodeContainer dragParent =
-            details.draggedNode.owner as NodeContainer;
-        dragParent
-          ..removeWhere(
-            (Node n) => n.id == details.draggedNode.id,
-            shouldNotify: false,
-          )
-          ..notify(propagate: true);
-        onWillInsert?.call(
-          details.draggedNode,
-          target as NodeContainer,
-          target.level + 1,
-        );
-        (details.targetNode as NodeContainer)
-            .add(details.draggedNode, propagateNotifications: true);
+        if (Node.canMoveTo(
+            node: details.draggedNode, target: target, inside: true)) {
+          final NodeContainer dragParent =
+              details.draggedNode.owner as NodeContainer;
+          dragParent
+            ..removeWhere(
+              (Node n) => n.id == details.draggedNode.id,
+              shouldNotify: false,
+            )
+            ..notify(propagate: true);
+          onWillInsert?.call(
+            details.draggedNode,
+            target as NodeContainer,
+            target.level + 1,
+          );
+          (details.targetNode as NodeContainer)
+              .add(details.draggedNode, propagateNotifications: true);
+        }
       },
       whenBelow: () {
         final NodeContainer parent = target.owner as NodeContainer;
