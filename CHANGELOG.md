@@ -1,4 +1,4 @@
-## Unreleases
+## Unreleased
 
 * Fix(example): children can be re-inserted into its parent again.
 
