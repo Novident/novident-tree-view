@@ -1,3 +1,7 @@
+## Unreleases
+
+* Fix(example): children can be re-inserted into its parent again.
+
 ## 1.0.2
 
 * Fix: bad example code in `NodeDragGestures` class.
