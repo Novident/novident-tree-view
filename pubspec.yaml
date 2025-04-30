@@ -1,6 +1,6 @@
 name: novident_tree_view 
 description: "A flexible internal Novident library for visualizing hierarchical structures with full control over nodes"
-version: 1.0.5
+version: 1.0.6
 homepage: https://github.com/Novident/novident-tree-view/
 repository: https://github.com/Novident/novident-tree-view/ 
 documentation: https://github.com/Novident/novident-tree-view/doc/ 
