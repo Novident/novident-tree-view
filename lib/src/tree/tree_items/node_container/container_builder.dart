@@ -35,6 +35,9 @@ class ContainerBuilder extends StatefulWidget {
 }
 
 class _ContainerBuilderState extends State<ContainerBuilder> {
+  bool _cacheChildrenAfterFirstAsyncBuild = false;
+  bool _isFirstChildrenBuild = true;
+
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
@@ -42,6 +45,11 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     properties.add(DiagnosticsProperty<NodeContainer>('owner', widget.owner));
     properties.add(
         DiagnosticsProperty<NodeContainer>('container', widget.nodeContainer));
+    properties.add(DiagnosticsProperty<bool>(
+        'isFirstChildrenBuild', _isFirstChildrenBuild));
+    properties.add(DiagnosticsProperty<bool>(
+        'willCacheChildrenAfterFirstAsyncBuild',
+        _cacheChildrenAfterFirstAsyncBuild));
   }
 
   @override
@@ -58,6 +66,9 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         'for ${widget.nodeContainer.runtimeType}(${widget.nodeContainer.id})',
       );
     }
+
+    _cacheChildrenAfterFirstAsyncBuild =
+        builder.cacheChildrenAfterFirstAsyncBuild;
     final ComponentContext componentContext = ComponentContext(
       depth: widget.depth,
       nodeContext: context,
@@ -158,79 +169,36 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       child = RepaintBoundary(child: child);
     }
 
+    final bool needsAsync = builder.useAsyncBuild;
+
     return ListenableBuilder(
       listenable: widget.nodeContainer,
       builder: (BuildContext context, Widget? _) {
+        _cacheChildrenAfterFirstAsyncBuild =
+            builder.cacheChildrenAfterFirstAsyncBuild;
+        _isFirstChildrenBuild =
+            _cacheChildrenAfterFirstAsyncBuild ? _isFirstChildrenBuild : true;
         Widget container = Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             child,
-            builder.buildChildren(
-                  componentContext,
-                ) ??
-                Visibility(
+            if (!needsAsync)
+              builder.buildChildren(
+                    componentContext,
+                  ) ??
+                  _buildDefaultChildrenWidgets(configuration, builder),
+            if (needsAsync)
+              Visibility(
                   visible: widget.nodeContainer.isExpanded,
-                  maintainSize: false,
-                  maintainState: false,
-                  child: ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    physics: const NeverScrollableScrollPhysics(),
-                    primary: false,
-                    shrinkWrap:
-                        configuration.treeListViewConfigurations.shrinkWrap,
-                    clipBehavior:
-                        configuration.treeListViewConfigurations.clipBehavior ??
-                            Clip.hardEdge,
-                    itemCount: widget.nodeContainer.length,
-                    reverse: configuration.treeListViewConfigurations.reverse,
-                    itemExtent:
-                        configuration.treeListViewConfigurations.itemExtent,
-                    itemExtentBuilder: configuration
-                        .treeListViewConfigurations.itemExtentBuilder,
-                    prototypeItem:
-                        configuration.treeListViewConfigurations.prototypeItem,
-                    findChildIndexCallback: configuration
-                        .treeListViewConfigurations.findChildIndexCallback,
-                    addAutomaticKeepAlives: configuration
-                        .treeListViewConfigurations.addSemanticIndexes,
-                    addSemanticIndexes: configuration
-                        .treeListViewConfigurations.addSemanticIndexes,
-                    cacheExtent:
-                        configuration.treeListViewConfigurations.cacheExtent,
-                    semanticChildCount: configuration
-                        .treeListViewConfigurations.semanticChildCount,
-                    dragStartBehavior: configuration
-                        .treeListViewConfigurations.dragStartBehavior,
-                    keyboardDismissBehavior: configuration
-                        .treeListViewConfigurations.keyboardDismissBehavior,
-                    restorationId:
-                        configuration.treeListViewConfigurations.restorationId,
-                    hitTestBehavior: configuration
-                        .treeListViewConfigurations.hitTestBehavior,
-                    itemBuilder: (BuildContext context, int index) {
-                      final Node node = widget.nodeContainer.elementAt(index);
-                      if (node is! NodeContainer) {
-                        return LeafNodeBuilder(
-                          depth: node.level + 1,
-                          node: node,
-                          index: index,
-                          owner: widget.nodeContainer,
-                        );
-                      } else {
-                        return ContainerBuilder(
-                          depth: node.level + 1,
-                          index: index,
-                          // the owner is this container
-                          owner: widget.nodeContainer,
-                          // the sub node
-                          nodeContainer: node,
-                        );
-                      }
-                    },
-                  ),
-                )
+                  child: _isFirstChildrenBuild
+                      ? _buildAsyncChildrenWidgets(
+                          componentContext,
+                          configuration,
+                          builder,
+                        )
+                      : _buildDefaultChildrenWidgets(configuration, builder)),
           ],
         );
 
@@ -245,6 +213,126 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         }
         return container;
       },
+    );
+  }
+
+  Widget _buildAsyncChildrenWidgets(
+    ComponentContext componentContext,
+    TreeConfiguration configuration,
+    NodeComponentBuilder builder,
+  ) {
+    return FutureBuilder<List<Widget>?>(
+      future: builder.buildChildrenAsync(componentContext),
+      builder: (ctx, value) {
+        if (value.hasError) {
+          return builder.buildChildrenAsyncError(
+                  componentContext, value.stackTrace, value.error!) ??
+              const SizedBox.shrink();
+        }
+        if (!value.hasData) {
+          return builder.buildChildrenAsyncPlaceholder(componentContext) ??
+              const SizedBox.shrink();
+        }
+        if (_cacheChildrenAfterFirstAsyncBuild && _isFirstChildrenBuild) {
+          _isFirstChildrenBuild = false;
+        }
+        final List<Widget> list = value.data!;
+        return ListView.builder(
+          scrollDirection: Axis.vertical,
+          physics: const NeverScrollableScrollPhysics(),
+          primary: false,
+          shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
+          clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
+              Clip.hardEdge,
+          reverse: configuration.treeListViewConfigurations.reverse,
+          itemExtent: configuration.treeListViewConfigurations.itemExtent,
+          itemExtentBuilder:
+              configuration.treeListViewConfigurations.itemExtentBuilder,
+          prototypeItem: configuration.treeListViewConfigurations.prototypeItem,
+          findChildIndexCallback:
+              configuration.treeListViewConfigurations.findChildIndexCallback,
+          addAutomaticKeepAlives:
+              configuration.treeListViewConfigurations.addSemanticIndexes,
+          addSemanticIndexes:
+              configuration.treeListViewConfigurations.addSemanticIndexes,
+          cacheExtent: configuration.treeListViewConfigurations.cacheExtent,
+          semanticChildCount:
+              configuration.treeListViewConfigurations.semanticChildCount,
+          dragStartBehavior:
+              configuration.treeListViewConfigurations.dragStartBehavior,
+          keyboardDismissBehavior:
+              configuration.treeListViewConfigurations.keyboardDismissBehavior,
+          restorationId: configuration.treeListViewConfigurations.restorationId,
+          hitTestBehavior:
+              configuration.treeListViewConfigurations.hitTestBehavior,
+          itemCount: list.length,
+          itemBuilder: (BuildContext context, int index) {
+            final node = list.elementAt(index);
+            return node;
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDefaultChildrenWidgets(
+    TreeConfiguration configuration,
+    NodeComponentBuilder builder,
+  ) {
+    return Visibility(
+      visible: widget.nodeContainer.isExpanded,
+      maintainSize: false,
+      maintainState: false,
+      child: ListView.builder(
+        scrollDirection: Axis.vertical,
+        physics: const NeverScrollableScrollPhysics(),
+        primary: false,
+        shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
+        clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
+            Clip.hardEdge,
+        reverse: configuration.treeListViewConfigurations.reverse,
+        itemExtent: configuration.treeListViewConfigurations.itemExtent,
+        itemExtentBuilder:
+            configuration.treeListViewConfigurations.itemExtentBuilder,
+        prototypeItem: configuration.treeListViewConfigurations.prototypeItem,
+        findChildIndexCallback:
+            configuration.treeListViewConfigurations.findChildIndexCallback,
+        addAutomaticKeepAlives:
+            configuration.treeListViewConfigurations.addSemanticIndexes,
+        addSemanticIndexes:
+            configuration.treeListViewConfigurations.addSemanticIndexes,
+        cacheExtent: configuration.treeListViewConfigurations.cacheExtent,
+        semanticChildCount:
+            configuration.treeListViewConfigurations.semanticChildCount,
+        dragStartBehavior:
+            configuration.treeListViewConfigurations.dragStartBehavior,
+        keyboardDismissBehavior:
+            configuration.treeListViewConfigurations.keyboardDismissBehavior,
+        restorationId: configuration.treeListViewConfigurations.restorationId,
+        hitTestBehavior:
+            configuration.treeListViewConfigurations.hitTestBehavior,
+        itemCount: widget.nodeContainer.length,
+        itemBuilder: (BuildContext context, int index) {
+          final Node node = widget.nodeContainer.elementAt(index);
+          if (node is! NodeContainer) {
+            return LeafNodeBuilder(
+              depth: node.level + 1,
+              node: node,
+              index: index,
+              owner: widget.nodeContainer,
+            );
+          } else {
+            return ContainerBuilder(
+              depth: node.level + 1,
+              index: index,
+              // the owner is this container
+              owner: widget.nodeContainer,
+              // the sub node
+              nodeContainer: node,
+            );
+          }
+        },
+      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 ## Unreleased
 
+* Feat: added `buildChildrenAsync` and related helper methods to create async rendering for Nodes (like github does).
 * Feat: added `index` property to `ComponentContext`.
 * Fix(example): children can be re-inserted into its parent again.
 

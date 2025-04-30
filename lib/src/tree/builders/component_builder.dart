@@ -39,4 +39,38 @@ abstract class NodeComponentBuilder {
   /// When null (the default), children are rendered using the tree's standard
   /// layout algorithm. When provided, this completely overrides child rendering.
   Widget? buildChildren(ComponentContext context);
+
+  /// Determines if we will use async build for custom children
+  bool get useAsyncBuild => false;
+
+  /// Determines if we will use the async calls
+  /// in every reload of the node container widget
+  ///
+  /// * If true is provided, will use [buildChildrenAsync] once time
+  /// and after will use non async functions (tree's standard rendering
+  /// or the [buildChildren] if it's provided)
+  ///
+  /// * If false is provided, will use [buildChildrenAsync] every time
+  /// the container widget is reloaded
+  bool get cacheChildrenAfterFirstAsyncBuild => false;
+
+  /// Optionally builds a custom children layout using Futures
+  ///
+  /// When null or [useAsyncBuild] returns false, children are
+  /// rendered using the tree's standard layout algorithm.
+  Future<List<Widget>?> buildChildrenAsync(ComponentContext context) async =>
+      null;
+
+  /// Constructs a visual placeholder that will be showed while
+  /// the data is being loaded into [buildChildrenAsync]
+  Widget? buildChildrenAsyncPlaceholder(ComponentContext context) => null;
+
+  /// Constructs a visual widget error that will be showed if the
+  /// [FutureBuilder] gets an error instead data
+  Widget? buildChildrenAsyncError(
+    ComponentContext context,
+    StackTrace? stacktrace,
+    Object error,
+  ) =>
+      null;
 }
