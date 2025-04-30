@@ -80,6 +80,7 @@ class CustomComponentBuilder extends NodeComponentBuilder {
 |----------|------|-------------|
 | `nodeContext` | `BuildContext` | Widget tree context |
 | `depth` | `int` | Node depth in hierarchy |
+| `index` | `int` | Index of the Node into its owner |
 | `node` | `Node` | Current node instance |
 | `details` | `NovDragAndDropDetails?` | Drag operation details |
 | `wrapWithDragGestures` | `Function` | custom Drag gesture wrapper (for custom children) |
