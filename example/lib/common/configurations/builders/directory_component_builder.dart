@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/configurations/widgets/directory_widget.dart';
 import 'package:example/common/nodes/directory.dart';
@@ -98,60 +96,6 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
 
   @override
   Widget? buildChildren(ComponentContext context) => null;
-
-  @override
-  bool get useAsyncBuild => true;
-
-  @override
-  bool get cacheChildrenAfterFirstAsyncBuild => true;
-
-  @override
-  Future<List<Widget>?> buildChildrenAsync(ComponentContext context) async {
-    List<Widget> children = [];
-    return Future<List<Widget>>.delayed(Duration(seconds: 1), () {
-      for (int i = 0; i < context.node.asDirectory.length; i++) {
-        final subNode = context.node.asDirectory.elementAt(i);
-        if (subNode is! NodeContainer) {
-          children.add(
-            LeafNodeBuilder(
-              node: subNode,
-              owner: context.node.asContainer,
-              depth: context.node.childrenLevel,
-              index: i,
-            ),
-          );
-          continue;
-        }
-        children.add(
-          ContainerBuilder(
-            nodeContainer: subNode,
-            owner: context.node.asContainer,
-            depth: context.node.childrenLevel,
-            index: i,
-          ),
-        );
-      }
-      return children;
-    });
-  }
-
-  @override
-  Widget? buildChildrenAsyncError(
-    ComponentContext context,
-    StackTrace? stacktrace,
-    Object error,
-  ) {
-    return Center(
-      child: Text('Error: $e'),
-    );
-  }
-
-  @override
-  Widget? buildChildrenAsyncPlaceholder(ComponentContext context) {
-    return Center(
-      child: CircularProgressIndicator.adaptive(),
-    );
-  }
 
   @override
   bool validate(Node node) => node is Directory;
