@@ -69,6 +69,8 @@ Typically, there isn't much to configure the tree, as most of the work is done t
 
 #### Indentation
 
+![Indent Preview](https://github.com/user-attachments/assets/2f40d4f7-e47f-4bc6-95be-498b842302ab)
+
 The indent configuration used is:
 
 ```dart
@@ -90,9 +92,9 @@ final config = IndentConfiguration.basic(
 );
 ```
 
-![Indent Preview](https://github.com/user-attachments/assets/2f40d4f7-e47f-4bc6-95be-498b842302ab)
-
 #### Visual Drag configurations
+
+https://github.com/user-attachments/assets/f19e88d5-e49e-420f-aa2a-18e648402e6b
 
 The `DraggableConfigurations` used is:
 
@@ -191,8 +193,6 @@ final configs = DraggableConfigurations(
    preferLongPressDraggable: Platform.isAndroid || Platform.isIOS,
 ),
 ```
-
-https://github.com/user-attachments/assets/f19e88d5-e49e-420f-aa2a-18e648402e6b
 
 #### Gestures
 
