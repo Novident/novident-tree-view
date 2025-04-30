@@ -1,5 +1,6 @@
 ## Unreleased
 
+* Feat: added `index` property to `ComponentContext`.
 * Fix(example): children can be re-inserted into its parent again.
 
 ## 1.0.2

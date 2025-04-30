@@ -8,24 +8,15 @@ import 'package:novident_tree_view/src/tree/wrapper/default_nodes_wrapper.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 /// [NodeTargetBuilder] handles drag-and-drop operations for tree nodes
-///
-/// This widget builds a drag target area around tree nodes and manages:
-/// - Drag acceptance validation
-/// - Drop position calculations
-/// - Hover effects and auto-expansion
-/// - Drag-and-drop event handling
 class NodeTargetBuilder extends StatefulWidget {
   /// Creates a drag target builder for tree nodes
-  ///
-  /// [builder]: The target node for drag operations
-  /// [configuration]: Tree configuration parameters
-  /// [owner]: The container that owns this node
   const NodeTargetBuilder({
     required this.builder,
     required this.configuration,
     required this.owner,
     required this.depth,
     required this.node,
+    required this.index,
     this.child,
     super.key,
   });
@@ -35,6 +26,7 @@ class NodeTargetBuilder extends StatefulWidget {
   final Widget? child;
   final int depth;
   final Node node;
+  final int index;
   final NodeComponentBuilder builder;
 
   /// The container that owns and manages this node
@@ -65,6 +57,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     _gestures = widget.builder.buildDragGestures(
       ComponentContext(
         depth: widget.depth,
+        index: widget.index,
         nodeContext: context,
         node: widget.node,
         details: _details,
@@ -282,6 +275,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     return ComponentContext(
       depth: widget.depth,
       nodeContext: context,
+      index: widget.index,
       node: widget.node,
       extraArgs: widget.configuration.extraArgs,
       wrapWithDragGestures: wrapWithDragAndDropWidgets,

@@ -33,6 +33,7 @@ class NodeDraggableBuilder extends StatefulWidget {
     required this.configuration,
     required this.node,
     required this.depth,
+    required this.index,
     super.key,
   });
 
@@ -50,6 +51,8 @@ class NodeDraggableBuilder extends StatefulWidget {
   final NodeComponentBuilder builder;
 
   final int depth;
+
+  final int index;
 
   /// The tree node that is going to be provided to [Draggable.data].
   final Node node;
@@ -83,6 +86,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   NodeDragGestures get gestures => widget.builder.buildDragGestures(
         ComponentContext(
           depth: widget.depth,
+          index: widget.index,
           nodeContext: context,
           node: widget.node,
           details: null,

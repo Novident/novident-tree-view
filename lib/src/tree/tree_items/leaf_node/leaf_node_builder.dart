@@ -11,6 +11,9 @@ class LeafNodeBuilder extends StatefulWidget {
   /// The [ContainerTreeNode] item
   final Node node;
 
+  /// The current index of this node;
+  final int index;
+
   /// The owner of this [NodeContainer]
   final NodeContainer owner;
 
@@ -23,6 +26,7 @@ class LeafNodeBuilder extends StatefulWidget {
     required this.node,
     required this.owner,
     required this.depth,
+    required this.index,
     super.key,
   });
 
@@ -60,10 +64,12 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           node: widget.node,
           depth: widget.depth,
           builder: builder,
+          index: widget.index,
           configuration: configuration,
           child: NodeTargetBuilder(
             builder: builder,
             depth: widget.depth,
+            index: widget.index,
             node: widget.node,
             configuration: configuration,
             owner: widget.owner,
@@ -75,6 +81,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           depth: widget.depth,
           wrapWithDragGestures: wrapWithDragAndDropWidgets,
           nodeContext: context,
+          index: widget.index,
           marksNeedBuild: () {
             if (context.mounted && mounted) {
               setState(() {});

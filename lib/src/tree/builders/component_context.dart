@@ -34,6 +34,9 @@ class ComponentContext {
 
   final void Function() marksNeedBuild;
 
+  /// The current index of this component into it's owner
+  final int index;
+
   /// Gesture wrapper factory for adding drag interactions
   ///
   /// - [context]: Current component context
@@ -57,6 +60,7 @@ class ComponentContext {
     required this.details,
     required this.wrapWithDragGestures,
     required this.marksNeedBuild,
+    required this.index,
     this.extraArgs = const <String, dynamic>{},
   });
 }

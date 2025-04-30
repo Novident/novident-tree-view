@@ -103,12 +103,14 @@ class _TreeViewState extends State<TreeView> {
                       if (node is! NodeContainer) {
                         return LeafNodeBuilder(
                           node: node,
+                          index: index,
                           depth: 0,
                           owner: widget.root,
                         );
                       } else {
                         return ContainerBuilder(
                           nodeContainer: node,
+                          index: index,
                           depth: 0,
                           owner: widget.root,
                         );

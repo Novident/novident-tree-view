@@ -20,11 +20,13 @@ class ContainerBuilder extends StatefulWidget {
   ///
   /// shouldn't be different than the Node level
   final int depth;
+  final int index;
 
   const ContainerBuilder({
     required this.nodeContainer,
     required this.owner,
     required this.depth,
+    required this.index,
     super.key,
   });
 
@@ -61,6 +63,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       nodeContext: context,
       wrapWithDragGestures: wrapWithDragAndDropWidgets,
       node: widget.nodeContainer,
+      index: widget.index,
       marksNeedBuild: () {
         if (context.mounted && mounted) {
           setState(() {});
@@ -72,6 +75,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     Widget child = NodeDraggableBuilder(
       node: widget.nodeContainer,
       depth: widget.depth,
+      index: widget.index,
       builder: builder,
       configuration: configuration,
       child: ListenableBuilder(
@@ -81,6 +85,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
               depth: widget.depth,
               builder: builder,
               node: widget.nodeContainer,
+              index: widget.index,
               configuration: configuration,
               owner: widget.owner,
             );
@@ -205,18 +210,18 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
                     hitTestBehavior: configuration
                         .treeListViewConfigurations.hitTestBehavior,
                     itemBuilder: (BuildContext context, int index) {
-                      final Node node = widget.nodeContainer.elementAt(
-                        index,
-                      );
+                      final Node node = widget.nodeContainer.elementAt(index);
                       if (node is! NodeContainer) {
                         return LeafNodeBuilder(
                           depth: node.level + 1,
                           node: node,
+                          index: index,
                           owner: widget.nodeContainer,
                         );
                       } else {
                         return ContainerBuilder(
                           depth: node.level + 1,
+                          index: index,
                           // the owner is this container
                           owner: widget.nodeContainer,
                           // the sub node

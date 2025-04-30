@@ -14,6 +14,7 @@ Widget wrapWithDragAndDropWidgets(
       Provider.of<TreeConfiguration>(context.nodeContext);
   Widget widget = NodeDraggableBuilder(
     node: node,
+    index: context.index,
     depth: context.depth,
     builder: builder,
     configuration: configuration,
@@ -21,6 +22,7 @@ Widget wrapWithDragAndDropWidgets(
       depth: context.depth,
       builder: builder,
       node: node,
+      index: context.index,
       configuration: configuration,
       owner: node.owner!,
       child: child,
