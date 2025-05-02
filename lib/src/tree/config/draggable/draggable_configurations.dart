@@ -3,6 +3,13 @@ import 'package:novident_nodes/novident_nodes.dart';
 
 const int kLongPressTimeout = 500;
 
+typedef EffectiveDragAnchorStrategy = Offset Function(
+  Draggable<Object> draggable,
+  BuildContext context,
+  Offset? catchedUserCursorOffset,
+  Offset position,
+);
+
 @immutable
 final class DraggableConfigurations {
   /// Constructs the visual feedback widget displayed during a drag operation.
@@ -17,7 +24,7 @@ final class DraggableConfigurations {
   ///
   /// If feedback is identical to the child, then this means the feedback will
   /// exactly overlap the original child when the drag starts.
-  final DragAnchorStrategy childDragAnchorStrategy;
+  final EffectiveDragAnchorStrategy childDragAnchorStrategy;
   final Offset feedbackOffset;
 
   /// The duration that a user has to press down before a long press is registered.
@@ -44,7 +51,7 @@ final class DraggableConfigurations {
     required this.buildDragFeedbackWidget,
     this.allowAutoExpandOnHover = true,
     this.preferLongPressDraggable = false,
-    this.childDragAnchorStrategy = _childDragAnchorStrategy,
+    this.childDragAnchorStrategy = _effectiveChildAnchorStrategy,
     this.feedbackOffset = Offset.zero,
     int? longPressDelay,
     this.axis,
@@ -54,7 +61,7 @@ final class DraggableConfigurations {
 
   DraggableConfigurations copyWith({
     Widget Function(Node, BuildContext)? buildDragFeedbackWidget,
-    DragAnchorStrategy? childDragAnchorStrategy,
+    EffectiveDragAnchorStrategy? childDragAnchorStrategy,
     Offset? feedbackOffset,
     int? longPressDelay,
     Axis? axis,
@@ -121,23 +128,20 @@ final class DraggableConfigurations {
 }
 
 /// Display the feedback anchored at the position of the original child.
-///
-/// If feedback is identical to the child, then this means the feedback will
-/// exactly overlap the original child when the drag starts.
-///
-/// This is the default [DragAnchorStrategy].
-///
-/// See also:
-///
-///  * [DragAnchorStrategy], the typedef that this function implements.
-///  * [Draggable.dragAnchorStrategy], for which this is a built-in value.
-///
-/// Copied from Flutter
-Offset _childDragAnchorStrategy(
+Offset _effectiveChildAnchorStrategy(
   Draggable<Object> draggable,
   BuildContext context,
+  Offset? catchedUserCursorOffset,
   Offset position,
 ) {
   final RenderBox renderObject = context.findRenderObject()! as RenderBox;
-  return renderObject.globalToLocal(position);
+  catchedUserCursorOffset ??= Offset.zero;
+  // gets the real local offset that is effective to appear where the user
+  // is making the interaction
+  final Offset effectiveOffset = renderObject.globalToLocal(position) -
+      // put manually the offset to be the near as we can
+      (catchedUserCursorOffset - _effectiveDecreaserOffset);
+  return effectiveOffset;
 }
+
+const Offset _effectiveDecreaserOffset = Offset(10, 15);

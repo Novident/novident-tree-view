@@ -75,14 +75,11 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       wrapWithDragGestures: wrapWithDragAndDropWidgets,
       node: widget.nodeContainer,
       index: widget.index,
-      marksNeedBuild: () {
-        if (context.mounted && mounted) {
-          setState(() {});
-        }
-      },
+      marksNeedBuild: _markNeedsBuild,
       details: null,
       extraArgs: configuration.extraArgs,
     );
+
     Widget child = NodeDraggableBuilder(
       node: widget.nodeContainer,
       depth: widget.depth,
@@ -214,6 +211,12 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         return container;
       },
     );
+  }
+
+  void _markNeedsBuild() {
+    if (context.mounted && mounted) {
+      setState(() {});
+    }
   }
 
   Widget _buildAsyncChildrenWidgets(

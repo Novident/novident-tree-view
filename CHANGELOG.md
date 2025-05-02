@@ -1,3 +1,9 @@
+## 1.0.7
+
+* Fix: `DraggableListener` is not being updated correctly in certain situations.
+* Fix: missing `NovDragAndDropDetails` updates at some dragging events.
+* Chore(breaking changes): changed type `DragAnchorStrategy` to `EffectiveDragAnchorStrategy`.
+
 ## 1.0.6
 
 * Fix: changelog typos.

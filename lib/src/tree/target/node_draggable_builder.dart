@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:novident_tree_view/src/extensions/cast_nodes.dart';
@@ -164,6 +165,8 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     super.dispose();
   }
 
+  Offset? _inactiveCursorOffset = null;
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -172,7 +175,19 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
         !widget.configuration.activateDragAndDropFeature) {
       return widget.child;
     }
+    return Listener(
+      onPointerMove: (PointerMoveEvent event) =>
+          _inactiveCursorOffset = event.localPosition,
+      onPointerHover: (PointerHoverEvent event) =>
+          _inactiveCursorOffset = event.localPosition,
+      onPointerUp: (PointerUpEvent event) => _inactiveCursorOffset = null,
+      onPointerCancel: (PointerCancelEvent event) =>
+          _inactiveCursorOffset = null,
+      child: _buildDraggable(),
+    );
+  }
 
+  Widget _buildDraggable() {
     if (widget.configuration.draggableConfigurations.preferLongPressDraggable ||
         widget.configuration.draggableConfigurations.longPressDelay > 0) {
       return LongPressDraggable<Node>(
@@ -191,8 +206,19 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
             ?.call(
           widget.node,
         ),
-        dragAnchorStrategy: widget
-            .configuration.draggableConfigurations.childDragAnchorStrategy,
+        dragAnchorStrategy: (
+          Draggable<Object> object,
+          BuildContext context,
+          Offset position,
+        ) {
+          return widget.configuration.draggableConfigurations
+              .childDragAnchorStrategy(
+            object,
+            context,
+            _inactiveCursorOffset!,
+            position,
+          );
+        },
         feedbackOffset:
             widget.configuration.draggableConfigurations.feedbackOffset,
         delay: Duration(
@@ -210,13 +236,24 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
       onDraggableCanceled: onDraggableCanceled,
       onDragEnd: gestures.onDragEnd,
       onDragCompleted: () => gestures.onDragCompleted?.call(widget.node),
-      dragAnchorStrategy:
-          widget.configuration.draggableConfigurations.childDragAnchorStrategy,
       feedback:
           widget.configuration.draggableConfigurations.buildDragFeedbackWidget(
         widget.node,
         context,
       ),
+      dragAnchorStrategy: (
+        Draggable<Object> object,
+        BuildContext context,
+        Offset position,
+      ) {
+        return widget.configuration.draggableConfigurations
+            .childDragAnchorStrategy(
+          object,
+          context,
+          _inactiveCursorOffset!,
+          position,
+        );
+      },
       axis: widget.configuration.draggableConfigurations.axis,
       childWhenDragging: widget
           .configuration.draggableConfigurations.childWhenDraggingBuilder

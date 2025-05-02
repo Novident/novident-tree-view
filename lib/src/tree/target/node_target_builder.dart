@@ -38,6 +38,7 @@ class NodeTargetBuilder extends StatefulWidget {
 
 class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   late NodeDragGestures _gestures;
+  late DraggableListener listener = DraggableListener.of(context);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -78,6 +79,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
 
   /// Current drag-and-drop operation details
   NovDragAndDropDetails<Node>? __details;
+  bool _needsInitializeDragListener = true;
 
   NovDragAndDropDetails<Node>? get _details => __details;
   set _details(NovDragAndDropDetails<Node>? details) {
@@ -106,6 +108,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     _details ??= _getDropDetails(
       details.offset,
       details.data,
+      starting: _needsInitializeDragListener,
     );
     return _gestures.onWillAcceptWithDetails(
       _details,
@@ -122,7 +125,10 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   ///   - The widget is not attached to the render tree
   ///   - There's no active drag operation (inconsistent state)
   NovDragAndDropDetails<Node>? _getDropDetails(
-      Offset pointer, Node draggedNode) {
+    Offset pointer,
+    Node draggedNode, {
+    bool starting = false,
+  }) {
     if (!context.mounted || !mounted) {
       return null;
     }
@@ -146,11 +152,15 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
         renderBox.getTransformTo(null).getTranslation();
     final Offset offset = Offset(vectorPosition.x, vectorPosition.y);
 
-    // Access the drag state through our custom listener
-    //
-    // Note: We intentionally avoid DragTarget's position data due to inconsistencies
-    final DraggableListener listener =
-        DraggableListener.of(context, listen: false);
+    // TODO: ahora necesitamos un listener para el actual offset del cursor
+    // tal vez podriamos ponerlo como ya parte del DraggableListener
+    if (starting && !listener.dragListener.isDragging) {
+      _needsInitializeDragListener = false;
+      listener.dragListener
+        ..draggedNode = draggedNode
+        ..targetNode = widget.node
+        ..globalPosition = offset;
+    }
 
     // Compose all drop information
     return NovDragAndDropDetails<Node>(
@@ -169,7 +179,10 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   /// [details]: Information about the current drag operation
   void _onMove(DragTargetDetails<Node> details) {
     _startOrCancelOnHoverExpansion(cancel: true);
-    DraggableListener.of(context).dragListener.targetNode = widget.node;
+
+    if (listener.dragListener.targetNode != widget.node) {
+      listener.dragListener.targetNode = widget.node;
+    }
 
     setState(() {
       _details = _getDropDetails(details.offset, details.data);
@@ -206,7 +219,10 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   ///
   /// [data]: The node that was being dragged
   void _onLeave(Node? data) {
-    DraggableListener.of(context).dragListener.targetNode = null;
+    _needsInitializeDragListener = true;
+
+    listener.dragListener.targetNode = null;
+
     if (_details == null || data == null || _details!.draggedNode != data) {
       return;
     }
