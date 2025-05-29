@@ -22,11 +22,14 @@ class LeafNodeBuilder extends StatefulWidget {
   /// shouldn't be different than the Node level
   final int depth;
 
+  final GlobalKey? ownerAnimatedListKey;
+
   const LeafNodeBuilder({
     required this.node,
     required this.owner,
     required this.depth,
     required this.index,
+    this.ownerAnimatedListKey,
     super.key,
   });
 
@@ -35,6 +38,53 @@ class LeafNodeBuilder extends StatefulWidget {
 }
 
 class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
+  bool _initStateCalled = false;
+  NodeComponentBuilder? _builder;
+  late final TreeConfiguration configuration =
+      Provider.of<TreeConfiguration>(context);
+
+  @override
+  void didChangeDependencies() {
+    if (!_initStateCalled) {
+      (_builder ??= _checkForBuilder()).initState(widget.node, widget.depth);
+      _initStateCalled = true;
+    }
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _builder!.dispose(_buildContext);
+  }
+
+  NodeComponentBuilder get builder {
+    _builder ??= _checkForBuilder();
+    return _builder!.validate(
+      widget.node,
+      widget.depth,
+    )
+        ? _builder!
+        : _builder = _checkForBuilder();
+  }
+
+  NodeComponentBuilder _checkForBuilder() {
+    final NodeComponentBuilder? tempB =
+        configuration.components.firstWhereOrNull(
+      (NodeComponentBuilder b) => b.validate(
+        widget.node,
+        widget.depth,
+      ),
+    );
+    if (tempB == null) {
+      throw StateError(
+        'There\'s no a builder configurated '
+        'for ${widget.node.runtimeType}(${widget.node.id})',
+      );
+    }
+    return tempB;
+  }
+
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
@@ -43,16 +93,35 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
     properties.add(DiagnosticsProperty('leaf', widget.node));
   }
 
+  ComponentContext get _buildContext => ComponentContext(
+        depth: widget.depth,
+        nodeContext: context,
+        wrapWithDragGestures: wrapWithDragAndDropWidgets,
+        node: widget.node,
+        index: widget.index,
+        marksNeedBuild: _markNeedsBuild,
+        details: null,
+        extraArgs: configuration.extraArgs,
+        animatedListGlobalKey: widget.ownerAnimatedListKey,
+      );
+
+  void _markNeedsBuild() {
+    if (context.mounted && mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final TreeConfiguration configuration =
-        Provider.of<TreeConfiguration>(context);
     return ListenableBuilder(
       listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
         final NodeComponentBuilder? builder =
             configuration.components.firstWhereOrNull(
-          (NodeComponentBuilder b) => b.validate(widget.node),
+          (NodeComponentBuilder b) => b.validate(
+            widget.node,
+            widget.depth,
+          ),
         );
         if (builder == null) {
           throw StateError(
@@ -70,6 +139,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
             builder: builder,
             depth: widget.depth,
             index: widget.index,
+            animatedListGlobalKey: widget.ownerAnimatedListKey,
             node: widget.node,
             configuration: configuration,
             owner: widget.owner,
@@ -77,20 +147,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
         );
 
         final NodeConfiguration? nodeConfig =
-            builder.buildConfigurations(ComponentContext(
-          depth: widget.depth,
-          wrapWithDragGestures: wrapWithDragAndDropWidgets,
-          nodeContext: context,
-          index: widget.index,
-          marksNeedBuild: () {
-            if (context.mounted && mounted) {
-              setState(() {});
-            }
-          },
-          node: widget.node,
-          details: null,
-          extraArgs: configuration.extraArgs,
-        ));
+            builder.buildConfigurations(_buildContext);
 
         if (nodeConfig == null) {
           return child;

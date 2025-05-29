@@ -70,13 +70,15 @@ class Root extends NodeContainer {
   }
 
   @override
-  Root clone() {
+  Root clone({bool deep = true}) {
     return Root(
-      children: children
-          .map(
-            (Node e) => e.clone(),
-          )
-          .toList(),
+      children: !deep
+          ? children
+          : children
+              .map(
+                (Node e) => e.clone(),
+              )
+              .toList(),
     );
   }
 
@@ -94,7 +96,7 @@ class Root extends NodeContainer {
   }
 
   @override
-  Root cloneWithNewLevel(int level) {
+  Root cloneWithNewLevel(int level, {bool deep = true}) {
     return copyWith(
       details: details.cloneWithNewLevel(
         level,

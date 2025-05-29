@@ -18,7 +18,33 @@ abstract class NodeComponentBuilder {
   ///     node is DirectoryTrashed;
   /// }
   /// ```
-  bool validate(Node node);
+  bool validate(Node node, int depth);
+
+  /// Determines whether this builder wont be cached the tree widgets
+  bool get avoidCacheBuilder => false;
+
+  /// Called when this object is removed from the tree permanently.
+  void dispose(ComponentContext context) {}
+
+  /// Called when a dependency of this [State] object changes.
+  ///
+  /// For example, if the previous call to [build] referenced an
+  /// [InheritedWidget] that later changed, the framework would call this
+  /// method to notify this object about the change.
+  void didChangeDependencies(
+      ComponentContext context, bool hasNotifierAttached) {}
+
+  /// Called whenever the widget configuration changes.
+  ///
+  /// If the parent widget rebuilds and requests that this location in the tree
+  /// update to display a new widget with the same [runtimeType] and
+  /// [Widget.key], the framework will update the [widget] property of this
+  /// [State] object to refer to the new widget and then call this method
+  /// with the previous widget as an argument.
+  void didUpdateWidget(ComponentContext context, bool hasNotifierAttached) {}
+
+  /// Called when this object is inserted into the widgets tree.
+  void initState(Node node, int depth) {}
 
   /// Creates gesture handlers for drag operations on this node.
   NodeDragGestures buildDragGestures(ComponentContext context);

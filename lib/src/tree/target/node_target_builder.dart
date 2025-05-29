@@ -17,6 +17,7 @@ class NodeTargetBuilder extends StatefulWidget {
     required this.depth,
     required this.node,
     required this.index,
+    required this.animatedListGlobalKey,
     this.child,
     super.key,
   });
@@ -28,6 +29,7 @@ class NodeTargetBuilder extends StatefulWidget {
   final Node node;
   final int index;
   final NodeComponentBuilder builder;
+  final GlobalKey? animatedListGlobalKey;
 
   /// The container that owns and manages this node
   final NodeContainer owner;
@@ -38,7 +40,7 @@ class NodeTargetBuilder extends StatefulWidget {
 
 class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   late NodeDragGestures _gestures;
-  late DraggableListener listener = DraggableListener.of(context);
+  late DraggableListener listener = DraggableListener.of(context, listen: true);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -61,6 +63,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
         index: widget.index,
         nodeContext: context,
         node: widget.node,
+        animatedListGlobalKey: widget.animatedListGlobalKey,
         details: _details,
         marksNeedBuild: () {
           if (context.mounted && mounted) {
@@ -152,14 +155,14 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
         renderBox.getTransformTo(null).getTranslation();
     final Offset offset = Offset(vectorPosition.x, vectorPosition.y);
 
-    // TODO: ahora necesitamos un listener para el actual offset del cursor
-    // tal vez podriamos ponerlo como ya parte del DraggableListener
     if (starting && !listener.dragListener.isDragging) {
       _needsInitializeDragListener = false;
       listener.dragListener
         ..draggedNode = draggedNode
         ..targetNode = widget.node
-        ..globalPosition = offset;
+        ..globalPosition = renderBox.localToGlobal(
+          listener.dragListener.userPosition!,
+        );
     }
 
     // Compose all drop information
@@ -179,10 +182,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   /// [details]: Information about the current drag operation
   void _onMove(DragTargetDetails<Node> details) {
     _startOrCancelOnHoverExpansion(cancel: true);
-
-    if (listener.dragListener.targetNode != widget.node) {
-      listener.dragListener.targetNode = widget.node;
-    }
+    listener.dragListener.targetNode = widget.node;
 
     setState(() {
       _details = _getDropDetails(details.offset, details.data);
@@ -202,6 +202,12 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     _details ??= _getDropDetails(details.offset, details.data);
 
     if (_details == null || _details!.draggedNode != details.data) return;
+
+    listener.dragListener
+      ..draggedNode = null
+      ..targetNode = null
+      ..globalPosition = null
+      ..localPosition = null;
 
     // Notify about the accepted drop
     _gestures.onAcceptWithDetails.call(
@@ -291,6 +297,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     return ComponentContext(
       depth: widget.depth,
       nodeContext: context,
+      animatedListGlobalKey: widget.animatedListGlobalKey,
       index: widget.index,
       node: widget.node,
       extraArgs: widget.configuration.extraArgs,
@@ -323,6 +330,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     }
 
     return DragTarget<Node>(
+      hitTestBehavior: HitTestBehavior.deferToChild,
       onWillAcceptWithDetails: (DragTargetDetails<Node> details) =>
           _onWillAccept(
         details,

@@ -24,6 +24,7 @@ Widget wrapWithDragAndDropWidgets(
       node: node,
       index: context.index,
       configuration: configuration,
+      animatedListGlobalKey: context.animatedListGlobalKey,
       owner: node.owner!,
       child: child,
     ),

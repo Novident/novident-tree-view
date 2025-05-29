@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
 /// A controller class that manages drag-and-drop operations within a tree structure.
@@ -30,6 +31,9 @@ class DragListener {
   Node? targetNode;
   Offset? globalPosition;
   Offset? localPosition;
+
+  @internal
+  Offset? userPosition;
 
   DragListener({
     this.draggedNode,

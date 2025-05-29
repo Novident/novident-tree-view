@@ -98,5 +98,5 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
   Widget? buildChildren(ComponentContext context) => null;
 
   @override
-  bool validate(Node node) => node is Directory;
+  bool validate(Node node, int depth) => node is Directory;
 }

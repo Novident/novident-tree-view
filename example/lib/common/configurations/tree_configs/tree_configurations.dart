@@ -13,13 +13,19 @@ TreeConfiguration treeConfigurationBuilder(
   TreeController controller,
   BuildContext context,
 ) =>
-    TreeConfiguration(
+    TreeConfiguration.animated(
       activateDragAndDropFeature: true,
       addRepaintBoundaries: true,
       components: <NodeComponentBuilder>[
         DirectoryComponentBuilder(),
         FileComponentBuilder(),
       ],
+      animatedWrapper: (animation, node, child) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+      onDeleteAnimationWrapper: (animation, node, child) {
+        return FadeTransition(opacity: animation, child: child);
+      },
       extraArgs: <String, dynamic>{
         'controller': controller,
       },

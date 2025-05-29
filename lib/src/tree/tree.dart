@@ -97,25 +97,7 @@ class _TreeViewState extends State<TreeView> {
                         .configuration.treeListViewConfigurations.restorationId,
                     hitTestBehavior: widget.configuration
                         .treeListViewConfigurations.hitTestBehavior,
-                    itemBuilder: (BuildContext context, int index) {
-                      final Node node = widget.root.children.elementAt(index);
-                      // Build appropriate node type
-                      if (node is! NodeContainer) {
-                        return LeafNodeBuilder(
-                          node: node,
-                          index: index,
-                          depth: 0,
-                          owner: widget.root,
-                        );
-                      } else {
-                        return ContainerBuilder(
-                          nodeContainer: node,
-                          index: index,
-                          depth: 0,
-                          owner: widget.root,
-                        );
-                      }
-                    },
+                    itemBuilder: _itemBuilder,
                   );
                 },
               ),
@@ -124,12 +106,32 @@ class _TreeViewState extends State<TreeView> {
                 padding: EdgeInsets.only(
                   bottom: widget.bottomInsets,
                 ),
-              )
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget? _itemBuilder(BuildContext context, int index) {
+    final Node node = widget.root.children.elementAt(index);
+    // Build appropriate node type
+    if (node is! NodeContainer) {
+      return LeafNodeBuilder(
+        node: node,
+        index: index,
+        depth: 0,
+        owner: widget.root,
+      );
+    } else {
+      return ContainerBuilder(
+        nodeContainer: node,
+        index: index,
+        depth: 0,
+        owner: widget.root,
+      );
+    }
   }
 }
 

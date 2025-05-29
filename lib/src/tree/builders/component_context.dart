@@ -53,6 +53,10 @@ class ComponentContext {
   /// Custom parameters passed through TreeConfiguration
   final Map<String, dynamic> extraArgs;
 
+  /// Use this when useAnimatedLists from TreeConfiguration is true
+  /// and when you need to insert or remove an item from the list
+  final GlobalKey? animatedListGlobalKey;
+
   ComponentContext({
     required this.depth,
     required this.nodeContext,
@@ -61,6 +65,7 @@ class ComponentContext {
     required this.wrapWithDragGestures,
     required this.marksNeedBuild,
     required this.index,
+    this.animatedListGlobalKey,
     this.extraArgs = const <String, dynamic>{},
   });
 }

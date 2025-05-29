@@ -97,5 +97,5 @@ class FileComponentBuilder extends NodeComponentBuilder {
   Widget? buildChildren(ComponentContext context) => null;
 
   @override
-  bool validate(Node node) => node is File;
+  bool validate(Node node, int depth) => node is File;
 }

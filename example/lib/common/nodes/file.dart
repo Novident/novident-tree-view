@@ -67,7 +67,7 @@ class File extends Node implements DragAndDropMixin {
   }
 
   @override
-  File clone() {
+  File clone({bool deep = true}) {
     return File(
       details: details,
       content: content,
@@ -87,7 +87,7 @@ class File extends Node implements DragAndDropMixin {
   }
 
   @override
-  File cloneWithNewLevel(int level) {
+  File cloneWithNewLevel(int level, {bool deep = true}) {
     return copyWith(
       details: details.cloneWithNewLevel(level),
     );

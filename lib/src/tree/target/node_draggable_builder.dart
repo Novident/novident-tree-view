@@ -65,6 +65,11 @@ class NodeDraggableBuilder extends StatefulWidget {
 class _TreeDraggableState extends State<NodeDraggableBuilder>
     with AutomaticKeepAliveClientMixin {
   @override
+  bool get wantKeepAlive => isDragging;
+
+  late final DraggableListener listener = DraggableListener.of(context);
+
+  @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<Node>('node', widget.node));
@@ -77,9 +82,6 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     properties.add(DiagnosticsProperty<bool>('isDragging', _isDragging));
     properties.add(DiagnosticsProperty<NodeDragGestures>('gestures', gestures));
   }
-
-  @override
-  bool get wantKeepAlive => isDragging;
 
   bool get isDragging => _isDragging;
   bool _isDragging = false;
@@ -122,27 +124,30 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     isDragging = true;
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final Offset cursorPosition = renderBox.localToGlobal(Offset.zero);
-    DraggableListener.of(context).dragListener
+    listener.dragListener
       ..globalPosition = cursorPosition
       ..localPosition = renderBox.globalToLocal(cursorPosition)
       ..targetNode = widget.node
+      ..userPosition = _inactiveCursorOffset
       ..draggedNode = widget.node;
     gestures.onDragStart?.call(cursorPosition, widget.node);
   }
 
   void onDragUpdate(DragUpdateDetails details) {
-    DraggableListener.of(context).dragListener
+    listener.dragListener
       ..globalPosition = details.globalPosition
       ..localPosition = details.localPosition
+      ..userPosition = _inactiveCursorOffset
       ..draggedNode = widget.node;
     gestures.onDragUpdate?.call(details);
   }
 
   void onDraggableCanceled(Velocity velocity, Offset point) {
     _endDrag();
-    DraggableListener.of(context).dragListener
+    listener.dragListener
       ..globalPosition = null
       ..localPosition = null
+      ..userPosition = _inactiveCursorOffset
       ..targetNode = null
       ..draggedNode = null;
     DragAndDropDetailsListener.of(context).details.value = null;
@@ -151,9 +156,10 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
 
   void onDragCompleted() {
     _endDrag();
-    DraggableListener.of(context).dragListener
+    listener.dragListener
       ..globalPosition = null
       ..localPosition = null
+      ..userPosition = _inactiveCursorOffset
       ..targetNode = null
       ..draggedNode = null;
     gestures.onDragCompleted?.call(widget.node);
@@ -165,7 +171,14 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     super.dispose();
   }
 
-  Offset? _inactiveCursorOffset = null;
+  Offset? __inactiveCursorOffset;
+
+  Offset? get _inactiveCursorOffset => __inactiveCursorOffset;
+
+  set _inactiveCursorOffset(Offset? offset) {
+    __inactiveCursorOffset = offset;
+    listener.dragListener.userPosition = __inactiveCursorOffset;
+  }
 
   @override
   Widget build(BuildContext context) {

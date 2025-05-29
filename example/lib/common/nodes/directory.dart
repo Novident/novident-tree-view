@@ -102,7 +102,7 @@ class Directory extends NodeContainer implements DragAndDropMixin {
   }
 
   @override
-  Directory clone() {
+  Directory clone({bool deep = true}) {
     return Directory(
       children: children,
       details: details,
@@ -145,7 +145,7 @@ class Directory extends NodeContainer implements DragAndDropMixin {
   }
 
   @override
-  Directory cloneWithNewLevel(int level) {
+  Directory cloneWithNewLevel(int level, {bool deep = true}) {
     return copyWith(
       children: children,
       isExpanded: isExpanded,

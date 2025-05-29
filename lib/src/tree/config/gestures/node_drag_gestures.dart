@@ -140,24 +140,19 @@ final class NodeDragGestures {
     details.mapDropPosition<void>(
       whenAbove: () {
         final NodeContainer parent = target.owner as NodeContainer;
-        final NodeContainer dragParent =
-            details.draggedNode.owner as NodeContainer;
-        dragParent.removeWhere(
-          (Node n) => n.id == details.draggedNode.id,
-          propagateNotifications: true,
+        onWillInsert?.call(
+          details.draggedNode,
+          parent,
+          parent.level + 1,
         );
         final int index = target.index;
-        if (index != -1) {
-          onWillInsert?.call(
-            details.draggedNode,
-            parent,
-            parent.level + 1,
-          );
-          parent.insert(
-            index,
-            details.draggedNode,
-          );
-        }
+        Node.moveTo(
+          node: details.draggedNode,
+          newOwner: parent,
+          index: index + 1 >= parent.length ? parent.length : index + 1,
+          shouldNotify: true,
+          propagate: true,
+        );
       },
       whenInside: () {
         if (Node.canMoveTo(
@@ -181,24 +176,20 @@ final class NodeDragGestures {
       },
       whenBelow: () {
         final NodeContainer parent = target.owner as NodeContainer;
-        final NodeContainer dragParent =
-            details.draggedNode.owner as NodeContainer;
-        dragParent.removeWhere(
-          (Node n) => n.id == details.draggedNode.id,
-          propagateNotifications: true,
+        onWillInsert?.call(
+          details.draggedNode,
+          parent,
+          parent.level,
         );
-        final int index = target.index;
-        if (index != -1) {
-          onWillInsert?.call(
-            details.draggedNode,
-            parent,
-            parent.level,
-          );
-          parent.insert(
-            index + 1 >= parent.length ? parent.length : index + 1,
-            details.draggedNode,
-          );
-        }
+        final int index = target.index + 1;
+        final wasMoved = Node.moveTo(
+          node: details.draggedNode,
+          newOwner: parent,
+          index: index + 1 >= parent.length ? parent.length : index + 1,
+          shouldNotify: true,
+          propagate: true,
+        );
+        print('Node was moved: ${wasMoved}');
       },
       ignoreInsideZone: target is! NodeContainer,
     );

@@ -5,11 +5,18 @@ import 'package:novident_tree_view/novident_tree_view.dart';
 
 const int _kDefaultExpandDelay = 625;
 
+typedef AnimatedWidgetBuilder = Widget Function(
+    Animation<double>, Node node, Widget child);
+
 /// Central configuration class for tree view behavior and operations
 @immutable
 final class TreeConfiguration {
   final List<NodeComponentBuilder> components;
   final ListViewConfigurations treeListViewConfigurations;
+
+  final AnimatedWidgetBuilder? animatedWrapper;
+  final AnimatedWidgetBuilder? onDeleteAnimationWrapper;
+  final bool useAnimatedLists;
 
   /// These are args that usually we want to use in all node builders
   final Map<String, dynamic> extraArgs;
@@ -55,7 +62,33 @@ final class TreeConfiguration {
     this.addRepaintBoundaries = false,
     this.onHoverContainerExpansionDelay = _kDefaultExpandDelay,
     this.onDetectEmptyRoot,
-  }) : assert(
+  })  : animatedWrapper = null,
+        onDeleteAnimationWrapper = null,
+        useAnimatedLists = false,
+        assert(
+          components.isNotEmpty,
+          'Nodes cannot be rendered if there\'s no builders for them',
+        );
+
+  /// Creates a tree configuration
+  TreeConfiguration.animated({
+    required this.components,
+    required this.draggableConfigurations,
+    required this.animatedWrapper,
+    required this.onDeleteAnimationWrapper,
+    this.treeListViewConfigurations = const ListViewConfigurations(),
+    this.indentConfiguration = const IndentConfiguration.basic(),
+    this.onHoverContainer,
+    this.extraArgs = const <String, dynamic>{},
+    this.activateDragAndDropFeature = true,
+    this.addRepaintBoundaries = false,
+    this.onHoverContainerExpansionDelay = _kDefaultExpandDelay,
+    this.onDetectEmptyRoot,
+  })  : useAnimatedLists = true,
+        assert(animatedWrapper != null, 'animatedWrapper cannot be nullable'),
+        assert(onDeleteAnimationWrapper != null,
+            'onDeleteAnimationWrapper cannot be nullable'),
+        assert(
           components.isNotEmpty,
           'Nodes cannot be rendered if there\'s no builders for them',
         );
@@ -74,9 +107,32 @@ final class TreeConfiguration {
     Widget? onDetectEmptyRoot,
     int? onHoverContainerExpansionDelay,
     IndentConfiguration? indentConfiguration,
+    AnimatedWidgetBuilder? animatedWrapper,
+    AnimatedWidgetBuilder? onDeleteAnimationWrapper,
     Widget Function(NovDragAndDropDetails<Node> details)?
         rootTargetToDropSection,
   }) {
+    if (useAnimatedLists) {
+      return TreeConfiguration.animated(
+        onHoverContainer: onHoverContainer ?? this.onHoverContainer,
+        animatedWrapper: animatedWrapper ?? this.animatedWrapper,
+        onDeleteAnimationWrapper:
+            onDeleteAnimationWrapper ?? this.onDeleteAnimationWrapper,
+        components: components ?? this.components,
+        treeListViewConfigurations:
+            treeListViewConfigurations ?? this.treeListViewConfigurations,
+        addRepaintBoundaries: addRepaintBoundaries ?? this.addRepaintBoundaries,
+        extraArgs: extraArgs ?? this.extraArgs,
+        draggableConfigurations:
+            draggableConfigurations ?? this.draggableConfigurations,
+        activateDragAndDropFeature:
+            activateDragAndDropFeature ?? this.activateDragAndDropFeature,
+        onDetectEmptyRoot: onDetectEmptyRoot ?? this.onDetectEmptyRoot,
+        onHoverContainerExpansionDelay: onHoverContainerExpansionDelay ??
+            this.onHoverContainerExpansionDelay,
+        indentConfiguration: indentConfiguration ?? this.indentConfiguration,
+      );
+    }
     return TreeConfiguration(
       onHoverContainer: onHoverContainer ?? this.onHoverContainer,
       components: components ?? this.components,
@@ -107,6 +163,9 @@ final class TreeConfiguration {
         other.onHoverContainerExpansionDelay ==
             onHoverContainerExpansionDelay &&
         other.indentConfiguration == indentConfiguration &&
+        other.animatedWrapper == animatedWrapper &&
+        other.onDeleteAnimationWrapper == onDeleteAnimationWrapper &&
+        other.useAnimatedLists == useAnimatedLists &&
         listEquals<NodeComponentBuilder>(other.components, components) &&
         mapEquals<String, dynamic>(other.extraArgs, extraArgs);
   }
@@ -116,6 +175,9 @@ final class TreeConfiguration {
     return Object.hashAll(<Object?>[
       components,
       extraArgs,
+      animatedWrapper,
+      onDeleteAnimationWrapper,
+      useAnimatedLists,
       onHoverContainer,
       treeListViewConfigurations,
       draggableConfigurations,
