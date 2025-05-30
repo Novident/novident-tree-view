@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-const int _kDefaultExpandDelay = 625;
-
 typedef AnimatedWidgetBuilder = Widget Function(
     Animation<double>, Node node, Widget child);
 
@@ -27,6 +25,11 @@ final class TreeConfiguration {
   /// Callback when hovering over a NodeContainer
   ///
   /// Triggered when a drag operation hovers over a container node
+  @Deprecated(
+    'onHoverContainer is not being used, '
+    'and nWas replace by onTryExpand method into '
+    'NodeComponentBuilder base class.',
+  )
   final void Function(NodeContainer node)? onHoverContainer;
 
   /// Settings for drag-and-drop operations
@@ -45,6 +48,10 @@ final class TreeConfiguration {
   /// Hover duration before auto-expanding containers (milliseconds)
   ///
   /// Time delay before automatically expanding NodeContainers during drag operations
+  @Deprecated(
+    'onHoverContainerExpansionDelay is not used, and was '
+    'replaced by onHoverCallDelay into NodeComponentBuilder class',
+  )
   final int onHoverContainerExpansionDelay;
 
   /// Indentation styling configuration
@@ -60,9 +67,9 @@ final class TreeConfiguration {
     this.extraArgs = const <String, dynamic>{},
     this.activateDragAndDropFeature = true,
     this.addRepaintBoundaries = false,
-    this.onHoverContainerExpansionDelay = _kDefaultExpandDelay,
     this.onDetectEmptyRoot,
-  })  : animatedWrapper = null,
+  })  : onHoverContainerExpansionDelay = -1,
+        animatedWrapper = null,
         onDeleteAnimationWrapper = null,
         useAnimatedLists = false,
         assert(
@@ -82,9 +89,9 @@ final class TreeConfiguration {
     this.extraArgs = const <String, dynamic>{},
     this.activateDragAndDropFeature = true,
     this.addRepaintBoundaries = false,
-    this.onHoverContainerExpansionDelay = _kDefaultExpandDelay,
     this.onDetectEmptyRoot,
-  })  : useAnimatedLists = true,
+  })  : onHoverContainerExpansionDelay = -1,
+        useAnimatedLists = true,
         assert(animatedWrapper != null, 'animatedWrapper cannot be nullable'),
         assert(onDeleteAnimationWrapper != null,
             'onDeleteAnimationWrapper cannot be nullable'),
@@ -105,7 +112,6 @@ final class TreeConfiguration {
     bool? activateDragAndDropFeature,
     bool? addRepaintBoundaries,
     Widget? onDetectEmptyRoot,
-    int? onHoverContainerExpansionDelay,
     IndentConfiguration? indentConfiguration,
     AnimatedWidgetBuilder? animatedWrapper,
     AnimatedWidgetBuilder? onDeleteAnimationWrapper,
@@ -114,7 +120,6 @@ final class TreeConfiguration {
   }) {
     if (useAnimatedLists) {
       return TreeConfiguration.animated(
-        onHoverContainer: onHoverContainer ?? this.onHoverContainer,
         animatedWrapper: animatedWrapper ?? this.animatedWrapper,
         onDeleteAnimationWrapper:
             onDeleteAnimationWrapper ?? this.onDeleteAnimationWrapper,
@@ -128,13 +133,10 @@ final class TreeConfiguration {
         activateDragAndDropFeature:
             activateDragAndDropFeature ?? this.activateDragAndDropFeature,
         onDetectEmptyRoot: onDetectEmptyRoot ?? this.onDetectEmptyRoot,
-        onHoverContainerExpansionDelay: onHoverContainerExpansionDelay ??
-            this.onHoverContainerExpansionDelay,
         indentConfiguration: indentConfiguration ?? this.indentConfiguration,
       );
     }
     return TreeConfiguration(
-      onHoverContainer: onHoverContainer ?? this.onHoverContainer,
       components: components ?? this.components,
       treeListViewConfigurations:
           treeListViewConfigurations ?? this.treeListViewConfigurations,
@@ -145,8 +147,6 @@ final class TreeConfiguration {
       activateDragAndDropFeature:
           activateDragAndDropFeature ?? this.activateDragAndDropFeature,
       onDetectEmptyRoot: onDetectEmptyRoot ?? this.onDetectEmptyRoot,
-      onHoverContainerExpansionDelay:
-          onHoverContainerExpansionDelay ?? this.onHoverContainerExpansionDelay,
       indentConfiguration: indentConfiguration ?? this.indentConfiguration,
     );
   }
@@ -155,13 +155,10 @@ final class TreeConfiguration {
   bool operator ==(covariant TreeConfiguration other) {
     if (identical(this, other)) return true;
 
-    return other.onHoverContainer == onHoverContainer &&
-        other.draggableConfigurations == draggableConfigurations &&
+    return other.draggableConfigurations == draggableConfigurations &&
         other.treeListViewConfigurations == treeListViewConfigurations &&
         other.activateDragAndDropFeature == activateDragAndDropFeature &&
         other.onDetectEmptyRoot == onDetectEmptyRoot &&
-        other.onHoverContainerExpansionDelay ==
-            onHoverContainerExpansionDelay &&
         other.indentConfiguration == indentConfiguration &&
         other.animatedWrapper == animatedWrapper &&
         other.onDeleteAnimationWrapper == onDeleteAnimationWrapper &&
@@ -178,12 +175,10 @@ final class TreeConfiguration {
       animatedWrapper,
       onDeleteAnimationWrapper,
       useAnimatedLists,
-      onHoverContainer,
       treeListViewConfigurations,
       draggableConfigurations,
       activateDragAndDropFeature,
       onDetectEmptyRoot,
-      onHoverContainerExpansionDelay,
       indentConfiguration,
     ]);
   }

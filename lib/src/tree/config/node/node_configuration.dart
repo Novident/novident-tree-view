@@ -34,7 +34,11 @@ final class NodeConfiguration {
   final void Function(BuildContext context)? onSecondaryTap;
 
   /// Callback triggered when the [Node] is hovered over or when the hover ends.
+  @Deprecated('onHover is not being used and was replaced by onHoverInkWell')
   final void Function(bool isHovered, BuildContext context)? onHover;
+
+  /// Callback triggered when the [Node] is hovered over or when the hover ends.
+  final void Function(bool isHovered, BuildContext context)? onHoverInkWell;
 
   /// Called when the user taps down this part of the material.
   final void Function(TapDownDetails details, BuildContext context)? onTapDown;
@@ -166,11 +170,11 @@ final class NodeConfiguration {
     this.onLongPress,
     this.mouseCursor,
     this.overlayColor,
-    this.onHover,
+    this.onHoverInkWell,
     this.splashFactory,
     this.hoverColor,
     this.tapSplashColor,
     this.splashBorderRadius,
     this.customSplashShape,
-  });
+  }) : onHover = null;
 }

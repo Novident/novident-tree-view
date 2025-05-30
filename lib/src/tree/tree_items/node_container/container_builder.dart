@@ -299,7 +299,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
               ? null
               : () => nodeConfig.onSecondaryTapCancel?.call(context),
           onHover: (bool isHovered) =>
-              nodeConfig.onHover?.call(isHovered, context),
+              nodeConfig.onHoverInkWell?.call(isHovered, context),
           mouseCursor: nodeConfig.mouseCursor,
           hoverDuration: nodeConfig.hoverDuration,
           hoverColor: nodeConfig.hoverColor,

@@ -261,39 +261,31 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
       timer = null;
       return;
     }
+    final ComponentContext compCtx = buildContext();
+
+    widget.builder.onHover(compCtx, _details);
 
     // Skip if auto-expansion is disabled or node isn't a container
-    if (!widget.configuration.draggableConfigurations.allowAutoExpandOnHover ||
-        widget.node is! NodeContainer) {
+    if (!widget.configuration.draggableConfigurations.allowAutoExpandOnHover &&
+        widget.node is NodeContainer) {
       return;
     }
 
-    // Don't expand if already expanded
-    if (widget.node.castToContainer().isExpanded ||
-        (_details != null &&
-            _details!.exactPosition() != DragHandlerPosition.into)) {
-      return;
-    }
-
-    // Start new timer if none exists or current one isn't active
     bool? isActive = timer?.isActive;
     if (timer == null || (isActive != null && !isActive)) {
       timer = Timer(
-        Duration(
-          milliseconds: widget.configuration.onHoverContainerExpansionDelay,
-        ),
+        widget.builder.onHoverCallDelay,
         () {
-          widget.configuration.onHoverContainer
-              ?.call(widget.node.castToContainer());
+          widget.builder.onTryExpand(compCtx, _details);
         },
       );
     }
   }
 
-  ComponentContext buildContext(
+  ComponentContext buildContext([
     List<dynamic>? rejectedData,
     List<Node?>? candidateData,
-  ) {
+  ]) {
     return ComponentContext(
       depth: widget.depth,
       nodeContext: context,

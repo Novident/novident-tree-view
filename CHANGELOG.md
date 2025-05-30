@@ -3,8 +3,9 @@
 * Fix: If we change something into the `validate` method of `NodeComponentBuilder` class the componentBuilders are not reloaded.
 * Feat(breaking changes): added property `depth` to validate method in `NodeComponentBuilder` class.
 * Feat: added methods for state management like `didUpdateWidget`, `didChangeDependencies`, `initState` and `dispose` methods for `NodeComponentBuilder` class.
-* Feat: added `dispose` and `initState` methods for NodeComponentBuilders.
 * Feat: added animated list support using `TreeConfiguration.animated`.
+* Chore: deprecated `onHoverContainerExpansionDelay` and `onHoverContainer`, and them were replaced by `onHoverCallDelay` and `onTryExpand` into the `NodeComponentBuilder` class.
+* Chore: deprecated `onHover` method in NodeConfiguration class and was replaced by `onHoverInkWell` that makes more sense with its function.
 
 ## 1.0.7
 

@@ -75,6 +75,20 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
   }
 
   @override
+  void onTryExpand(
+      ComponentContext context, NovDragAndDropDetails<Node>? details) {
+    final NodeContainer node = context.node as NodeContainer;
+    // Don't expand if already expanded
+    if (node.isExpanded) {
+      return;
+    }
+    if ((details != null &&
+        details.exactPosition() == DragHandlerPosition.into)) {
+      node.asDirectory.openOrClose(forceOpen: true);
+    }
+  }
+
+  @override
   NodeDragGestures buildDragGestures(ComponentContext context) {
     final TreeController controller =
         context.extraArgs['controller'] as TreeController;

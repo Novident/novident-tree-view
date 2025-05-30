@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
+const int _kDefaultExpandDelay = 625;
+
 /// Abstract base class for building and configuring node components in a tree structure.
 abstract class NodeComponentBuilder {
   /// Determines whether this builder should handle the given node.
@@ -20,7 +22,26 @@ abstract class NodeComponentBuilder {
   /// ```
   bool validate(Node node, int depth);
 
-  /// Determines whether this builder wont be cached the tree widgets
+  /// Called when we drag a [Node] over this widget
+  /// and we maintain that one certain time
+  ///
+  /// Commonly executed after the delay passed by [onHoverCallDelay]
+  void onTryExpand(
+      ComponentContext context, NovDragAndDropDetails<Node>? details) {}
+
+  /// Called when we drag a [Node] over this widget
+  void onHover(
+    ComponentContext context,
+    NovDragAndDropDetails<Node>? details,
+  ) {}
+
+  /// Determines the delay of the execution of the [onHover] method
+  Duration get onHoverCallDelay =>
+      const Duration(milliseconds: _kDefaultExpandDelay);
+
+  /// Determines whether this builder won't be cached into the tree
+  ///
+  /// Tipically, we use this, when a part of this builder change
   bool get avoidCacheBuilder => false;
 
   /// Called when this object is removed from the tree permanently.
