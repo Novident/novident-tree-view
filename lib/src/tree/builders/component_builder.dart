@@ -52,8 +52,7 @@ abstract class NodeComponentBuilder {
   /// For example, if the previous call to [build] referenced an
   /// [InheritedWidget] that later changed, the framework would call this
   /// method to notify this object about the change.
-  void didChangeDependencies(
-      ComponentContext context, bool hasNotifierAttached) {}
+  void didChangeDependencies(ComponentContext context) {}
 
   /// Called whenever the widget configuration changes.
   ///

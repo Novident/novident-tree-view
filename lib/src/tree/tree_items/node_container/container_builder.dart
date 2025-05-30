@@ -60,6 +60,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           .initState(widget.nodeContainer, widget.depth);
       _initStateCalled = true;
     }
+    _builder?.didChangeDependencies(_buildContext);
     super.didChangeDependencies();
   }
 
@@ -349,15 +350,13 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
                   ) ??
                   _buildDefaultChildrenWidgets(configuration, builder),
             if (needsAsync)
-              Visibility(
-                  visible: widget.nodeContainer.isExpanded,
-                  child: _isFirstChildrenBuild
-                      ? _buildAsyncChildrenWidgets(
-                          componentContext,
-                          configuration,
-                          builder,
-                        )
-                      : _buildDefaultChildrenWidgets(configuration, builder)),
+              _isFirstChildrenBuild
+                  ? _buildAsyncChildrenWidgets(
+                      componentContext,
+                      configuration,
+                      builder,
+                    )
+                  : _buildDefaultChildrenWidgets(configuration, builder),
           ],
         );
 
@@ -527,6 +526,10 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
               itemCount: widget.nodeContainer.length,
               itemBuilder: (BuildContext context, int index) {
                 final Node node = widget.nodeContainer.elementAt(index);
+                print(
+                  'Node ${node.runtimeType}:'
+                  '${node.id.substring(0, 4)}',
+                );
                 if (node is! NodeContainer) {
                   return LeafNodeBuilder(
                     depth: node.level + 1,

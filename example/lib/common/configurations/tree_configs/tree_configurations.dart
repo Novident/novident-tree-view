@@ -13,27 +13,21 @@ TreeConfiguration treeConfigurationBuilder(
   TreeController controller,
   BuildContext context,
 ) =>
-    TreeConfiguration.animated(
+    TreeConfiguration(
       activateDragAndDropFeature: true,
-      addRepaintBoundaries: true,
+      addRepaintBoundaries: false,
       components: <NodeComponentBuilder>[
         DirectoryComponentBuilder(),
         FileComponentBuilder(),
       ],
-      animatedWrapper: (animation, node, child) {
-        return FadeTransition(opacity: animation, child: child);
-      },
-      onDeleteAnimationWrapper: (animation, node, child) {
-        return FadeTransition(opacity: animation, child: child);
-      },
       extraArgs: <String, dynamic>{
         'controller': controller,
       },
       treeListViewConfigurations: ListViewConfigurations(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        addSemanticIndexes: true,
-        addAutomaticKeepAlives: true,
+        addSemanticIndexes: false,
+        addAutomaticKeepAlives: false,
       ),
       indentConfiguration: IndentConfiguration.basic(
         indentPerLevel: 14,

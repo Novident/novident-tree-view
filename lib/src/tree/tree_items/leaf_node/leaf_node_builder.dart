@@ -49,6 +49,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
       (_builder ??= _checkForBuilder()).initState(widget.node, widget.depth);
       _initStateCalled = true;
     }
+    _builder?.didChangeDependencies(_buildContext);
     super.didChangeDependencies();
   }
 
