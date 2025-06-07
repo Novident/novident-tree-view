@@ -145,11 +145,15 @@ final class NodeDragGestures {
           parent,
           parent.level + 1,
         );
-        final int index = target.index;
+        final int effectiveIndex = target.index;
+
+        if (effectiveIndex == details.draggedNode.index) {
+          return;
+        }
         Node.moveTo(
           node: details.draggedNode,
           newOwner: parent,
-          index: index + 1 >= parent.length ? parent.length : index + 1,
+          index: effectiveIndex,
           shouldNotify: true,
           propagate: true,
         );
@@ -181,15 +185,25 @@ final class NodeDragGestures {
           parent,
           parent.level,
         );
-        final int index = target.index + 1;
-        final wasMoved = Node.moveTo(
+        // will be inserted at next index
+        // the before one effective, is the exact current
+        final int targetIndex = target.index;
+        final int draggedIndex = details.draggedNode.index;
+
+        // adjust the index if the dragged node is before the target
+        int effectiveIndex =
+            draggedIndex < targetIndex ? targetIndex : targetIndex + 1;
+
+        if (effectiveIndex == draggedIndex) {
+          return;
+        }
+        Node.moveTo(
           node: details.draggedNode,
           newOwner: parent,
-          index: index + 1 >= parent.length ? parent.length : index + 1,
+          index: effectiveIndex,
           shouldNotify: true,
           propagate: true,
         );
-        print('Node was moved: ${wasMoved}');
       },
       ignoreInsideZone: target is! NodeContainer,
     );

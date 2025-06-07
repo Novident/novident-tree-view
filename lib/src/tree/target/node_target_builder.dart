@@ -48,10 +48,11 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     properties.add(DiagnosticsProperty<Node>('node', widget.node));
     properties.add(DiagnosticsProperty<Node>('owner', widget.owner));
     properties.add(DiagnosticsProperty<Widget?>('child', widget.child));
-    properties.add(
-        DiagnosticsProperty<TreeConfiguration>('configuration', widget.configuration));
+    properties.add(DiagnosticsProperty<TreeConfiguration>(
+        'configuration', widget.configuration));
     properties.add(DiagnosticsProperty<int>('depth', widget.depth));
-    properties.add(DiagnosticsProperty<NodeComponentBuilder>('builder', widget.builder));
+    properties.add(
+        DiagnosticsProperty<NodeComponentBuilder>('builder', widget.builder));
   }
 
   @override
@@ -87,7 +88,8 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   set _details(NovDragAndDropDetails<Node>? details) {
     __details = details;
     if (mounted && details != null) {
-      DragAndDropDetailsListener.of(context).details.value = NodeDragAndDropDetails(
+      DragAndDropDetailsListener.of(context).details.value =
+          NodeDragAndDropDetails(
         draggedNode: __details!.draggedNode,
         targetNode: __details!.targetNode,
         inside: __details!.exactPosition() == DragHandlerPosition.into,
@@ -149,7 +151,8 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     // 1. `globalTargetNodeOffset`: Position of this widget in global coordinates
     // 2. `globalDropPosition`: Raw cursor position in global coordinates
     // 3. `targetBounds`: Size and position (at origin) of this widget
-    final Vector3 vectorPosition = renderBox.getTransformTo(null).getTranslation();
+    final Vector3 vectorPosition =
+        renderBox.getTransformTo(null).getTranslation();
     final Offset offset = Offset(vectorPosition.x, vectorPosition.y);
 
     if (starting && !listener.dragListener.isDragging) {
@@ -169,8 +172,8 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
       draggedNode: listener.dragListener.draggedNode ?? draggedNode,
       globalTargetNodeOffset: offset,
       targetNode: widget.node,
-      dropPosition:
-          renderBox.globalToLocal(listener.dragListener.globalPosition ?? pointer),
+      dropPosition: renderBox
+          .globalToLocal(listener.dragListener.globalPosition ?? pointer),
       globalDropPosition: listener.dragListener.globalPosition ?? offset,
       targetBounds: Offset.zero & renderBox.size,
     );
@@ -322,7 +325,8 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
 
     return DragTarget<Node>(
       hitTestBehavior: HitTestBehavior.deferToChild,
-      onWillAcceptWithDetails: (DragTargetDetails<Node> details) => _onWillAccept(
+      onWillAcceptWithDetails: (DragTargetDetails<Node> details) =>
+          _onWillAccept(
         details,
       ),
       onAcceptWithDetails: (DragTargetDetails<Node> details) => _onAccept(
