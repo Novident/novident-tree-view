@@ -40,24 +40,29 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   bool _initStateCalled = false;
   NodeComponentBuilder? _builder;
   final GlobalKey<AnimatedListState> _animatedListKey = GlobalKey();
-  late final TreeConfiguration configuration =
-      Provider.of<TreeConfiguration>(context);
+  late final TreeConfiguration configuration = Provider.of<TreeConfiguration>(context);
 
   bool get _hasNotifierAttached => widget.nodeContainer.hasNotifiersAttached;
 
   @override
   void initState() {
     super.initState();
+    widget.nodeContainer.addListener(onChange);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initializeNotificationsListener();
     });
   }
 
+  void onChange() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void didChangeDependencies() {
     if (!_initStateCalled) {
-      (_builder ??= _checkForBuilder())
-          .initState(widget.nodeContainer, widget.depth);
+      (_builder ??= _checkForBuilder()).initState(widget.nodeContainer, widget.depth);
       _initStateCalled = true;
     }
     _builder?.didChangeDependencies(_buildContext);
@@ -68,6 +73,9 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   void didUpdateWidget(covariant ContainerBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    oldWidget.nodeContainer.removeListener(onChange);
+    widget.nodeContainer.addListener(onChange);
+
     // we need to avoid initialize notifications when we are not using animated lists
     _builder!.didUpdateWidget(
       _buildContext,
@@ -77,9 +85,9 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     if (_builder!.avoidCacheBuilder) {
       _builder = null;
     }
+
     if (configuration.useAnimatedLists) {
-      if (oldWidget.nodeContainer != widget.nodeContainer &&
-          _hasNotifierAttached) {
+      if (oldWidget.nodeContainer != widget.nodeContainer && _hasNotifierAttached) {
         oldWidget.nodeContainer.detachNotifier(
           _onChange,
           detachInChildren: false,
@@ -93,6 +101,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   @override
   void dispose() {
     _builder!.dispose(_buildContext);
+    widget.nodeContainer.removeListener(onChange);
     if (_hasNotifierAttached && widget.nodeContainer.hasNotifiersAttached) {
       widget.nodeContainer.detachNotifier(
         _onChange,
@@ -180,13 +189,11 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<int>('Tree depth', widget.depth));
     properties.add(DiagnosticsProperty<NodeContainer>('owner', widget.owner));
-    properties.add(
-        DiagnosticsProperty<NodeContainer>('container', widget.nodeContainer));
+    properties.add(DiagnosticsProperty<NodeContainer>('container', widget.nodeContainer));
+    properties
+        .add(DiagnosticsProperty<bool>('isFirstChildrenBuild', _isFirstChildrenBuild));
     properties.add(DiagnosticsProperty<bool>(
-        'isFirstChildrenBuild', _isFirstChildrenBuild));
-    properties.add(DiagnosticsProperty<bool>(
-        'willCacheChildrenAfterFirstAsyncBuild',
-        _cacheChildrenAfterFirstAsyncBuild));
+        'willCacheChildrenAfterFirstAsyncBuild', _cacheChildrenAfterFirstAsyncBuild));
   }
 
   //TODO(cathood0): create a separate package to create a custom drawer that makes
@@ -204,8 +211,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB =
-        configuration.components.firstWhereOrNull(
+    final NodeComponentBuilder? tempB = configuration.components.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(
         widget.nodeContainer,
         widget.depth,
@@ -228,17 +234,13 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         index: widget.index,
         marksNeedBuild: _markNeedsBuild,
         details: null,
-        extraArgs: context.mounted
-            ? configuration.extraArgs
-            : const <String, dynamic>{},
-        animatedListGlobalKey:
-            configuration.useAnimatedLists ? _animatedListKey : null,
+        extraArgs: context.mounted ? configuration.extraArgs : const <String, dynamic>{},
+        animatedListGlobalKey: configuration.useAnimatedLists ? _animatedListKey : null,
       );
 
   @override
   Widget build(BuildContext context) {
-    _cacheChildrenAfterFirstAsyncBuild =
-        builder.cacheChildrenAfterFirstAsyncBuild;
+    _cacheChildrenAfterFirstAsyncBuild = builder.cacheChildrenAfterFirstAsyncBuild;
     final ComponentContext componentContext = _buildContext;
 
     Widget child = NodeDraggableBuilder(
@@ -248,19 +250,20 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       builder: builder,
       configuration: configuration,
       child: ListenableBuilder(
-          listenable: widget.nodeContainer,
-          builder: (BuildContext context, Widget? snapshot) {
-            return NodeTargetBuilder(
-              depth: widget.depth,
-              builder: builder,
-              animatedListGlobalKey:
-                  configuration.useAnimatedLists ? _animatedListKey : null,
-              node: widget.nodeContainer,
-              index: widget.index,
-              configuration: configuration,
-              owner: widget.owner,
-            );
-          }),
+        listenable: widget.nodeContainer,
+        builder: (BuildContext context, Widget? snapshot) {
+          return NodeTargetBuilder(
+            depth: widget.depth,
+            builder: builder,
+            animatedListGlobalKey:
+                configuration.useAnimatedLists ? _animatedListKey : null,
+            node: widget.nodeContainer,
+            index: widget.index,
+            configuration: configuration,
+            owner: widget.owner,
+          );
+        },
+      ),
     );
 
     final NodeConfiguration? nodeConfig = builder.buildConfigurations(
@@ -276,8 +279,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           onTap: () => nodeConfig.onTap?.call(context),
           onTapDown: (TapDownDetails details) =>
               nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) =>
-              nodeConfig.onTapUp?.call(details, context),
+          onTapUp: (TapUpDetails details) => nodeConfig.onTapUp?.call(details, context),
           onTapCancel: () => nodeConfig.onTapCancel?.call(context),
           onDoubleTap: nodeConfig.onDoubleTap == null
               ? null
@@ -334,8 +336,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     return ListenableBuilder(
       listenable: widget.nodeContainer,
       builder: (BuildContext context, Widget? _) {
-        _cacheChildrenAfterFirstAsyncBuild =
-            builder.cacheChildrenAfterFirstAsyncBuild;
+        _cacheChildrenAfterFirstAsyncBuild = builder.cacheChildrenAfterFirstAsyncBuild;
         _isFirstChildrenBuild =
             _cacheChildrenAfterFirstAsyncBuild ? _isFirstChildrenBuild : true;
         Widget container = Column(
@@ -409,29 +410,24 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           physics: const NeverScrollableScrollPhysics(),
           primary: false,
           shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
-          clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
-              Clip.hardEdge,
+          clipBehavior:
+              configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
           reverse: configuration.treeListViewConfigurations.reverse,
           itemExtent: configuration.treeListViewConfigurations.itemExtent,
-          itemExtentBuilder:
-              configuration.treeListViewConfigurations.itemExtentBuilder,
+          itemExtentBuilder: configuration.treeListViewConfigurations.itemExtentBuilder,
           prototypeItem: configuration.treeListViewConfigurations.prototypeItem,
           findChildIndexCallback:
               configuration.treeListViewConfigurations.findChildIndexCallback,
           addAutomaticKeepAlives:
               configuration.treeListViewConfigurations.addSemanticIndexes,
-          addSemanticIndexes:
-              configuration.treeListViewConfigurations.addSemanticIndexes,
+          addSemanticIndexes: configuration.treeListViewConfigurations.addSemanticIndexes,
           cacheExtent: configuration.treeListViewConfigurations.cacheExtent,
-          semanticChildCount:
-              configuration.treeListViewConfigurations.semanticChildCount,
-          dragStartBehavior:
-              configuration.treeListViewConfigurations.dragStartBehavior,
+          semanticChildCount: configuration.treeListViewConfigurations.semanticChildCount,
+          dragStartBehavior: configuration.treeListViewConfigurations.dragStartBehavior,
           keyboardDismissBehavior:
               configuration.treeListViewConfigurations.keyboardDismissBehavior,
           restorationId: configuration.treeListViewConfigurations.restorationId,
-          hitTestBehavior:
-              configuration.treeListViewConfigurations.hitTestBehavior,
+          hitTestBehavior: configuration.treeListViewConfigurations.hitTestBehavior,
           itemCount: list.length,
           itemBuilder: (BuildContext context, int index) {
             final Widget node = list.elementAt(index);
@@ -458,8 +454,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
               primary: false,
               shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
               clipBehavior:
-                  configuration.treeListViewConfigurations.clipBehavior ??
-                      Clip.hardEdge,
+                  configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
               reverse: configuration.treeListViewConfigurations.reverse,
               initialItemCount: widget.nodeContainer.length,
               itemBuilder: (
@@ -473,9 +468,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
                   child = LeafNodeBuilder(
                     depth: node.level + 1,
                     node: node,
-                    ownerAnimatedListKey: configuration.useAnimatedLists
-                        ? _animatedListKey
-                        : null,
+                    ownerAnimatedListKey:
+                        configuration.useAnimatedLists ? _animatedListKey : null,
                     index: index,
                     owner: widget.nodeContainer,
                   );
@@ -498,45 +492,17 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
               primary: false,
               shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
               clipBehavior:
-                  configuration.treeListViewConfigurations.clipBehavior ??
-                      Clip.hardEdge,
-              reverse: configuration.treeListViewConfigurations.reverse,
-              itemExtent: configuration.treeListViewConfigurations.itemExtent,
-              itemExtentBuilder:
-                  configuration.treeListViewConfigurations.itemExtentBuilder,
-              prototypeItem:
-                  configuration.treeListViewConfigurations.prototypeItem,
-              findChildIndexCallback: configuration
-                  .treeListViewConfigurations.findChildIndexCallback,
-              addAutomaticKeepAlives:
-                  configuration.treeListViewConfigurations.addSemanticIndexes,
-              addSemanticIndexes:
-                  configuration.treeListViewConfigurations.addSemanticIndexes,
-              cacheExtent: configuration.treeListViewConfigurations.cacheExtent,
-              semanticChildCount:
-                  configuration.treeListViewConfigurations.semanticChildCount,
-              dragStartBehavior:
-                  configuration.treeListViewConfigurations.dragStartBehavior,
-              keyboardDismissBehavior: configuration
-                  .treeListViewConfigurations.keyboardDismissBehavior,
-              restorationId:
-                  configuration.treeListViewConfigurations.restorationId,
-              hitTestBehavior:
-                  configuration.treeListViewConfigurations.hitTestBehavior,
+                  configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
+              hitTestBehavior: configuration.treeListViewConfigurations.hitTestBehavior,
               itemCount: widget.nodeContainer.length,
               itemBuilder: (BuildContext context, int index) {
                 final Node node = widget.nodeContainer.elementAt(index);
-                print(
-                  'Node ${node.runtimeType}:'
-                  '${node.id.substring(0, 4)}',
-                );
                 if (node is! NodeContainer) {
                   return LeafNodeBuilder(
                     depth: node.level + 1,
                     node: node,
-                    ownerAnimatedListKey: configuration.useAnimatedLists
-                        ? _animatedListKey
-                        : null,
+                    ownerAnimatedListKey:
+                        configuration.useAnimatedLists ? _animatedListKey : null,
                     index: index,
                     owner: widget.nodeContainer,
                   );

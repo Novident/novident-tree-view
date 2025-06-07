@@ -27,7 +27,7 @@ class _DirectoryTileState extends State<DirectoryTile> {
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: ListenableBuilder(
         listenable: widget.directory,
-        builder: (context, _) {
+        builder: (BuildContext context, Widget? _) {
           return Row(
             children: <Widget>[
               OverflowBox(
@@ -53,7 +53,7 @@ class _DirectoryTileState extends State<DirectoryTile> {
               ),
               Expanded(
                 child: Text(
-                  "${widget.directory.name} ${widget.directory.level}",
+                  "${widget.directory.name} ${widget.directory.id.substring(0, 4)}",
                   maxLines: 1,
                   softWrap: true,
                   overflow: TextOverflow.fade,

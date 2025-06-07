@@ -67,36 +67,7 @@ class _TreeViewState extends State<TreeView> {
                     scrollDirection: Axis.vertical,
                     physics: const NeverScrollableScrollPhysics(),
                     primary: false,
-                    clipBehavior: widget.configuration
-                            .treeListViewConfigurations.clipBehavior ??
-                        Clip.hardEdge,
                     itemCount: widget.root.length,
-                    reverse:
-                        widget.configuration.treeListViewConfigurations.reverse,
-                    itemExtent: widget
-                        .configuration.treeListViewConfigurations.itemExtent,
-                    itemExtentBuilder: widget.configuration
-                        .treeListViewConfigurations.itemExtentBuilder,
-                    prototypeItem: widget
-                        .configuration.treeListViewConfigurations.prototypeItem,
-                    findChildIndexCallback: widget.configuration
-                        .treeListViewConfigurations.findChildIndexCallback,
-                    addAutomaticKeepAlives: widget.configuration
-                        .treeListViewConfigurations.addSemanticIndexes,
-                    addSemanticIndexes: widget.configuration
-                        .treeListViewConfigurations.addSemanticIndexes,
-                    cacheExtent: widget
-                        .configuration.treeListViewConfigurations.cacheExtent,
-                    semanticChildCount: widget.configuration
-                        .treeListViewConfigurations.semanticChildCount,
-                    dragStartBehavior: widget.configuration
-                        .treeListViewConfigurations.dragStartBehavior,
-                    keyboardDismissBehavior: widget.configuration
-                        .treeListViewConfigurations.keyboardDismissBehavior,
-                    restorationId: widget
-                        .configuration.treeListViewConfigurations.restorationId,
-                    hitTestBehavior: widget.configuration
-                        .treeListViewConfigurations.hitTestBehavior,
                     itemBuilder: _itemBuilder,
                   );
                 },
