@@ -39,31 +39,31 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   bool _isFirstChildrenBuild = true;
   bool _initStateCalled = false;
   NodeComponentBuilder? _builder;
-  final GlobalKey<AnimatedListState> _animatedListKey = GlobalKey();
-  late final TreeConfiguration configuration =
-      Provider.of<TreeConfiguration>(context);
-
-  bool get _hasNotifierAttached => widget.nodeContainer.hasNotifiersAttached;
+  late final TreeConfiguration configuration = Provider.of<TreeConfiguration>(context);
 
   @override
-  void initState() {
+  initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      initializeNotificationsListener();
-    });
+    widget.nodeContainer.addListener(_markNeedsBuild);
   }
 
-  void onChange() {
-    if (mounted) {
-      setState(() {});
-    }
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<int>('Tree depth', widget.depth));
+    properties.add(DiagnosticsProperty<NodeContainer>('owner', widget.owner));
+    properties.add(DiagnosticsProperty<NodeContainer>('container', widget.nodeContainer));
+    properties
+        .add(DiagnosticsProperty<bool>('isFirstChildrenBuild', _isFirstChildrenBuild));
+    properties.add(DiagnosticsProperty<bool>(
+        'willCacheChildrenAfterFirstAsyncBuild', _cacheChildrenAfterFirstAsyncBuild));
   }
 
   @override
   void didChangeDependencies() {
     if (!_initStateCalled) {
-      (_builder ??= _checkForBuilder())
-          .initState(widget.nodeContainer, widget.depth);
+      _builder ??= _checkForBuilder();
+      _builder!.initState(widget.nodeContainer, widget.depth);
       _initStateCalled = true;
     }
     _builder?.didChangeDependencies(_buildContext);
@@ -75,144 +75,35 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     super.didUpdateWidget(oldWidget);
 
     // we need to avoid initialize notifications when we are not using animated lists
-    _builder!.didUpdateWidget(
+    _builder?.didUpdateWidget(
       _buildContext,
       widget.nodeContainer.hasNotifiersAttached,
     );
 
-    if (_builder!.avoidCacheBuilder) {
+    if (oldWidget.nodeContainer != widget.nodeContainer) {
+      oldWidget.nodeContainer.removeListener(_markNeedsBuild);
+      widget.nodeContainer.addListener(_markNeedsBuild);
       _builder = null;
     }
-
-    if (configuration.useAnimatedLists) {
-      if (oldWidget.nodeContainer != widget.nodeContainer &&
-          _hasNotifierAttached) {
-        oldWidget.nodeContainer.detachNotifier(
-          _onChange,
-          detachInChildren: false,
-        );
-      }
-
-      initializeNotificationsListener();
-    }
   }
 
-  @override
-  void dispose() {
-    _builder!.dispose(_buildContext);
-    if (_hasNotifierAttached && widget.nodeContainer.hasNotifiersAttached) {
-      widget.nodeContainer.detachNotifier(
-        _onChange,
-        detachInChildren: false,
-      );
-    }
-    super.dispose();
-  }
-
-  void initializeNotificationsListener() {
-    if (configuration.useAnimatedLists && !_hasNotifierAttached) {
-      widget.nodeContainer.attachNotifier(
-        _onChange,
-        attachToChildren: false,
-      );
-    }
-  }
-
-  void _onChange(NodeChange change) {
-    switch (change) {
-      case NodeInsertion():
-        onInsertInto(change.to, change.index);
-      case NodeMoveChange():
-        onInsertInto(change.to, change.index);
-      case NodeDeletion():
-        onRemoveOfThis(change);
-      case NodeClear():
-        onClear(change);
-      default:
-        break;
-    }
-  }
-
-  AnimatedListState? get animatedState => _animatedListKey.currentState;
-
-  //TODO: we need to create a local state of the node
-  // to avoid issues with animated lists. Probably
-  // we will need to check if the animatedList is active
-  // since we don't really need to "cache" the node state
-  // because the state of the widget.nodeContainer
-  // is updated after the insertItem is executed
-  // (it does not find the new item)
-  void onInsertInto(Node to, int index) {
-    if (to.id == widget.nodeContainer.id) {
-      animatedState?.insertItem(index);
-    }
-  }
-
-  void onRemoveOfThis(NodeDeletion deletion) {
-    if (deletion.inNode.id == widget.nodeContainer.id) {
-      animatedState?.removeItem(
-        deletion.originalPosition,
-        (BuildContext context, Animation<double> a) {
-          late Widget child;
-          if (deletion.newState is! NodeContainer) {
-            child = LeafNodeBuilder(
-              node: deletion.newState,
-              owner: deletion.inNode as NodeContainer,
-              depth: widget.depth + 1,
-              index: 0,
-              ownerAnimatedListKey: _animatedListKey,
-            );
-          } else {
-            child = ContainerBuilder(
-              nodeContainer: deletion.newState as NodeContainer,
-              owner: deletion.inNode as NodeContainer,
-              depth: widget.depth + 1,
-              index: 0,
-            );
-          }
-          return configuration.onDeleteAnimationWrapper!(
-            a,
-            deletion.newState,
-            child,
-          );
-        },
-      );
-    }
-  }
-
-  void onClear(NodeClear clear) {}
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<int>('Tree depth', widget.depth));
-    properties.add(DiagnosticsProperty<NodeContainer>('owner', widget.owner));
-    properties.add(
-        DiagnosticsProperty<NodeContainer>('container', widget.nodeContainer));
-    properties.add(DiagnosticsProperty<bool>(
-        'isFirstChildrenBuild', _isFirstChildrenBuild));
-    properties.add(DiagnosticsProperty<bool>(
-        'willCacheChildrenAfterFirstAsyncBuild',
-        _cacheChildrenAfterFirstAsyncBuild));
-  }
-
-  //TODO(cathood0): create a separate package to create a custom drawer that makes
-  // the same than the current implementation, but, allows infinite horizontal
-  // and vertical size (this should fix our issue with the children having no space
-  // to be rendered)
   NodeComponentBuilder get builder {
     _builder ??= _checkForBuilder();
-    return _builder!.validate(
+    // if the current builder is cached, as now
+    // is not validating the current one, we need
+    // to reload it again to avoid bad builder
+    // selection
+    if (!_builder!.validate(
       widget.nodeContainer,
       widget.depth,
-    )
-        ? _builder!
-        : _builder = _checkForBuilder();
+    )) {
+      _builder = _checkForBuilder();
+    }
+    return _builder!;
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB =
-        configuration.components.firstWhereOrNull(
+    final NodeComponentBuilder? tempB = configuration.components.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(
         widget.nodeContainer,
         widget.depth,
@@ -220,8 +111,11 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     );
     if (tempB == null) {
       throw StateError(
-        'There\'s no a builder configurated '
-        'for ${widget.nodeContainer.runtimeType}(${widget.nodeContainer.id})',
+        'No NodeComponentBuilder was '
+        'found with correct validate method return '
+        'for NodeContainer(${widget.nodeContainer.id.substring(0, 7)})'
+        ':'
+        '${widget.nodeContainer}',
       );
     }
     return tempB;
@@ -235,45 +129,30 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         index: widget.index,
         marksNeedBuild: _markNeedsBuild,
         details: null,
-        extraArgs: context.mounted
-            ? configuration.extraArgs
-            : const <String, dynamic>{},
-        animatedListGlobalKey:
-            configuration.useAnimatedLists ? _animatedListKey : null,
+        extraArgs: context.mounted ? configuration.extraArgs : const <String, dynamic>{},
       );
 
   @override
   Widget build(BuildContext context) {
-    _cacheChildrenAfterFirstAsyncBuild =
-        builder.cacheChildrenAfterFirstAsyncBuild;
-    final ComponentContext componentContext = _buildContext;
-
+    _cacheChildrenAfterFirstAsyncBuild = builder.cacheChildrenAfterFirstAsyncBuild;
+    ComponentContext componentContext = _buildContext;
     Widget child = NodeDraggableBuilder(
       node: widget.nodeContainer,
       depth: widget.depth,
       index: widget.index,
       builder: builder,
       configuration: configuration,
-      child: ListenableBuilder(
-        listenable: widget.nodeContainer,
-        builder: (BuildContext context, Widget? snapshot) {
-          return NodeTargetBuilder(
-            depth: widget.depth,
-            builder: builder,
-            animatedListGlobalKey:
-                configuration.useAnimatedLists ? _animatedListKey : null,
-            node: widget.nodeContainer,
-            index: widget.index,
-            configuration: configuration,
-            owner: widget.owner,
-          );
-        },
+      child: NodeTargetBuilder(
+        depth: widget.depth,
+        builder: builder,
+        node: widget.nodeContainer,
+        index: widget.index,
+        configuration: configuration,
+        owner: widget.owner,
       ),
     );
 
-    final NodeConfiguration? nodeConfig = builder.buildConfigurations(
-      componentContext,
-    );
+    final NodeConfiguration? nodeConfig = builder.buildConfigurations(componentContext);
 
     if (nodeConfig != null) {
       if (nodeConfig.makeTappable) {
@@ -284,8 +163,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           onTap: () => nodeConfig.onTap?.call(context),
           onTapDown: (TapDownDetails details) =>
               nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) =>
-              nodeConfig.onTapUp?.call(details, context),
+          onTapUp: (TapUpDetails details) => nodeConfig.onTapUp?.call(details, context),
           onTapCancel: () => nodeConfig.onTapCancel?.call(context),
           onDoubleTap: nodeConfig.onDoubleTap == null
               ? null
@@ -339,54 +217,53 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
 
     final bool needsAsync = builder.useAsyncBuild;
 
-    return ListenableBuilder(
-      listenable: widget.nodeContainer,
-      builder: (BuildContext context, Widget? _) {
-        _cacheChildrenAfterFirstAsyncBuild =
-            builder.cacheChildrenAfterFirstAsyncBuild;
-        _isFirstChildrenBuild =
-            _cacheChildrenAfterFirstAsyncBuild ? _isFirstChildrenBuild : true;
-        Widget container = Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            child,
-            if (!needsAsync)
-              builder.buildChildren(
-                    componentContext,
-                  ) ??
-                  _buildDefaultChildrenWidgets(configuration, builder),
-            if (needsAsync)
-              _isFirstChildrenBuild
-                  ? _buildAsyncChildrenWidgets(
-                      componentContext,
-                      configuration,
-                      builder,
-                    )
-                  : _buildDefaultChildrenWidgets(configuration, builder),
-          ],
-        );
-
-        final Widget? wrapper = nodeConfig?.nodeWrapper?.call(
-          widget.nodeContainer,
-          context,
-          container,
-        );
-
-        if (wrapper != null) {
-          container = wrapper;
-        }
-        return container;
-      },
+    _cacheChildrenAfterFirstAsyncBuild = builder.cacheChildrenAfterFirstAsyncBuild;
+    _isFirstChildrenBuild =
+        _cacheChildrenAfterFirstAsyncBuild ? _isFirstChildrenBuild : true;
+    Widget container = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        child,
+        if (!needsAsync)
+          builder.buildChildren(
+                componentContext,
+              ) ??
+              _buildDefaultChildrenWidgets(configuration, builder),
+        if (needsAsync)
+          _isFirstChildrenBuild
+              ? _buildAsyncChildrenWidgets(
+                  componentContext,
+                  configuration,
+                  builder,
+                )
+              : _buildDefaultChildrenWidgets(configuration, builder),
+      ],
     );
+
+    final Widget? wrapper = nodeConfig?.nodeWrapper?.call(
+      widget.nodeContainer,
+      context,
+      container,
+    );
+
+    if (wrapper != null) {
+      container = wrapper;
+    }
+
+    return container;
+  }
+
+  @override
+  void dispose() {
+    _builder!.dispose(_buildContext);
+    widget.nodeContainer.removeListener(_markNeedsBuild);
+    super.dispose();
   }
 
   void _markNeedsBuild() {
     if (context.mounted && mounted) {
-      if (_builder!.avoidCacheBuilder) {
-        _builder = null;
-      }
       setState(() {});
     }
   }
@@ -417,29 +294,24 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           physics: const NeverScrollableScrollPhysics(),
           primary: false,
           shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
-          clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
-              Clip.hardEdge,
+          clipBehavior:
+              configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
           reverse: configuration.treeListViewConfigurations.reverse,
           itemExtent: configuration.treeListViewConfigurations.itemExtent,
-          itemExtentBuilder:
-              configuration.treeListViewConfigurations.itemExtentBuilder,
+          itemExtentBuilder: configuration.treeListViewConfigurations.itemExtentBuilder,
           prototypeItem: configuration.treeListViewConfigurations.prototypeItem,
           findChildIndexCallback:
               configuration.treeListViewConfigurations.findChildIndexCallback,
           addAutomaticKeepAlives:
               configuration.treeListViewConfigurations.addSemanticIndexes,
-          addSemanticIndexes:
-              configuration.treeListViewConfigurations.addSemanticIndexes,
+          addSemanticIndexes: configuration.treeListViewConfigurations.addSemanticIndexes,
           cacheExtent: configuration.treeListViewConfigurations.cacheExtent,
-          semanticChildCount:
-              configuration.treeListViewConfigurations.semanticChildCount,
-          dragStartBehavior:
-              configuration.treeListViewConfigurations.dragStartBehavior,
+          semanticChildCount: configuration.treeListViewConfigurations.semanticChildCount,
+          dragStartBehavior: configuration.treeListViewConfigurations.dragStartBehavior,
           keyboardDismissBehavior:
               configuration.treeListViewConfigurations.keyboardDismissBehavior,
           restorationId: configuration.treeListViewConfigurations.restorationId,
-          hitTestBehavior:
-              configuration.treeListViewConfigurations.hitTestBehavior,
+          hitTestBehavior: configuration.treeListViewConfigurations.hitTestBehavior,
           itemCount: list.length,
           itemBuilder: (BuildContext context, int index) {
             final Widget node = list.elementAt(index);
@@ -458,83 +330,38 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       visible: widget.nodeContainer.isExpanded,
       maintainSize: false,
       maintainState: false,
-      child: configuration.useAnimatedLists
-          ? AnimatedList(
-              key: _animatedListKey,
-              scrollDirection: Axis.vertical,
-              physics: const NeverScrollableScrollPhysics(),
-              primary: false,
-              shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
-              clipBehavior:
-                  configuration.treeListViewConfigurations.clipBehavior ??
-                      Clip.hardEdge,
-              reverse: configuration.treeListViewConfigurations.reverse,
-              initialItemCount: widget.nodeContainer.length,
-              itemBuilder: (
-                BuildContext context,
-                int index,
-                Animation<double> animation,
-              ) {
-                final Node node = widget.nodeContainer.elementAt(index);
-                late Widget child;
-                if (node is! NodeContainer) {
-                  child = LeafNodeBuilder(
-                    depth: node.level + 1,
-                    node: node,
-                    ownerAnimatedListKey: configuration.useAnimatedLists
-                        ? _animatedListKey
-                        : null,
-                    index: index,
-                    owner: widget.nodeContainer,
-                  );
-                } else {
-                  child = ContainerBuilder(
-                    depth: node.level + 1,
-                    index: index,
-                    // the owner is this container
-                    owner: widget.nodeContainer,
-                    // the sub node
-                    nodeContainer: node,
-                  );
-                }
-                return configuration.animatedWrapper!(animation, node, child);
-              },
-            )
-          : ListView.builder(
-              scrollDirection: Axis.vertical,
-              physics: const NeverScrollableScrollPhysics(),
-              primary: false,
-              shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
-              clipBehavior:
-                  configuration.treeListViewConfigurations.clipBehavior ??
-                      Clip.hardEdge,
-              hitTestBehavior:
-                  configuration.treeListViewConfigurations.hitTestBehavior,
-              itemCount: widget.nodeContainer.length,
-              itemBuilder: (BuildContext context, int index) {
-                final Node node = widget.nodeContainer.elementAt(index);
-                if (node is! NodeContainer) {
-                  return LeafNodeBuilder(
-                    depth: node.level + 1,
-                    node: node,
-                    ownerAnimatedListKey: configuration.useAnimatedLists
-                        ? _animatedListKey
-                        : null,
-                    index: index,
-                    owner: widget.nodeContainer,
-                  );
-                } else {
-                  return ContainerBuilder(
-                    depth: node.level + 1,
-                    index: index,
-                    // the owner is this container
-                    owner: widget.nodeContainer,
-                    // the sub node
-                    nodeContainer: node,
-                  );
-                }
-              },
-            ),
+      child: ListView.builder(
+        scrollDirection: Axis.vertical,
+        physics: const NeverScrollableScrollPhysics(),
+        primary: false,
+        shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
+        clipBehavior:
+            configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
+        hitTestBehavior: configuration.treeListViewConfigurations.hitTestBehavior,
+        itemCount: widget.nodeContainer.length,
+        itemBuilder: (BuildContext context, int index) {
+          final Node node = widget.nodeContainer.elementAt(index);
+          if (node is! NodeContainer) {
+            return LeafNodeBuilder(
+              key: ValueKey(node.id),
+              depth: node.childrenLevel,
+              node: node,
+              index: index,
+              owner: widget.nodeContainer,
+            );
+          } else {
+            return ContainerBuilder(
+              key: ValueKey(node.id),
+              depth: node.childrenLevel,
+              index: index,
+              // the owner is this container
+              owner: widget.nodeContainer,
+              // the sub node
+              nodeContainer: node,
+            );
+          }
+        },
+      ),
     );
   }
 }

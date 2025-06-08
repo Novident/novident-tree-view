@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
+import 'package:novident_tree_view/src/extensions/cast_nodes.dart';
 
 /// A callback that determines whether a dragged node can be accepted by a target node.
 typedef NovOnWillAcceptOnNode = bool Function(
@@ -174,8 +175,13 @@ final class NodeDragGestures {
             target as NodeContainer,
             target.level + 1,
           );
-          (details.targetNode as NodeContainer)
-              .add(details.draggedNode, propagateNotifications: true);
+          Node.moveTo(
+            node: details.draggedNode,
+            newOwner: target.castToContainer(),
+            index: null,
+            shouldNotify: true,
+            propagate: true,
+          );
         }
       },
       whenBelow: () {
@@ -197,6 +203,7 @@ final class NodeDragGestures {
         if (effectiveIndex == draggedIndex) {
           return;
         }
+
         Node.moveTo(
           node: details.draggedNode,
           newOwner: parent,

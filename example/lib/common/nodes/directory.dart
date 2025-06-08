@@ -55,12 +55,12 @@ class Directory extends NodeContainer implements DragAndDropMixin {
     if (ignoreRedepth) return;
 
     redepth(children, currentLevel ?? level);
-    notifyListeners();
+    notify();
   }
 
   set isExpanded(bool expand) {
     _isExpanded = expand;
-    notifyListeners();
+    notify();
   }
 
   @override

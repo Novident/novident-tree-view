@@ -14,7 +14,6 @@ final class TreeConfiguration {
 
   final AnimatedWidgetBuilder? animatedWrapper;
   final AnimatedWidgetBuilder? onDeleteAnimationWrapper;
-  final bool useAnimatedLists;
 
   /// These are args that usually we want to use in all node builders
   final Map<String, dynamic> extraArgs;
@@ -71,7 +70,6 @@ final class TreeConfiguration {
   })  : onHoverContainerExpansionDelay = -1,
         animatedWrapper = null,
         onDeleteAnimationWrapper = null,
-        useAnimatedLists = false,
         assert(
           components.isNotEmpty,
           'Nodes cannot be rendered if there\'s no builders for them',
@@ -91,7 +89,6 @@ final class TreeConfiguration {
     this.addRepaintBoundaries = false,
     this.onDetectEmptyRoot,
   })  : onHoverContainerExpansionDelay = -1,
-        useAnimatedLists = true,
         assert(animatedWrapper != null, 'animatedWrapper cannot be nullable'),
         assert(onDeleteAnimationWrapper != null,
             'onDeleteAnimationWrapper cannot be nullable'),
@@ -118,24 +115,6 @@ final class TreeConfiguration {
     Widget Function(NovDragAndDropDetails<Node> details)?
         rootTargetToDropSection,
   }) {
-    if (useAnimatedLists) {
-      return TreeConfiguration.animated(
-        animatedWrapper: animatedWrapper ?? this.animatedWrapper,
-        onDeleteAnimationWrapper:
-            onDeleteAnimationWrapper ?? this.onDeleteAnimationWrapper,
-        components: components ?? this.components,
-        treeListViewConfigurations:
-            treeListViewConfigurations ?? this.treeListViewConfigurations,
-        addRepaintBoundaries: addRepaintBoundaries ?? this.addRepaintBoundaries,
-        extraArgs: extraArgs ?? this.extraArgs,
-        draggableConfigurations:
-            draggableConfigurations ?? this.draggableConfigurations,
-        activateDragAndDropFeature:
-            activateDragAndDropFeature ?? this.activateDragAndDropFeature,
-        onDetectEmptyRoot: onDetectEmptyRoot ?? this.onDetectEmptyRoot,
-        indentConfiguration: indentConfiguration ?? this.indentConfiguration,
-      );
-    }
     return TreeConfiguration(
       components: components ?? this.components,
       treeListViewConfigurations:
@@ -162,7 +141,6 @@ final class TreeConfiguration {
         other.indentConfiguration == indentConfiguration &&
         other.animatedWrapper == animatedWrapper &&
         other.onDeleteAnimationWrapper == onDeleteAnimationWrapper &&
-        other.useAnimatedLists == useAnimatedLists &&
         listEquals<NodeComponentBuilder>(other.components, components) &&
         mapEquals<String, dynamic>(other.extraArgs, extraArgs);
   }
@@ -174,7 +152,6 @@ final class TreeConfiguration {
       extraArgs,
       animatedWrapper,
       onDeleteAnimationWrapper,
-      useAnimatedLists,
       treeListViewConfigurations,
       draggableConfigurations,
       activateDragAndDropFeature,

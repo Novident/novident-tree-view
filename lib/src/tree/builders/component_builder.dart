@@ -42,6 +42,11 @@ abstract class NodeComponentBuilder {
   /// Determines whether this builder won't be cached into the tree
   ///
   /// Tipically, we use this, when a part of this builder change
+  @Deprecated(
+    'avoidCacheBuilder is invalid '
+    'now, and it will be '
+    'removed in future releases.',
+  )
   bool get avoidCacheBuilder => false;
 
   /// Called when this object is removed from the tree permanently.
@@ -87,6 +92,7 @@ abstract class NodeComponentBuilder {
   Widget? buildChildren(ComponentContext context);
 
   /// Determines if we will use async build for custom children
+  @mustCallSuper
   bool get useAsyncBuild => false;
 
   /// Determines if we will use the async calls

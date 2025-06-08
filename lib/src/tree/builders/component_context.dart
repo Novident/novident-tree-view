@@ -53,10 +53,6 @@ class ComponentContext {
   /// Custom parameters passed through TreeConfiguration
   final Map<String, dynamic> extraArgs;
 
-  /// Use this when useAnimatedLists from TreeConfiguration is true
-  /// and when you need to insert or remove an item from the list
-  final GlobalKey? animatedListGlobalKey;
-
   ComponentContext({
     required this.depth,
     required this.nodeContext,
@@ -65,7 +61,33 @@ class ComponentContext {
     required this.wrapWithDragGestures,
     required this.marksNeedBuild,
     required this.index,
-    this.animatedListGlobalKey,
     this.extraArgs = const <String, dynamic>{},
   });
+
+  @override
+  bool operator ==(covariant ComponentContext other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return depth == other.depth &&
+        nodeContext == other.nodeContext &&
+        node == other.node &&
+        details == other.details &&
+        marksNeedBuild == other.marksNeedBuild &&
+        index == other.index &&
+        wrapWithDragGestures == other.wrapWithDragGestures &&
+        extraArgs == other.extraArgs;
+  }
+
+  @override
+  int get hashCode {
+    return depth.hashCode ^
+        nodeContext.hashCode ^
+        node.hashCode ^
+        details.hashCode ^
+        marksNeedBuild.hashCode ^
+        index.hashCode ^
+        wrapWithDragGestures.hashCode ^
+        extraArgs.hashCode;
+  }
 }

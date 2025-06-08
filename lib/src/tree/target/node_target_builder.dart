@@ -17,7 +17,6 @@ class NodeTargetBuilder extends StatefulWidget {
     required this.depth,
     required this.node,
     required this.index,
-    required this.animatedListGlobalKey,
     this.child,
     super.key,
   });
@@ -29,7 +28,6 @@ class NodeTargetBuilder extends StatefulWidget {
   final Node node;
   final int index;
   final NodeComponentBuilder builder;
-  final GlobalKey? animatedListGlobalKey;
 
   /// The container that owns and manages this node
   final NodeContainer owner;
@@ -63,7 +61,6 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
         index: widget.index,
         nodeContext: context,
         node: widget.node,
-        animatedListGlobalKey: widget.animatedListGlobalKey,
         details: _details,
         marksNeedBuild: () {
           if (context.mounted && mounted) {
@@ -291,7 +288,6 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     return ComponentContext(
       depth: widget.depth,
       nodeContext: context,
-      animatedListGlobalKey: widget.animatedListGlobalKey,
       index: widget.index,
       node: widget.node,
       extraArgs: widget.configuration.extraArgs,

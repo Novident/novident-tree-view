@@ -25,43 +25,38 @@ class _DirectoryTileState extends State<DirectoryTile> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
-      child: ListenableBuilder(
-        listenable: widget.directory,
-        builder: (BuildContext context, Widget? _) {
-          return Row(
-            children: <Widget>[
-              OverflowBox(
-                fit: OverflowBoxFit.deferToChild,
-                child: InkWell(
-                  onTap: widget.onTap,
-                  child: widget.directory.isExpanded
-                      ? const Icon(Icons.expand_less)
-                      : const Icon(
-                          Icons.expand_more,
-                        ),
-                ),
-              ),
-              const SizedBox(width: 5),
-              Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: Icon(
-                  widget.directory.isExpanded && widget.directory.isEmpty
-                      ? CupertinoIcons.folder_open
-                      : CupertinoIcons.folder_fill,
-                  size: isAndroid ? 20 : null,
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  "${widget.directory.name} ${widget.directory.id.substring(0, 4)}",
-                  maxLines: 1,
-                  softWrap: true,
-                  overflow: TextOverflow.fade,
-                ),
-              ),
-            ],
-          );
-        },
+      child: Row(
+        children: <Widget>[
+          OverflowBox(
+            fit: OverflowBoxFit.deferToChild,
+            child: InkWell(
+              onTap: widget.onTap,
+              child: widget.directory.isExpanded
+                  ? const Icon(Icons.expand_less)
+                  : const Icon(
+                      Icons.expand_more,
+                    ),
+            ),
+          ),
+          const SizedBox(width: 5),
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: Icon(
+              widget.directory.isExpanded && widget.directory.isEmpty
+                  ? CupertinoIcons.folder_open
+                  : CupertinoIcons.folder_fill,
+              size: isAndroid ? 20 : null,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              widget.directory.name,
+              maxLines: 1,
+              softWrap: true,
+              overflow: TextOverflow.fade,
+            ),
+          ),
+        ],
       ),
     );
   }

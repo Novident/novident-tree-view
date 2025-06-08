@@ -60,7 +60,6 @@ class _TreeViewState extends State<TreeView> {
               ListenableBuilder(
                 listenable: widget.root,
                 builder: (BuildContext context, Widget? child) {
-                  if (widget.root.isEmpty) return noNodesFoundWidget;
                   return ListView.builder(
                     shrinkWrap: widget
                         .configuration.treeListViewConfigurations.shrinkWrap,
@@ -70,7 +69,7 @@ class _TreeViewState extends State<TreeView> {
                     clipBehavior: widget.configuration
                             .treeListViewConfigurations.clipBehavior ??
                         Clip.hardEdge,
-                    itemCount: widget.root.length,
+                    itemCount: widget.root.isEmpty ? 1 : widget.root.length,
                     reverse:
                         widget.configuration.treeListViewConfigurations.reverse,
                     itemExtent: widget
@@ -115,10 +114,14 @@ class _TreeViewState extends State<TreeView> {
   }
 
   Widget? _itemBuilder(BuildContext context, int index) {
+    if (widget.root.isEmpty) {
+      return noNodesFoundWidget;
+    }
     final Node node = widget.root.children.elementAt(index);
     // Build appropriate node type
     if (node is! NodeContainer) {
       return LeafNodeBuilder(
+        key: ValueKey(node.id),
         node: node,
         index: index,
         depth: 0,
@@ -126,6 +129,7 @@ class _TreeViewState extends State<TreeView> {
       );
     } else {
       return ContainerBuilder(
+        key: ValueKey(node.id),
         nodeContainer: node,
         index: index,
         depth: 0,

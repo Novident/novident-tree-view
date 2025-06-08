@@ -22,14 +22,11 @@ class LeafNodeBuilder extends StatefulWidget {
   /// shouldn't be different than the Node level
   final int depth;
 
-  final GlobalKey? ownerAnimatedListKey;
-
   const LeafNodeBuilder({
     required this.node,
     required this.owner,
     required this.depth,
     required this.index,
-    this.ownerAnimatedListKey,
     super.key,
   });
 
@@ -40,13 +37,21 @@ class LeafNodeBuilder extends StatefulWidget {
 class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   bool _initStateCalled = false;
   NodeComponentBuilder? _builder;
-  late final TreeConfiguration configuration =
-      Provider.of<TreeConfiguration>(context);
+  late final TreeConfiguration configuration = Provider.of<TreeConfiguration>(context);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty('Tree depth', widget.depth));
+    properties.add(DiagnosticsProperty('owner', widget.owner));
+    properties.add(DiagnosticsProperty('leaf', widget.node));
+  }
 
   @override
   void didChangeDependencies() {
     if (!_initStateCalled) {
-      (_builder ??= _checkForBuilder()).initState(widget.node, widget.depth);
+      _builder ??= _checkForBuilder();
+      _builder!.initState(widget.node, widget.depth);
       _initStateCalled = true;
     }
     _builder?.didChangeDependencies(_buildContext);
@@ -54,9 +59,19 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-    _builder!.dispose(_buildContext);
+  didUpdateWidget(covariant LeafNodeBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _builder?.didUpdateWidget(_buildContext, false);
+
+    if (oldWidget.node != widget.node) {
+      _builder = null;
+    }
+  }
+
+  void _markNeedsBuild() {
+    if (context.mounted && mounted) {
+      setState(() {});
+    }
   }
 
   NodeComponentBuilder get builder {
@@ -70,8 +85,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB =
-        configuration.components.firstWhereOrNull(
+    final NodeComponentBuilder? tempB = configuration.components.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(
         widget.node,
         widget.depth,
@@ -79,19 +93,14 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
     );
     if (tempB == null) {
       throw StateError(
-        'There\'s no a builder configurated '
-        'for ${widget.node.runtimeType}(${widget.node.id})',
+        'No NodeComponentBuilder was '
+        'found with correct validate method return '
+        'for Node(${widget.node.id.substring(0, 7)})'
+        ':'
+        '${widget.node}',
       );
     }
     return tempB;
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty('Tree depth', widget.depth));
-    properties.add(DiagnosticsProperty('owner', widget.owner));
-    properties.add(DiagnosticsProperty('leaf', widget.node));
   }
 
   ComponentContext get _buildContext => ComponentContext(
@@ -103,33 +112,13 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
         marksNeedBuild: _markNeedsBuild,
         details: null,
         extraArgs: configuration.extraArgs,
-        animatedListGlobalKey: widget.ownerAnimatedListKey,
       );
-
-  void _markNeedsBuild() {
-    if (context.mounted && mounted) {
-      setState(() {});
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
-        final NodeComponentBuilder? builder =
-            configuration.components.firstWhereOrNull(
-          (NodeComponentBuilder b) => b.validate(
-            widget.node,
-            widget.depth,
-          ),
-        );
-        if (builder == null) {
-          throw StateError(
-            'There\'s no a builder configurated '
-            'for ${widget.node.runtimeType}(${widget.node.id})',
-          );
-        }
         Widget child = NodeDraggableBuilder(
           node: widget.node,
           depth: widget.depth,
@@ -140,15 +129,13 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
             builder: builder,
             depth: widget.depth,
             index: widget.index,
-            animatedListGlobalKey: widget.ownerAnimatedListKey,
             node: widget.node,
             configuration: configuration,
             owner: widget.owner,
           ),
         );
 
-        final NodeConfiguration? nodeConfig =
-            builder.buildConfigurations(_buildContext);
+        final NodeConfiguration? nodeConfig = builder.buildConfigurations(_buildContext);
 
         if (nodeConfig == null) {
           return child;
@@ -183,8 +170,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           onTap: () => nodeConfig.onTap?.call(context),
           onTapDown: (TapDownDetails details) =>
               nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) =>
-              nodeConfig.onTapUp?.call(details, context),
+          onTapUp: (TapUpDetails details) => nodeConfig.onTapUp?.call(details, context),
           onTapCancel: () => nodeConfig.onTapCancel?.call(context),
           onDoubleTap: nodeConfig.onDoubleTap == null
               ? null
@@ -229,5 +215,11 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
         return child;
       },
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _builder!.dispose(_buildContext);
   }
 }
