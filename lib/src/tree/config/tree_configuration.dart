@@ -12,9 +12,6 @@ final class TreeConfiguration {
   final List<NodeComponentBuilder> components;
   final ListViewConfigurations treeListViewConfigurations;
 
-  final AnimatedWidgetBuilder? animatedWrapper;
-  final AnimatedWidgetBuilder? onDeleteAnimationWrapper;
-
   /// These are args that usually we want to use in all node builders
   final Map<String, dynamic> extraArgs;
 
@@ -70,8 +67,6 @@ final class TreeConfiguration {
     this.onDetectEmptyRoot,
     // ignore: deprecated_member_use_from_same_package
   })  : onHoverContainerExpansionDelay = -1,
-        animatedWrapper = null,
-        onDeleteAnimationWrapper = null,
         assert(
           components.isNotEmpty,
           'Nodes cannot be rendered if there\'s no builders for them',
@@ -119,8 +114,6 @@ final class TreeConfiguration {
         other.activateDragAndDropFeature == activateDragAndDropFeature &&
         other.onDetectEmptyRoot == onDetectEmptyRoot &&
         other.indentConfiguration == indentConfiguration &&
-        other.animatedWrapper == animatedWrapper &&
-        other.onDeleteAnimationWrapper == onDeleteAnimationWrapper &&
         listEquals<NodeComponentBuilder>(other.components, components) &&
         mapEquals<String, dynamic>(other.extraArgs, extraArgs);
   }
@@ -130,8 +123,6 @@ final class TreeConfiguration {
     return Object.hashAll(<Object?>[
       components,
       extraArgs,
-      animatedWrapper,
-      onDeleteAnimationWrapper,
       treeListViewConfigurations,
       draggableConfigurations,
       activateDragAndDropFeature,
