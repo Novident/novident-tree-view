@@ -74,6 +74,9 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   void didUpdateWidget(covariant ContainerBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    oldWidget.nodeContainer.removeListener(_markNeedsBuild);
+    widget.nodeContainer.addListener(_markNeedsBuild);
+
     // we need to avoid initialize notifications when we are not using animated lists
     _builder?.didUpdateWidget(
       _buildContext,
@@ -81,8 +84,6 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     );
 
     if (oldWidget.nodeContainer != widget.nodeContainer) {
-      oldWidget.nodeContainer.removeListener(_markNeedsBuild);
-      widget.nodeContainer.addListener(_markNeedsBuild);
       _builder = null;
     }
   }
