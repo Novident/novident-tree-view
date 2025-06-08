@@ -1,4 +1,4 @@
-## 1.0.8
+## 1.0.7
 
 * Fix: If we change something into the `validate` method of `NodeComponentBuilder` class the `componentBuilders` are not reloaded.
 * Fix: Inconsistencies with `ListenableBuilder` implementation in `ContainerBuilder` widget.
