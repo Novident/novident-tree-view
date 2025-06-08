@@ -37,7 +37,8 @@ class LeafNodeBuilder extends StatefulWidget {
 class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   bool _initStateCalled = false;
   NodeComponentBuilder? _builder;
-  late final TreeConfiguration configuration = Provider.of<TreeConfiguration>(context);
+  late final TreeConfiguration configuration =
+      Provider.of<TreeConfiguration>(context);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -85,7 +86,8 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB = configuration.components.firstWhereOrNull(
+    final NodeComponentBuilder? tempB =
+        configuration.components.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(
         widget.node,
         widget.depth,
@@ -135,7 +137,8 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           ),
         );
 
-        final NodeConfiguration? nodeConfig = builder.buildConfigurations(_buildContext);
+        final NodeConfiguration? nodeConfig =
+            builder.buildConfigurations(_buildContext);
 
         if (nodeConfig == null) {
           return child;
@@ -170,7 +173,8 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           onTap: () => nodeConfig.onTap?.call(context),
           onTapDown: (TapDownDetails details) =>
               nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) => nodeConfig.onTapUp?.call(details, context),
+          onTapUp: (TapUpDetails details) =>
+              nodeConfig.onTapUp?.call(details, context),
           onTapCancel: () => nodeConfig.onTapCancel?.call(context),
           onDoubleTap: nodeConfig.onDoubleTap == null
               ? null

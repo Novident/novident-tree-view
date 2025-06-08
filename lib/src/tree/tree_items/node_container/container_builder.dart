@@ -39,7 +39,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   bool _isFirstChildrenBuild = true;
   bool _initStateCalled = false;
   NodeComponentBuilder? _builder;
-  late final TreeConfiguration configuration = Provider.of<TreeConfiguration>(context);
+  late final TreeConfiguration configuration =
+      Provider.of<TreeConfiguration>(context);
 
   @override
   initState() {
@@ -52,11 +53,13 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<int>('Tree depth', widget.depth));
     properties.add(DiagnosticsProperty<NodeContainer>('owner', widget.owner));
-    properties.add(DiagnosticsProperty<NodeContainer>('container', widget.nodeContainer));
-    properties
-        .add(DiagnosticsProperty<bool>('isFirstChildrenBuild', _isFirstChildrenBuild));
+    properties.add(
+        DiagnosticsProperty<NodeContainer>('container', widget.nodeContainer));
     properties.add(DiagnosticsProperty<bool>(
-        'willCacheChildrenAfterFirstAsyncBuild', _cacheChildrenAfterFirstAsyncBuild));
+        'isFirstChildrenBuild', _isFirstChildrenBuild));
+    properties.add(DiagnosticsProperty<bool>(
+        'willCacheChildrenAfterFirstAsyncBuild',
+        _cacheChildrenAfterFirstAsyncBuild));
   }
 
   @override
@@ -104,7 +107,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB = configuration.components.firstWhereOrNull(
+    final NodeComponentBuilder? tempB =
+        configuration.components.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(
         widget.nodeContainer,
         widget.depth,
@@ -130,12 +134,15 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         index: widget.index,
         marksNeedBuild: _markNeedsBuild,
         details: null,
-        extraArgs: context.mounted ? configuration.extraArgs : const <String, dynamic>{},
+        extraArgs: context.mounted
+            ? configuration.extraArgs
+            : const <String, dynamic>{},
       );
 
   @override
   Widget build(BuildContext context) {
-    _cacheChildrenAfterFirstAsyncBuild = builder.cacheChildrenAfterFirstAsyncBuild;
+    _cacheChildrenAfterFirstAsyncBuild =
+        builder.cacheChildrenAfterFirstAsyncBuild;
     ComponentContext componentContext = _buildContext;
     Widget child = NodeDraggableBuilder(
       node: widget.nodeContainer,
@@ -153,7 +160,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       ),
     );
 
-    final NodeConfiguration? nodeConfig = builder.buildConfigurations(componentContext);
+    final NodeConfiguration? nodeConfig =
+        builder.buildConfigurations(componentContext);
 
     if (nodeConfig != null) {
       if (nodeConfig.makeTappable) {
@@ -164,7 +172,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           onTap: () => nodeConfig.onTap?.call(context),
           onTapDown: (TapDownDetails details) =>
               nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) => nodeConfig.onTapUp?.call(details, context),
+          onTapUp: (TapUpDetails details) =>
+              nodeConfig.onTapUp?.call(details, context),
           onTapCancel: () => nodeConfig.onTapCancel?.call(context),
           onDoubleTap: nodeConfig.onDoubleTap == null
               ? null
@@ -218,7 +227,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
 
     final bool needsAsync = builder.useAsyncBuild;
 
-    _cacheChildrenAfterFirstAsyncBuild = builder.cacheChildrenAfterFirstAsyncBuild;
+    _cacheChildrenAfterFirstAsyncBuild =
+        builder.cacheChildrenAfterFirstAsyncBuild;
     _isFirstChildrenBuild =
         _cacheChildrenAfterFirstAsyncBuild ? _isFirstChildrenBuild : true;
     Widget container = Column(
@@ -295,24 +305,29 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           physics: const NeverScrollableScrollPhysics(),
           primary: false,
           shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
-          clipBehavior:
-              configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
+          clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
+              Clip.hardEdge,
           reverse: configuration.treeListViewConfigurations.reverse,
           itemExtent: configuration.treeListViewConfigurations.itemExtent,
-          itemExtentBuilder: configuration.treeListViewConfigurations.itemExtentBuilder,
+          itemExtentBuilder:
+              configuration.treeListViewConfigurations.itemExtentBuilder,
           prototypeItem: configuration.treeListViewConfigurations.prototypeItem,
           findChildIndexCallback:
               configuration.treeListViewConfigurations.findChildIndexCallback,
           addAutomaticKeepAlives:
               configuration.treeListViewConfigurations.addSemanticIndexes,
-          addSemanticIndexes: configuration.treeListViewConfigurations.addSemanticIndexes,
+          addSemanticIndexes:
+              configuration.treeListViewConfigurations.addSemanticIndexes,
           cacheExtent: configuration.treeListViewConfigurations.cacheExtent,
-          semanticChildCount: configuration.treeListViewConfigurations.semanticChildCount,
-          dragStartBehavior: configuration.treeListViewConfigurations.dragStartBehavior,
+          semanticChildCount:
+              configuration.treeListViewConfigurations.semanticChildCount,
+          dragStartBehavior:
+              configuration.treeListViewConfigurations.dragStartBehavior,
           keyboardDismissBehavior:
               configuration.treeListViewConfigurations.keyboardDismissBehavior,
           restorationId: configuration.treeListViewConfigurations.restorationId,
-          hitTestBehavior: configuration.treeListViewConfigurations.hitTestBehavior,
+          hitTestBehavior:
+              configuration.treeListViewConfigurations.hitTestBehavior,
           itemCount: list.length,
           itemBuilder: (BuildContext context, int index) {
             final Widget node = list.elementAt(index);
@@ -336,9 +351,10 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         physics: const NeverScrollableScrollPhysics(),
         primary: false,
         shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
-        clipBehavior:
-            configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
-        hitTestBehavior: configuration.treeListViewConfigurations.hitTestBehavior,
+        clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
+            Clip.hardEdge,
+        hitTestBehavior:
+            configuration.treeListViewConfigurations.hitTestBehavior,
         itemCount: widget.nodeContainer.length,
         itemBuilder: (BuildContext context, int index) {
           final Node node = widget.nodeContainer.elementAt(index);
