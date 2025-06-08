@@ -9,6 +9,7 @@
 * Fix: `DraggableListener` is not being updated correctly in certain situations.
 * Fix: missing `NovDragAndDropDetails` updates at some dragging events.
 * Chore(breaking changes): changed type `DragAnchorStrategy` to `EffectiveDragAnchorStrategy`.
+* Chore(example): added trash icon for remove nodes manually dragging them over it.
 
 ## 1.0.6
 
