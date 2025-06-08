@@ -176,5 +176,6 @@ final class NodeConfiguration {
     this.tapSplashColor,
     this.splashBorderRadius,
     this.customSplashShape,
+    // ignore: deprecated_member_use_from_same_package
   }) : onHover = null;
 }

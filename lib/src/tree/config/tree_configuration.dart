@@ -24,11 +24,9 @@ final class TreeConfiguration {
   /// Callback when hovering over a NodeContainer
   ///
   /// Triggered when a drag operation hovers over a container node
-  @Deprecated(
-    'onHoverContainer is not being used, '
-    'and nWas replace by onTryExpand method into '
-    'NodeComponentBuilder base class.',
-  )
+  @Deprecated('onHoverContainer is not being used, '
+      'and nWas replace by onTryExpand method into '
+      'NodeComponentBuilder base class.')
   final void Function(NodeContainer node)? onHoverContainer;
 
   /// Settings for drag-and-drop operations
@@ -62,36 +60,18 @@ final class TreeConfiguration {
     required this.draggableConfigurations,
     this.treeListViewConfigurations = const ListViewConfigurations(),
     this.indentConfiguration = const IndentConfiguration.basic(),
+    @Deprecated('onHoverContainer is not being used, '
+        'and nWas replace by onTryExpand method into '
+        'NodeComponentBuilder base class.')
     this.onHoverContainer,
     this.extraArgs = const <String, dynamic>{},
     this.activateDragAndDropFeature = true,
     this.addRepaintBoundaries = false,
     this.onDetectEmptyRoot,
+    // ignore: deprecated_member_use_from_same_package
   })  : onHoverContainerExpansionDelay = -1,
         animatedWrapper = null,
         onDeleteAnimationWrapper = null,
-        assert(
-          components.isNotEmpty,
-          'Nodes cannot be rendered if there\'s no builders for them',
-        );
-
-  /// Creates a tree configuration
-  TreeConfiguration.animated({
-    required this.components,
-    required this.draggableConfigurations,
-    required this.animatedWrapper,
-    required this.onDeleteAnimationWrapper,
-    this.treeListViewConfigurations = const ListViewConfigurations(),
-    this.indentConfiguration = const IndentConfiguration.basic(),
-    this.onHoverContainer,
-    this.extraArgs = const <String, dynamic>{},
-    this.activateDragAndDropFeature = true,
-    this.addRepaintBoundaries = false,
-    this.onDetectEmptyRoot,
-  })  : onHoverContainerExpansionDelay = -1,
-        assert(animatedWrapper != null, 'animatedWrapper cannot be nullable'),
-        assert(onDeleteAnimationWrapper != null,
-            'onDeleteAnimationWrapper cannot be nullable'),
         assert(
           components.isNotEmpty,
           'Nodes cannot be rendered if there\'s no builders for them',

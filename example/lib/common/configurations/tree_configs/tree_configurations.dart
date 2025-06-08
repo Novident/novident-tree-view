@@ -43,12 +43,6 @@ TreeConfiguration treeConfigurationBuilder(
           return null;
         },
       ),
-      onHoverContainer: (Node node) {
-        if (node is NodeContainer) {
-          node.asDirectory.openOrClose(forceOpen: true);
-          return;
-        }
-      },
       draggableConfigurations: DraggableConfigurations(
         buildDragFeedbackWidget: (Node node, BuildContext context) {
           final DragAndDropDetailsListener listener =
