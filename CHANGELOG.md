@@ -1,3 +1,7 @@
+## 1.0.8
+
+* Chore: update dependencies.
+
 ## 1.0.7
 
 * Fix: If we change something into the `validate` method of `NodeComponentBuilder` class the `componentBuilders` are not reloaded.
