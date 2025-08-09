@@ -1,6 +1,6 @@
 name: novident_tree_view 
 description: "A flexible internal Novident library for visualizing hierarchical structures with full control over nodes"
-version: 1.0.8
+version: 1.0.9
 homepage: https://github.com/Novident/novident-tree-view/
 repository: https://github.com/Novident/novident-tree-view/ 
 documentation: https://github.com/Novident/novident-tree-view/doc/ 
@@ -18,7 +18,7 @@ dependencies:
   collection: ^1.19.1
   provider: ^6.1.5
   vector_math: ^2.1.4
-  novident_nodes: ^1.1.8
+  novident_nodes: ^1.1.9
 
 dev_dependencies:
   flutter_test:
