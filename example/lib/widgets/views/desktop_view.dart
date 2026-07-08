@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:example/common/controller/tree_controller.dart';
+import 'package:example/common/debug_logger.dart';
 import 'package:example/extensions/node_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Node;
@@ -75,7 +76,21 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
   }
 
   void _handleOnChangeSelection(Node? node) {
-    if (_lastNode?.details == node?.details) return;
+    // ── DEBUG ──
+    NodeDebugLogger.log('selection_handler', <String, Object?>{
+      ...NodeDebugLogger.nodeSnapshot(_lastNode, label: 'lastNode'),
+      ...NodeDebugLogger.nodeSnapshot(node, label: 'incoming'),
+      'details_equal':
+          _lastNode?.details == node?.details,
+      'details_identical':
+          identical(_lastNode?.details, node?.details),
+    });
+    // Use identical() instead of == to detect actual instance changes,
+    // not just value equality. After NodeContainer.update() creates a
+    // clone via cloneWithNewLevel, the clone's NodeDetails has the same
+    // values (id, level, owner) as the original, so == returns true and
+    // _lastNode was never updated — keeping a stale reference forever.
+    if (identical(_lastNode?.details, node?.details)) return;
     if (node != null && node is! File) {
       _showNoFileToWatch = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -193,14 +208,55 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                                     // needed. OnChange also is called when the selection changes
                                     if (oldVersion != currentDelta) {
                                       oldVersion = currentDelta;
-                                      _lastNode!.owner?.asContainer.update(
-                                        _lastNode!.copyWith(
-                                          details: _lastNode!.details,
-                                          content: jsonEncode(
-                                            document.toDelta().toJson(),
-                                          ),
+                                      final NodeContainer? owner =
+                                          _lastNode!.owner;
+                                      final File newCopy = _lastNode!.copyWith(
+                                        // Clone details to break shared
+                                        // mutable reference with _lastNode.
+                                        // Without this, NodeContainer.update()
+                                        // may mutate _lastNode.details.owner
+                                        // as a side effect.
+                                        details:
+                                            _lastNode!.details.copyWith(),
+                                        content: jsonEncode(
+                                          document.toDelta().toJson(),
                                         ),
                                       );
+                                      // ── DEBUG ──
+                                      NodeDebugLogger.log('editor_onChange',
+                                          <String, Object?>{
+                                        'phase': 'before_update',
+                                        ...NodeDebugLogger.nodeSnapshot(
+                                            _lastNode,
+                                            label: 'lastNode'),
+                                        ...NodeDebugLogger.nodeSnapshot(
+                                            newCopy,
+                                            label: 'newCopy'),
+                                        'owner_hash':
+                                            identityHashCode(owner),
+                                        'shared_details':
+                                            identityHashCode(
+                                                    _lastNode!.details) ==
+                                                identityHashCode(
+                                                    newCopy.details),
+                                      });
+                                      if (owner != null) {
+                                        owner.asContainer.update(
+                                          newCopy,
+                                        );
+                                        // ── DEBUG after update ──
+                                        NodeDebugLogger.log(
+                                            'editor_onChange',
+                                            <String, Object?>{
+                                          'phase': 'after_update',
+                                          ...NodeDebugLogger.nodeSnapshot(
+                                              _lastNode,
+                                              label: 'lastNode'),
+                                          ...NodeDebugLogger.nodeSnapshot(
+                                              newCopy,
+                                              label: 'newCopy'),
+                                        });
+                                      }
                                     }
                                   }
                                 },
