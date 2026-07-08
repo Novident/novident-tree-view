@@ -123,20 +123,13 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
       listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
         debugPrint('DEBUG [LeafNodeBuilder.build] rebuild triggered for: ${widget.node.id}');
-        Widget child = NodeDraggableBuilder(
+        Widget child = NodeDragAndDropBuilder(
           node: widget.node,
           depth: widget.depth,
-          builder: builder,
           index: widget.index,
+          builder: builder,
           configuration: configuration,
-          child: NodeTargetBuilder(
-            builder: builder,
-            depth: widget.depth,
-            index: widget.index,
-            node: widget.node,
-            configuration: configuration,
-            owner: widget.owner,
-          ),
+          owner: widget.owner,
         );
 
         final NodeConfiguration? nodeConfig = builder.buildConfigurations(_buildContext);

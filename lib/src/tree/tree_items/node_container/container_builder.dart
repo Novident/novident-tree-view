@@ -137,20 +137,13 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         'DEBUG [ContainerBuilder.build] START - container: ${widget.nodeContainer.id}, owner: ${widget.owner.id}, length: ${widget.nodeContainer.length}');
     _cacheChildrenAfterFirstAsyncBuild = builder.cacheChildrenAfterFirstAsyncBuild;
     ComponentContext componentContext = _buildContext;
-    Widget child = NodeDraggableBuilder(
+    Widget child = NodeDragAndDropBuilder(
       node: widget.nodeContainer,
       depth: widget.depth,
       index: widget.index,
       builder: builder,
       configuration: configuration,
-      child: NodeTargetBuilder(
-        depth: widget.depth,
-        builder: builder,
-        node: widget.nodeContainer,
-        index: widget.index,
-        configuration: configuration,
-        owner: widget.owner,
-      ),
+      owner: widget.owner,
     );
 
     final NodeConfiguration? nodeConfig = builder.buildConfigurations(componentContext);
