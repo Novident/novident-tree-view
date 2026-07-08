@@ -103,5 +103,5 @@ class DraggableListener extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(covariant DraggableListener oldWidget) => false;
+  bool updateShouldNotify(covariant DraggableListener oldWidget) => true;
 }

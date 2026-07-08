@@ -148,7 +148,8 @@ final class NodeDragGestures {
         );
         final int effectiveIndex = target.index;
 
-        if (effectiveIndex == details.draggedNode.index) {
+        if (effectiveIndex == details.draggedNode.index &&
+            details.draggedNode.id == details.targetNode.id) {
           return;
         }
         Node.moveTo(
@@ -160,29 +161,30 @@ final class NodeDragGestures {
         );
       },
       whenInside: () {
-        if (Node.canMoveTo(
+        if (!Node.canMoveTo(
             node: details.draggedNode, target: target, inside: true)) {
-          final NodeContainer dragParent =
-              details.draggedNode.owner as NodeContainer;
-          dragParent
-            ..removeWhere(
-              (Node n) => n.id == details.draggedNode.id,
-              shouldNotify: false,
-            )
-            ..notify(propagate: true);
-          onWillInsert?.call(
-            details.draggedNode,
-            target as NodeContainer,
-            target.level + 1,
-          );
-          Node.moveTo(
-            node: details.draggedNode,
-            newOwner: target.castToContainer(),
-            index: null,
-            shouldNotify: true,
-            propagate: true,
-          );
+          return;
         }
+        final NodeContainer dragParent =
+            details.draggedNode.owner as NodeContainer;
+        dragParent
+          ..removeWhere(
+            (Node n) => n.id == details.draggedNode.id,
+            shouldNotify: false,
+          )
+          ..notify(propagate: true);
+        onWillInsert?.call(
+          details.draggedNode,
+          target as NodeContainer,
+          target.level + 1,
+        );
+        Node.moveTo(
+          node: details.draggedNode,
+          newOwner: target.castToContainer(),
+          index: null,
+          shouldNotify: true,
+          propagate: true,
+        );
       },
       whenBelow: () {
         final NodeContainer parent = target.owner as NodeContainer;
@@ -200,7 +202,8 @@ final class NodeDragGestures {
         int effectiveIndex =
             draggedIndex < targetIndex ? targetIndex : targetIndex + 1;
 
-        if (effectiveIndex == draggedIndex) {
+        if (effectiveIndex == details.draggedNode.index &&
+            details.draggedNode.id == details.targetNode.id) {
           return;
         }
 

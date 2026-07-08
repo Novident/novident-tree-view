@@ -38,7 +38,7 @@ class NodeTargetBuilder extends StatefulWidget {
 
 class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   late NodeDragGestures _gestures;
-  late DraggableListener listener = DraggableListener.of(context, listen: true);
+  late DraggableListener listener = DraggableListener.of(context);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -84,7 +84,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
   NovDragAndDropDetails<Node>? get _details => __details;
   set _details(NovDragAndDropDetails<Node>? details) {
     __details = details;
-    if (mounted && details != null) {
+    if (details != null) {
       DragAndDropDetailsListener.of(context).details.value =
           NodeDragAndDropDetails(
         draggedNode: __details!.draggedNode,
@@ -129,7 +129,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     Node draggedNode, {
     bool starting = false,
   }) {
-    if (!context.mounted || !mounted) {
+    if (!mounted) {
       return null;
     }
     // Get the render box for coordinate conversions
@@ -152,6 +152,12 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
         renderBox.getTransformTo(null).getTranslation();
     final Offset offset = Offset(vectorPosition.x, vectorPosition.y);
 
+    print('$runtimeType [GETTING DROP DETAILS 1]: $offset');
+    print(
+        '$runtimeType [GETTING DROP DETAILS 2]: global pos: ${listener.dragListener.userPosition != null ? renderBox.localToGlobal(
+            listener.dragListener.userPosition!,
+          ) : renderBox.globalToLocal(pointer)}');
+
     if (starting && !listener.dragListener.isDragging) {
       _needsInitializeDragListener = false;
       listener.dragListener
@@ -165,7 +171,7 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
     }
 
     // Compose all drop information
-    return NovDragAndDropDetails<Node>(
+    final details = NovDragAndDropDetails<Node>(
       draggedNode: listener.dragListener.draggedNode ?? draggedNode,
       globalTargetNodeOffset: offset,
       targetNode: widget.node,
@@ -174,12 +180,17 @@ class _NodeTargetBuilderState extends State<NodeTargetBuilder> {
       globalDropPosition: listener.dragListener.globalPosition ?? offset,
       targetBounds: Offset.zero & renderBox.size,
     );
+
+    print(
+        '$runtimeType [DEFINITIVE DROP DETAILS]: ${details}');
+    return details;
   }
 
   /// Handles drag movement over the target area
   ///
   /// [details]: Information about the current drag operation
   void _onMove(DragTargetDetails<Node> details) {
+    print('$runtimeType [RECEIVE MOVE DRAG]: ${details.offset}');
     _startOrCancelOnHoverExpansion(cancel: true);
     listener.dragListener.targetNode = widget.node;
 

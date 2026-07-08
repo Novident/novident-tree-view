@@ -39,8 +39,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   bool _isFirstChildrenBuild = true;
   bool _initStateCalled = false;
   NodeComponentBuilder? _builder;
-  late final TreeConfiguration configuration =
-      Provider.of<TreeConfiguration>(context);
+  late final TreeConfiguration configuration = Provider.of<TreeConfiguration>(context);
 
   @override
   initState() {
@@ -53,13 +52,9 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<int>('Tree depth', widget.depth));
     properties.add(DiagnosticsProperty<NodeContainer>('owner', widget.owner));
-    properties.add(
-        DiagnosticsProperty<NodeContainer>('container', widget.nodeContainer));
-    properties.add(DiagnosticsProperty<bool>(
-        'isFirstChildrenBuild', _isFirstChildrenBuild));
-    properties.add(DiagnosticsProperty<bool>(
-        'willCacheChildrenAfterFirstAsyncBuild',
-        _cacheChildrenAfterFirstAsyncBuild));
+    properties.add(DiagnosticsProperty<NodeContainer>('container', widget.nodeContainer));
+    properties.add(DiagnosticsProperty<bool>('isFirstChildrenBuild', _isFirstChildrenBuild));
+    properties.add(DiagnosticsProperty<bool>('willCacheChildrenAfterFirstAsyncBuild', _cacheChildrenAfterFirstAsyncBuild));
   }
 
   @override
@@ -107,8 +102,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB =
-        configuration.components.firstWhereOrNull(
+    final NodeComponentBuilder? tempB = configuration.components.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(
         widget.nodeContainer,
         widget.depth,
@@ -134,15 +128,14 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         index: widget.index,
         marksNeedBuild: _markNeedsBuild,
         details: null,
-        extraArgs: context.mounted
-            ? configuration.extraArgs
-            : const <String, dynamic>{},
+        extraArgs: context.mounted ? configuration.extraArgs : const <String, dynamic>{},
       );
 
   @override
   Widget build(BuildContext context) {
-    _cacheChildrenAfterFirstAsyncBuild =
-        builder.cacheChildrenAfterFirstAsyncBuild;
+    debugPrint(
+        'DEBUG [ContainerBuilder.build] START - container: ${widget.nodeContainer.id}, owner: ${widget.owner.id}, length: ${widget.nodeContainer.length}');
+    _cacheChildrenAfterFirstAsyncBuild = builder.cacheChildrenAfterFirstAsyncBuild;
     ComponentContext componentContext = _buildContext;
     Widget child = NodeDraggableBuilder(
       node: widget.nodeContainer,
@@ -160,8 +153,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       ),
     );
 
-    final NodeConfiguration? nodeConfig =
-        builder.buildConfigurations(componentContext);
+    final NodeConfiguration? nodeConfig = builder.buildConfigurations(componentContext);
 
     if (nodeConfig != null) {
       if (nodeConfig.makeTappable) {
@@ -170,33 +162,19 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           focusNode: nodeConfig.focusNode,
           focusColor: nodeConfig.focusColor,
           onTap: () => nodeConfig.onTap?.call(context),
-          onTapDown: (TapDownDetails details) =>
-              nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) =>
-              nodeConfig.onTapUp?.call(details, context),
+          onTapDown: (TapDownDetails details) => nodeConfig.onTapDown?.call(details, context),
+          onTapUp: (TapUpDetails details) => nodeConfig.onTapUp?.call(details, context),
           onTapCancel: () => nodeConfig.onTapCancel?.call(context),
-          onDoubleTap: nodeConfig.onDoubleTap == null
-              ? null
-              : () => nodeConfig.onDoubleTap?.call(context),
-          onLongPress: nodeConfig.onLongPress == null
-              ? null
-              : () => nodeConfig.onLongPress?.call(context),
-          onSecondaryTap: nodeConfig.onSecondaryTap == null
-              ? null
-              : () => nodeConfig.onSecondaryTap?.call(context),
-          onSecondaryTapUp: nodeConfig.onSecondaryTapUp == null
-              ? null
-              : (TapUpDetails details) =>
-                  nodeConfig.onSecondaryTapUp?.call(details, context),
+          onDoubleTap: nodeConfig.onDoubleTap == null ? null : () => nodeConfig.onDoubleTap?.call(context),
+          onLongPress: nodeConfig.onLongPress == null ? null : () => nodeConfig.onLongPress?.call(context),
+          onSecondaryTap: nodeConfig.onSecondaryTap == null ? null : () => nodeConfig.onSecondaryTap?.call(context),
+          onSecondaryTapUp:
+              nodeConfig.onSecondaryTapUp == null ? null : (TapUpDetails details) => nodeConfig.onSecondaryTapUp?.call(details, context),
           onSecondaryTapDown: nodeConfig.onSecondaryTapDown == null
               ? null
-              : (TapDownDetails details) =>
-                  nodeConfig.onSecondaryTapDown?.call(details, context),
-          onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null
-              ? null
-              : () => nodeConfig.onSecondaryTapCancel?.call(context),
-          onHover: (bool isHovered) =>
-              nodeConfig.onHoverInkWell?.call(isHovered, context),
+              : (TapDownDetails details) => nodeConfig.onSecondaryTapDown?.call(details, context),
+          onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null ? null : () => nodeConfig.onSecondaryTapCancel?.call(context),
+          onHover: (bool isHovered) => nodeConfig.onHoverInkWell?.call(isHovered, context),
           mouseCursor: nodeConfig.mouseCursor,
           hoverDuration: nodeConfig.hoverDuration,
           hoverColor: nodeConfig.hoverColor,
@@ -227,10 +205,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
 
     final bool needsAsync = builder.useAsyncBuild;
 
-    _cacheChildrenAfterFirstAsyncBuild =
-        builder.cacheChildrenAfterFirstAsyncBuild;
-    _isFirstChildrenBuild =
-        _cacheChildrenAfterFirstAsyncBuild ? _isFirstChildrenBuild : true;
+    _cacheChildrenAfterFirstAsyncBuild = builder.cacheChildrenAfterFirstAsyncBuild;
+    _isFirstChildrenBuild = _cacheChildrenAfterFirstAsyncBuild ? _isFirstChildrenBuild : true;
     Widget container = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -274,7 +250,9 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   }
 
   void _markNeedsBuild() {
+    debugPrint('DEBUG [_markNeedsBuild] ContainerBuilder called - nodeContainer: ${widget.nodeContainer.id}, mounted: ${context.mounted}');
     if (context.mounted && mounted) {
+      debugPrint('DEBUG [_markNeedsBuild] ContainerBuilder triggering setState');
       setState(() {});
     }
   }
@@ -288,13 +266,10 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       future: builder.buildChildrenAsync(componentContext),
       builder: (BuildContext ctx, AsyncSnapshot<List<Widget>?> value) {
         if (value.hasError) {
-          return builder.buildChildrenAsyncError(
-                  componentContext, value.stackTrace, value.error!) ??
-              const SizedBox.shrink();
+          return builder.buildChildrenAsyncError(componentContext, value.stackTrace, value.error!) ?? const SizedBox.shrink();
         }
         if (!value.hasData) {
-          return builder.buildChildrenAsyncPlaceholder(componentContext) ??
-              const SizedBox.shrink();
+          return builder.buildChildrenAsyncPlaceholder(componentContext) ?? const SizedBox.shrink();
         }
         if (_cacheChildrenAfterFirstAsyncBuild && _isFirstChildrenBuild) {
           _isFirstChildrenBuild = false;
@@ -305,29 +280,20 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
           physics: const NeverScrollableScrollPhysics(),
           primary: false,
           shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
-          clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
-              Clip.hardEdge,
+          clipBehavior: configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
           reverse: configuration.treeListViewConfigurations.reverse,
           itemExtent: configuration.treeListViewConfigurations.itemExtent,
-          itemExtentBuilder:
-              configuration.treeListViewConfigurations.itemExtentBuilder,
+          itemExtentBuilder: configuration.treeListViewConfigurations.itemExtentBuilder,
           prototypeItem: configuration.treeListViewConfigurations.prototypeItem,
-          findChildIndexCallback:
-              configuration.treeListViewConfigurations.findChildIndexCallback,
-          addAutomaticKeepAlives:
-              configuration.treeListViewConfigurations.addSemanticIndexes,
-          addSemanticIndexes:
-              configuration.treeListViewConfigurations.addSemanticIndexes,
+          findChildIndexCallback: configuration.treeListViewConfigurations.findChildIndexCallback,
+          addAutomaticKeepAlives: configuration.treeListViewConfigurations.addSemanticIndexes,
+          addSemanticIndexes: configuration.treeListViewConfigurations.addSemanticIndexes,
           cacheExtent: configuration.treeListViewConfigurations.cacheExtent,
-          semanticChildCount:
-              configuration.treeListViewConfigurations.semanticChildCount,
-          dragStartBehavior:
-              configuration.treeListViewConfigurations.dragStartBehavior,
-          keyboardDismissBehavior:
-              configuration.treeListViewConfigurations.keyboardDismissBehavior,
+          semanticChildCount: configuration.treeListViewConfigurations.semanticChildCount,
+          dragStartBehavior: configuration.treeListViewConfigurations.dragStartBehavior,
+          keyboardDismissBehavior: configuration.treeListViewConfigurations.keyboardDismissBehavior,
           restorationId: configuration.treeListViewConfigurations.restorationId,
-          hitTestBehavior:
-              configuration.treeListViewConfigurations.hitTestBehavior,
+          hitTestBehavior: configuration.treeListViewConfigurations.hitTestBehavior,
           itemCount: list.length,
           itemBuilder: (BuildContext context, int index) {
             final Widget node = list.elementAt(index);
@@ -342,6 +308,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     TreeConfiguration configuration,
     NodeComponentBuilder builder,
   ) {
+    debugPrint(
+        'DEBUG [_buildDefaultChildrenWidgets] START - container: ${widget.nodeContainer.id}, isExpanded: ${widget.nodeContainer.isExpanded}, length: ${widget.nodeContainer.length}');
     return Visibility(
       visible: widget.nodeContainer.isExpanded,
       maintainSize: false,
@@ -351,13 +319,12 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         physics: const NeverScrollableScrollPhysics(),
         primary: false,
         shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
-        clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
-            Clip.hardEdge,
-        hitTestBehavior:
-            configuration.treeListViewConfigurations.hitTestBehavior,
+        clipBehavior: configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
+        hitTestBehavior: configuration.treeListViewConfigurations.hitTestBehavior,
         itemCount: widget.nodeContainer.length,
         itemBuilder: (BuildContext context, int index) {
           final Node node = widget.nodeContainer.elementAt(index);
+          debugPrint('DEBUG [_buildDefaultChildrenWidgets] itemBuilder - index: $index, node: ${node.id}, type: ${node.runtimeType}');
           if (node is! NodeContainer) {
             return LeafNodeBuilder(
               key: ValueKey(node.id),

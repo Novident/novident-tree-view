@@ -37,8 +37,7 @@ class LeafNodeBuilder extends StatefulWidget {
 class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   bool _initStateCalled = false;
   NodeComponentBuilder? _builder;
-  late final TreeConfiguration configuration =
-      Provider.of<TreeConfiguration>(context);
+  late final TreeConfiguration configuration = Provider.of<TreeConfiguration>(context);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -70,7 +69,9 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   }
 
   void _markNeedsBuild() {
+    debugPrint('DEBUG [_markNeedsBuild] LeafNodeBuilder called - node: ${widget.node.id}, mounted: ${context.mounted}');
     if (context.mounted && mounted) {
+      debugPrint('DEBUG [_markNeedsBuild] LeafNodeBuilder triggering setState');
       setState(() {});
     }
   }
@@ -86,8 +87,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB =
-        configuration.components.firstWhereOrNull(
+    final NodeComponentBuilder? tempB = configuration.components.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(
         widget.node,
         widget.depth,
@@ -118,9 +118,11 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('DEBUG [LeafNodeBuilder.build] START - node id: ${widget.node.id}');
     return ListenableBuilder(
       listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
+        debugPrint('DEBUG [LeafNodeBuilder.build] rebuild triggered for: ${widget.node.id}');
         Widget child = NodeDraggableBuilder(
           node: widget.node,
           depth: widget.depth,
@@ -137,8 +139,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           ),
         );
 
-        final NodeConfiguration? nodeConfig =
-            builder.buildConfigurations(_buildContext);
+        final NodeConfiguration? nodeConfig = builder.buildConfigurations(_buildContext);
 
         if (nodeConfig == null) {
           return child;
@@ -171,33 +172,19 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           focusNode: nodeConfig.focusNode,
           focusColor: nodeConfig.focusColor,
           onTap: () => nodeConfig.onTap?.call(context),
-          onTapDown: (TapDownDetails details) =>
-              nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) =>
-              nodeConfig.onTapUp?.call(details, context),
+          onTapDown: (TapDownDetails details) => nodeConfig.onTapDown?.call(details, context),
+          onTapUp: (TapUpDetails details) => nodeConfig.onTapUp?.call(details, context),
           onTapCancel: () => nodeConfig.onTapCancel?.call(context),
-          onDoubleTap: nodeConfig.onDoubleTap == null
-              ? null
-              : () => nodeConfig.onDoubleTap?.call(context),
-          onLongPress: nodeConfig.onLongPress == null
-              ? null
-              : () => nodeConfig.onLongPress?.call(context),
-          onSecondaryTap: nodeConfig.onSecondaryTap == null
-              ? null
-              : () => nodeConfig.onSecondaryTap?.call(context),
-          onSecondaryTapUp: nodeConfig.onSecondaryTapUp == null
-              ? null
-              : (TapUpDetails details) =>
-                  nodeConfig.onSecondaryTapUp?.call(details, context),
+          onDoubleTap: nodeConfig.onDoubleTap == null ? null : () => nodeConfig.onDoubleTap?.call(context),
+          onLongPress: nodeConfig.onLongPress == null ? null : () => nodeConfig.onLongPress?.call(context),
+          onSecondaryTap: nodeConfig.onSecondaryTap == null ? null : () => nodeConfig.onSecondaryTap?.call(context),
+          onSecondaryTapUp:
+              nodeConfig.onSecondaryTapUp == null ? null : (TapUpDetails details) => nodeConfig.onSecondaryTapUp?.call(details, context),
           onSecondaryTapDown: nodeConfig.onSecondaryTapDown == null
               ? null
-              : (TapDownDetails details) =>
-                  nodeConfig.onSecondaryTapDown?.call(details, context),
-          onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null
-              ? null
-              : () => nodeConfig.onSecondaryTapCancel?.call(context),
-          onHover: (bool isHovered) =>
-              nodeConfig.onHoverInkWell?.call(isHovered, context),
+              : (TapDownDetails details) => nodeConfig.onSecondaryTapDown?.call(details, context),
+          onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null ? null : () => nodeConfig.onSecondaryTapCancel?.call(context),
+          onHover: (bool isHovered) => nodeConfig.onHoverInkWell?.call(isHovered, context),
           mouseCursor: nodeConfig.mouseCursor,
           hoverDuration: nodeConfig.hoverDuration,
           hoverColor: nodeConfig.hoverColor,

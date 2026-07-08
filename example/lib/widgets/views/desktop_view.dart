@@ -137,7 +137,9 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                     SizedBox(
                       width: size.width * 0.30,
                       height: size.height * 0.95,
-                      child: TreeViewDrawer(controller: widget.controller),
+                      child: RepaintBoundary(
+                        child: TreeViewDrawer(controller: widget.controller),
+                      ),
                     ),
                     if (_showNoFileToWatch)
                       SizedBox(

@@ -52,5 +52,5 @@ class DragAndDropDetailsListener extends InheritedWidget {
 
   @override
   bool updateShouldNotify(covariant DragAndDropDetailsListener oldWidget) =>
-      false;
+      true;
 }

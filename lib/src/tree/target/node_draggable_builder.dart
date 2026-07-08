@@ -23,6 +23,8 @@ import 'package:novident_tree_view/src/tree/wrapper/default_nodes_wrapper.dart';
 ///   );
 /// }
 /// ```
+//TODO: es probable que tengamos que unificar NodeDraggableBuilder y NodeTargetBuilder 
+// para que cuando DraggableListener se actualice, ambos tengan la misma data al mismo tiempo
 class NodeDraggableBuilder extends StatefulWidget {
   /// Creates a [NodeDraggableBuilder].
   ///
@@ -124,6 +126,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
     isDragging = true;
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final Offset cursorPosition = renderBox.localToGlobal(Offset.zero);
+    debugPrint('${runtimeType} [START DRAG]: global => ${cursorPosition}');
     listener.dragListener
       ..globalPosition = cursorPosition
       ..localPosition = renderBox.globalToLocal(cursorPosition)
@@ -134,6 +137,7 @@ class _TreeDraggableState extends State<NodeDraggableBuilder>
   }
 
   void onDragUpdate(DragUpdateDetails details) {
+    debugPrint('${runtimeType} [UPDATE DRAG]: global => ${details.globalPosition}');
     listener.dragListener
       ..globalPosition = details.globalPosition
       ..localPosition = details.localPosition
