@@ -64,14 +64,21 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
     _builder?.didUpdateWidget(_buildContext, false);
 
     if (oldWidget.node != widget.node) {
+      NodeDebugLogger.log('leaf_didUpdate', <String, Object?>{
+        'old_hash': identityHashCode(oldWidget.node),
+        'old_id': oldWidget.node.id,
+        'new_hash': identityHashCode(widget.node),
+        'new_id': widget.node.id,
+        'old_owner_hash': identityHashCode(oldWidget.node.owner),
+        'new_owner_hash': identityHashCode(widget.node.owner),
+        'builder_reset': true,
+      });
       _builder = null;
     }
   }
 
   void _markNeedsBuild() {
-    debugPrint('DEBUG [_markNeedsBuild] LeafNodeBuilder called - node: ${widget.node.id}, mounted: ${context.mounted}');
     if (context.mounted && mounted) {
-      debugPrint('DEBUG [_markNeedsBuild] LeafNodeBuilder triggering setState');
       setState(() {});
     }
   }
@@ -118,11 +125,9 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('DEBUG [LeafNodeBuilder.build] START - node id: ${widget.node.id}');
     return ListenableBuilder(
       listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
-        debugPrint('DEBUG [LeafNodeBuilder.build] rebuild triggered for: ${widget.node.id}');
         Widget child = NodeDragAndDropBuilder(
           node: widget.node,
           depth: widget.depth,

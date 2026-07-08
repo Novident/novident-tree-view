@@ -1,5 +1,7 @@
 library;
 
+// debug
+export 'src/utils/debug_logger.dart';
 // node entities
 export 'src/tree/config/node/node_configuration.dart';
 // interfaces

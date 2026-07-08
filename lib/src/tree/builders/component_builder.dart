@@ -39,16 +39,6 @@ abstract class NodeComponentBuilder {
   Duration get onHoverCallDelay =>
       const Duration(milliseconds: _kDefaultExpandDelay);
 
-  /// Determines whether this builder won't be cached into the tree
-  ///
-  /// Tipically, we use this, when a part of this builder change
-  @Deprecated(
-    'avoidCacheBuilder is invalid '
-    'now, and it will be '
-    'removed in future releases.',
-  )
-  bool get avoidCacheBuilder => false;
-
   /// Called when this object is removed from the tree permanently.
   void dispose(ComponentContext context) {}
 

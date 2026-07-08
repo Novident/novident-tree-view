@@ -298,12 +298,39 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       details.data,
       starting: _needsInitializeDragListener,
     );
-    return _gestures.onWillAcceptWithDetails(
+    final bool accepted = _gestures.onWillAcceptWithDetails(
       _details,
       details,
       widget.node,
       widget.owner,
     );
+    // ── DEBUG: log drop acceptance decision ──
+    if (_details != null) {
+      final DragHandlerPosition pos = _details!.exactPosition();
+      final bool inside = pos == DragHandlerPosition.into;
+      final bool canMoveRaw = Node.canMoveTo(
+        node: _details!.draggedNode,
+        target: _details!.targetNode,
+        inside: inside,
+      );
+      NodeDebugLogger.log('onWillAccept', <String, Object?>{
+        'accepted': accepted,
+        'canMoveTo_raw': canMoveRaw,
+        'position': pos.name,
+        'inside': inside,
+        'dragged_id': _details!.draggedNode.id,
+        'dragged_hash': identityHashCode(_details!.draggedNode),
+        'dragged_owner_id': _details!.draggedNode.owner?.id,
+        'target_id': _details!.targetNode.id,
+        'target_hash': identityHashCode(_details!.targetNode),
+        'target_runtimeType':
+            _details!.targetNode.runtimeType.toString(),
+        'target_is_NodeContainer':
+            _details!.targetNode is NodeContainer,
+        'widget_node_hash': identityHashCode(widget.node),
+      });
+    }
+    return accepted;
   }
 
   void _onMove(DragTargetDetails<Node> details) {
@@ -313,6 +340,15 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     setState(() {
       _details = _getDropDetails(details.offset, details.data);
     });
+
+    // ── DEBUG ──
+    if (_details != null) {
+      NodeDebugLogger.log('onMove', <String, Object?>{
+        'position': _details!.exactPosition().name,
+        'dragged_id': _details!.draggedNode.id,
+        'target_id': _details!.targetNode.id,
+      });
+    }
 
     if (details.data.id != widget.node.id) {
       _startHoverExpansion();
@@ -325,6 +361,15 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     _details ??= _getDropDetails(details.offset, details.data);
 
     if (_details == null || _details!.draggedNode != details.data) return;
+
+    // ── DEBUG ──
+    NodeDebugLogger.log('onAccept', <String, Object?>{
+      'dragged_id': _details!.draggedNode.id,
+      'dragged_hash': identityHashCode(_details!.draggedNode),
+      'dragged_owner_id': _details!.draggedNode.owner?.id,
+      'target_id': _details!.targetNode.id,
+      'position': _details!.exactPosition().name,
+    });
 
     _dragListener.dragListener
       ..draggedNode = null
@@ -341,6 +386,11 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     setState(() {
       _details = null;
     });
+
+    // Explicitly clear the inherited listener so any widget
+    // depending on DragAndDropDetailsListener stops showing
+    // drag feedback (borders, highlights).
+    DragAndDropDetailsListener.of(context).details.value = null;
   }
 
   void _onLeave(Node? data) {
@@ -401,13 +451,22 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     List<dynamic>? rejectedData,
     List<Node?>? candidateData,
   ]) {
-    if (widget.child != null) return widget.child!;
-    return widget.builder.build(
-      _buildContext(
-        rejectedData,
-        candidateData,
-      ),
-    );
+    if (widget.child != null) {
+      NodeDebugLogger.log('buildContent', <String, Object?>{
+        'using_child': true,
+        'node_id': widget.node.id,
+      });
+      return widget.child!;
+    }
+    final ComponentContext ctx = _buildContext(rejectedData, candidateData);
+    NodeDebugLogger.log('buildContent', <String, Object?>{
+      'using_child': false,
+      'node_id': widget.node.id,
+      'details_null': ctx.details == null,
+      'details_position': ctx.details?.exactPosition().name,
+      'from_dragTarget': candidateData != null,
+    });
+    return widget.builder.build(ctx);
   }
 
   // ── Build ──
@@ -423,6 +482,25 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     final bool canDrop = widget.node is DragAndDropMixin &&
         widget.node.cast<DragAndDropMixin>().isDropTarget() &&
         widget.configuration.activateDragAndDropFeature;
+
+    // ── DEBUG: log drag capability decision ──
+    NodeDebugLogger.log('build', <String, Object?>{
+      'widget_hash': identityHashCode(widget),
+      'state_hash': identityHashCode(this),
+      'node_hash': identityHashCode(widget.node),
+      'node_id': widget.node.id,
+      'node_runtimeType': widget.node.runtimeType.toString(),
+      'node_is_DragAndDropMixin': widget.node is DragAndDropMixin,
+      'canDrag': canDrag,
+      'canDrop': canDrop,
+      'activateDragAndDropFeature':
+          widget.configuration.activateDragAndDropFeature,
+      'node_owner_hash': identityHashCode(widget.node.owner),
+      'depth': widget.depth,
+      'index': widget.index,
+      'details_null': _details == null,
+      'details_position': _details?.exactPosition().name,
+    });
 
     // Neither drag nor drop — render plain content.
     if (!canDrag && !canDrop) {
