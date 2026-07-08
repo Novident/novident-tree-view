@@ -87,13 +87,6 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     );
 
     if (oldWidget.nodeContainer != widget.nodeContainer) {
-      NodeDebugLogger.log('container_didUpdate', <String, Object?>{
-        'old_hash': identityHashCode(oldWidget.nodeContainer),
-        'old_id': oldWidget.nodeContainer.id,
-        'new_hash': identityHashCode(widget.nodeContainer),
-        'new_id': widget.nodeContainer.id,
-        'builder_reset': true,
-      });
       _builder = null;
     }
   }

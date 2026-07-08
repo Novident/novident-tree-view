@@ -138,17 +138,6 @@ final class NodeDragGestures {
     NodeContainer? parent,
   ) {
     final Node target = details.targetNode;
-    final DragHandlerPosition pos = details.exactPosition();
-    // ── DEBUG ──
-    NodeDebugLogger.log('gestures_onAccept', <String, Object?>{
-      'position': pos.name,
-      'dragged_id': details.draggedNode.id,
-      'dragged_hash': identityHashCode(details.draggedNode),
-      'dragged_ownerId': details.draggedNode.owner?.id,
-      'target_id': target.id,
-      'target_hash': identityHashCode(target),
-      'target_ownerId': target.owner?.id,
-    });
     details.mapDropPosition<void>(
       whenAbove: () {
         final NodeContainer parent = target.owner as NodeContainer;
@@ -247,19 +236,6 @@ final class NodeDragGestures {
       target: effectiveTarget,
       inside: inside,
     );
-    // ── DEBUG ──
-    NodeDebugLogger.log('gestures_onWillAccept', <String, Object?>{
-      'result': result,
-      'inside': inside,
-      'node_id': node.id,
-      'node_hash': identityHashCode(node),
-      'node_ownerId': node.owner?.id,
-      'target_id': effectiveTarget.id,
-      'target_hash': identityHashCode(effectiveTarget),
-      'target_isContainer': effectiveTarget is NodeContainer,
-      'target_ownerId': effectiveTarget.owner?.id,
-      'position': details?.exactPosition().name ?? 'null',
-    });
     return result;
   }
 }
