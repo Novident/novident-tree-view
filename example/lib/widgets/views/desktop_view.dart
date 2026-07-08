@@ -75,7 +75,12 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
   }
 
   void _handleOnChangeSelection(Node? node) {
-    if (_lastNode?.details == node?.details) return;
+    // Use identical() instead of == to detect actual instance changes,
+    // not just value equality. After NodeContainer.update() creates a
+    // clone via cloneWithNewLevel, the clone's NodeDetails has the same
+    // values (id, level, owner) as the original, so == returns true and
+    // _lastNode was never updated — keeping a stale reference forever.
+    if (identical(_lastNode?.details, node?.details)) return;
     if (node != null && node is! File) {
       _showNoFileToWatch = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -193,14 +198,25 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                                     // needed. OnChange also is called when the selection changes
                                     if (oldVersion != currentDelta) {
                                       oldVersion = currentDelta;
-                                      _lastNode!.owner?.asContainer.update(
-                                        _lastNode!.copyWith(
-                                          details: _lastNode!.details,
-                                          content: jsonEncode(
-                                            document.toDelta().toJson(),
-                                          ),
+                                      final NodeContainer? owner =
+                                          _lastNode!.owner;
+                                      final File newCopy = _lastNode!.copyWith(
+                                        // Clone details to break shared
+                                        // mutable reference with _lastNode.
+                                        // Without this, NodeContainer.update()
+                                        // may mutate _lastNode.details.owner
+                                        // as a side effect.
+                                        details:
+                                            _lastNode!.details.copyWith(),
+                                        content: jsonEncode(
+                                          document.toDelta().toJson(),
                                         ),
                                       );
+                                      if (owner != null) {
+                                        owner.asContainer.update(
+                                          newCopy,
+                                        );
+                                      }
                                     }
                                   }
                                 },

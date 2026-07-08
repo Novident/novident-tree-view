@@ -171,7 +171,8 @@ class _AndroidTreeViewExampleState extends State<AndroidTreeViewExample> {
                                       oldVersion = currentDelta;
                                       _lastNode!.owner?.asContainer.update(
                                         _lastNode!.copyWith(
-                                          details: _lastNode!.details,
+                                          details:
+                                              _lastNode!.details.copyWith(),
                                           content: jsonEncode(
                                             document.toDelta().toJson(),
                                           ),

@@ -29,55 +29,81 @@ final class TreeView extends StatefulWidget {
 }
 
 class _TreeViewState extends State<TreeView> {
+  /// Persistent drag state shared across tree rebuilds.
+  ///
+  /// Must be stored as a field (not created inside [build]) so all
+  /// [NodeDragAndDropBuilder] instances and feedback widgets reference
+  /// the same [DragListener] object regardless of [setState] calls.
+  final DragListener _dragListener = DragListener();
+
   /// Widget displayed when no nodes are found in the tree
-  Widget get noNodesFoundWidget => widget.configuration.onDetectEmptyRoot ?? _kDefaultNotFoundWidget;
+  Widget get noNodesFoundWidget =>
+      widget.configuration.onDetectEmptyRoot ?? _kDefaultNotFoundWidget;
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('DEBUG [TreeView.build] START - root id: ${widget.root.id}');
     return DragAndDropDetailsListener(
       child: DraggableListener(
+        dragListener: _dragListener,
         child: Provider<TreeConfiguration>(
           create: (BuildContext context) => widget.configuration,
           child: ListView(
-            shrinkWrap: widget.configuration.treeListViewConfigurations.shrinkWrap,
-            controller: widget.configuration.treeListViewConfigurations.scrollController,
+            shrinkWrap:
+                widget.configuration.treeListViewConfigurations.shrinkWrap,
+            controller: widget
+                .configuration.treeListViewConfigurations.scrollController,
             primary: widget.configuration.treeListViewConfigurations.primary,
-            clipBehavior: widget.configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
+            clipBehavior:
+                widget.configuration.treeListViewConfigurations.clipBehavior ??
+                    Clip.hardEdge,
             addRepaintBoundaries: false,
-            addSemanticIndexes: widget.configuration.treeListViewConfigurations.addSemanticIndexes,
+            addSemanticIndexes: widget
+                .configuration.treeListViewConfigurations.addSemanticIndexes,
             addAutomaticKeepAlives: false,
-            physics: widget.configuration.treeListViewConfigurations.physics ?? const NeverScrollableScrollPhysics(),
+            physics: widget.configuration.treeListViewConfigurations.physics ??
+                const NeverScrollableScrollPhysics(),
             children: <Widget>[
               // Main tree content
               ListenableBuilder(
                 listenable: widget.root,
-                builder: (BuildContext context, Widget? child) {
-                  debugPrint(
-                      'DEBUG [TreeView.ListenableBuilder] root changed - isEmpty: ${widget.root.isEmpty}, length: ${widget.root.length}');
-                  return ListView.builder(
-                    shrinkWrap: widget.configuration.treeListViewConfigurations.shrinkWrap,
-                    scrollDirection: Axis.vertical,
-                    physics: const NeverScrollableScrollPhysics(),
-                    primary: false,
-                    clipBehavior: widget.configuration.treeListViewConfigurations.clipBehavior ?? Clip.hardEdge,
-                    itemCount: widget.root.isEmpty ? 1 : widget.root.length,
-                    reverse: widget.configuration.treeListViewConfigurations.reverse,
-                    itemExtent: widget.configuration.treeListViewConfigurations.itemExtent,
-                    itemExtentBuilder: widget.configuration.treeListViewConfigurations.itemExtentBuilder,
-                    prototypeItem: widget.configuration.treeListViewConfigurations.prototypeItem,
-                    findChildIndexCallback: widget.configuration.treeListViewConfigurations.findChildIndexCallback,
-                    addAutomaticKeepAlives: false,
-                    addSemanticIndexes: widget.configuration.treeListViewConfigurations.addSemanticIndexes,
-                    cacheExtent: widget.configuration.treeListViewConfigurations.cacheExtent,
-                    semanticChildCount: widget.configuration.treeListViewConfigurations.semanticChildCount,
-                    dragStartBehavior: widget.configuration.treeListViewConfigurations.dragStartBehavior,
-                    keyboardDismissBehavior: widget.configuration.treeListViewConfigurations.keyboardDismissBehavior,
-                    restorationId: widget.configuration.treeListViewConfigurations.restorationId,
-                    hitTestBehavior: widget.configuration.treeListViewConfigurations.hitTestBehavior,
-                    itemBuilder: _itemBuilder,
-                  );
-                },
+                builder: (BuildContext context, Widget? child) =>
+                    ListView.builder(
+                  shrinkWrap: widget
+                      .configuration.treeListViewConfigurations.shrinkWrap,
+                  scrollDirection: Axis.vertical,
+                  physics: const NeverScrollableScrollPhysics(),
+                  primary: false,
+                  clipBehavior: widget.configuration.treeListViewConfigurations
+                          .clipBehavior ??
+                      Clip.hardEdge,
+                  itemCount: widget.root.isEmpty ? 1 : widget.root.length,
+                  reverse:
+                      widget.configuration.treeListViewConfigurations.reverse,
+                  itemExtent: widget
+                      .configuration.treeListViewConfigurations.itemExtent,
+                  itemExtentBuilder: widget.configuration
+                      .treeListViewConfigurations.itemExtentBuilder,
+                  prototypeItem: widget
+                      .configuration.treeListViewConfigurations.prototypeItem,
+                  findChildIndexCallback: widget.configuration
+                      .treeListViewConfigurations.findChildIndexCallback,
+                  addAutomaticKeepAlives: false,
+                  addSemanticIndexes: widget.configuration
+                      .treeListViewConfigurations.addSemanticIndexes,
+                  cacheExtent: widget
+                      .configuration.treeListViewConfigurations.cacheExtent,
+                  semanticChildCount: widget.configuration
+                      .treeListViewConfigurations.semanticChildCount,
+                  dragStartBehavior: widget.configuration
+                      .treeListViewConfigurations.dragStartBehavior,
+                  keyboardDismissBehavior: widget.configuration
+                      .treeListViewConfigurations.keyboardDismissBehavior,
+                  restorationId: widget
+                      .configuration.treeListViewConfigurations.restorationId,
+                  hitTestBehavior: widget
+                      .configuration.treeListViewConfigurations.hitTestBehavior,
+                  itemBuilder: _itemBuilder,
+                ),
               ),
               // Bottom padding spacer
               Padding(

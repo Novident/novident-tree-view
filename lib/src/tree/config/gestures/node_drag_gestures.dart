@@ -226,12 +226,16 @@ final class NodeDragGestures {
     Node target,
     NodeContainer? parent,
   ) {
-    return Node.canMoveTo(
-      node: details?.draggedNode ?? dragDetails.data,
-      target: details?.targetNode ?? target,
-      inside: details == null
-          ? true
-          : details.exactPosition() == DragHandlerPosition.into,
+    final Node node = details?.draggedNode ?? dragDetails.data;
+    final Node effectiveTarget = details?.targetNode ?? target;
+    final bool inside = details == null
+        ? true
+        : details.exactPosition() == DragHandlerPosition.into;
+    final bool result = Node.canMoveTo(
+      node: node,
+      target: effectiveTarget,
+      inside: inside,
     );
+    return result;
   }
 }

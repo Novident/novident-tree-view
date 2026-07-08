@@ -12,21 +12,14 @@ Widget wrapWithDragAndDropWidgets(
   final Node node = context.node;
   final TreeConfiguration configuration =
       Provider.of<TreeConfiguration>(context.nodeContext);
-  Widget widget = NodeDraggableBuilder(
+  Widget widget = NodeDragAndDropBuilder(
     node: node,
     index: context.index,
     depth: context.depth,
     builder: builder,
     configuration: configuration,
-    child: NodeTargetBuilder(
-      depth: context.depth,
-      builder: builder,
-      node: node,
-      index: context.index,
-      configuration: configuration,
-      owner: node.owner!,
-      child: child,
-    ),
+    owner: node.owner!,
+    child: child,
   );
 
   if (wrapWithListenableBuilder) {

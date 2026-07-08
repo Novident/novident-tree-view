@@ -69,9 +69,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   }
 
   void _markNeedsBuild() {
-    debugPrint('DEBUG [_markNeedsBuild] LeafNodeBuilder called - node: ${widget.node.id}, mounted: ${context.mounted}');
     if (context.mounted && mounted) {
-      debugPrint('DEBUG [_markNeedsBuild] LeafNodeBuilder triggering setState');
       setState(() {});
     }
   }
@@ -118,25 +116,16 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('DEBUG [LeafNodeBuilder.build] START - node id: ${widget.node.id}');
     return ListenableBuilder(
       listenable: widget.node,
       builder: (BuildContext ctx, Widget? child) {
-        debugPrint('DEBUG [LeafNodeBuilder.build] rebuild triggered for: ${widget.node.id}');
-        Widget child = NodeDraggableBuilder(
+        Widget child = NodeDragAndDropBuilder(
           node: widget.node,
           depth: widget.depth,
-          builder: builder,
           index: widget.index,
+          builder: builder,
           configuration: configuration,
-          child: NodeTargetBuilder(
-            builder: builder,
-            depth: widget.depth,
-            index: widget.index,
-            node: widget.node,
-            configuration: configuration,
-            owner: widget.owner,
-          ),
+          owner: widget.owner,
         );
 
         final NodeConfiguration? nodeConfig = builder.buildConfigurations(_buildContext);
