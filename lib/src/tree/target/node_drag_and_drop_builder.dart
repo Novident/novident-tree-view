@@ -371,11 +371,11 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       'position': _details!.exactPosition().name,
     });
 
-    _dragListener.dragListener
-      ..draggedNode = null
-      ..targetNode = null
-      ..globalPosition = null
-      ..localPosition = null;
+    // Do NOT clear _dragListener.dragListener here — that belongs to
+    // the Draggable lifecycle (_onDragCompleted / _onDraggableCanceled).
+    // Clearing it here would zero globalPosition while the drag feedback
+    // widget is still visible, because both live in the same unified state
+    // (unlike the old separate Widget architecture).
 
     _gestures.onAcceptWithDetails.call(
       _details!,

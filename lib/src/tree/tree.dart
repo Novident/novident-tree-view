@@ -29,6 +29,13 @@ final class TreeView extends StatefulWidget {
 }
 
 class _TreeViewState extends State<TreeView> {
+  /// Persistent drag state shared across tree rebuilds.
+  ///
+  /// Must be stored as a field (not created inside [build]) so all
+  /// [NodeDragAndDropBuilder] instances and feedback widgets reference
+  /// the same [DragListener] object regardless of [setState] calls.
+  final DragListener _dragListener = DragListener();
+
   /// Widget displayed when no nodes are found in the tree
   Widget get noNodesFoundWidget =>
       widget.configuration.onDetectEmptyRoot ?? _kDefaultNotFoundWidget;
@@ -37,6 +44,7 @@ class _TreeViewState extends State<TreeView> {
   Widget build(BuildContext context) {
     return DragAndDropDetailsListener(
       child: DraggableListener(
+        dragListener: _dragListener,
         child: Provider<TreeConfiguration>(
           create: (BuildContext context) => widget.configuration,
           child: ListView(
