@@ -1,8 +1,9 @@
+import 'dart:math';
+
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/nodes/file.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_quill/internal.dart';
-import 'package:novident_nodes/novident_nodes.dart';
 
 class FileTile extends StatefulWidget {
   final File file;
@@ -46,23 +47,13 @@ class _FileTileState extends State<FileTile> {
             ],
           ),
           Row(
-            spacing: 10,
+            spacing: 5,
             children: [
+              Text('Owner: ${widget.file.owner?.id.substring(
+                0,
+                min(4, widget.file.owner?.id.length ?? 0),
+              )}'),
               Text('ID: ${widget.file.id.substring(0, 4)}'),
-              Text(
-                'OWID: ${widget.file.owner?.id.substring(0, 4) ?? 'N/A'}',
-              ),
-              Text(
-                'L: ${widget.file.childrenLevel}',
-              ),
-              if (widget.file.nextSibling != null)
-                Text(
-                  'M: ${Node.canMoveTo(
-                    node: widget.file,
-                    target: widget.file.nextSibling!,
-                    inside: true,
-                  )!.toString()}',
-                ),
             ],
           ),
         ],

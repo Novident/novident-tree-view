@@ -1,5 +1,4 @@
 import 'package:novident_nodes/novident_nodes.dart';
-import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// Enables nodes to participate in drag-and-drop operations within the tree
 ///
@@ -27,5 +26,5 @@ mixin DragAndDropMixin {
   /// - [dropPosition]: Target position relative to this node (above/inside/below)
   ///
   /// Return `true` to allow the drop operation at specified position
-  bool isDropPositionValid(Node draggedNode, DragHandlerPosition dropPosition);
+  bool isDropPositionValid(Node draggedNode, DropPosition dropPosition);
 }

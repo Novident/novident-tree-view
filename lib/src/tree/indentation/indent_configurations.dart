@@ -49,6 +49,30 @@ final class IndentConfiguration {
     this.padding = EdgeInsets.zero,
   });
 
+  factory IndentConfiguration.systemFile({
+    double indentation = 14,
+    bool directoryLeading = true,
+    bool Function(Node)? predicate,
+    int maxLevel = largestIndentAccepted,
+    EdgeInsetsGeometry padding = EdgeInsets.zero,
+  }) {
+    return IndentConfiguration.basic(
+      indentPerLevel: indentation,
+      padding: padding,
+      maxLevel: maxLevel,
+      indentPerLevelBuilder: !directoryLeading
+          ? null
+          : (Node node) {
+              if (node is! NodeContainer && (predicate?.call(node) ?? true)) {
+                final double effectiveLeft =
+                    node.isAtRootLevel ? 29 : (node.level * indentation) + 30;
+                return effectiveLeft;
+              }
+              return null;
+            },
+    );
+  }
+
   /// Creates a copy of this configuration with the specified fields replaced
   ///
   /// Any parameter not specified will maintain its current value

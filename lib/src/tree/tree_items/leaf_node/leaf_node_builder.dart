@@ -85,7 +85,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB = configuration.components.firstWhereOrNull(
+    final NodeComponentBuilder? tempB = configuration.builders.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(
         widget.node,
         widget.depth,
@@ -111,7 +111,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
         index: widget.index,
         marksNeedBuild: _markNeedsBuild,
         details: null,
-        extraArgs: configuration.extraArgs,
+        extraArgs: configuration.sharedData,
       );
 
   @override

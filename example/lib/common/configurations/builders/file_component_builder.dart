@@ -1,6 +1,5 @@
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/configurations/widgets/file_widget.dart';
-import 'package:example/common/nodes/directory.dart';
 import 'package:example/common/nodes/file.dart';
 import 'package:example/common/nodes/root.dart';
 import 'package:example/extensions/node_ext.dart';
@@ -26,9 +25,10 @@ class FileComponentBuilder extends NodeComponentBuilder {
       if (Node.canMoveTo(
         node: details.draggedNode,
         target: details.targetNode,
-        inside: details.exactPosition() == DragHandlerPosition.into,
+        inside: details.exactPosition() == DropPosition.inside,
       )) {
-        border = details.mapDropPosition<BoxBorder?>(
+        border = details.
+        mapDropPosition<BoxBorder?>(
           whenAbove: () => Border(top: borderSide),
           whenInside: () => const Border(),
           whenBelow: () => Border(bottom: borderSide),
@@ -79,15 +79,8 @@ class FileComponentBuilder extends NodeComponentBuilder {
         context.extraArgs['controller'] as TreeController;
     return NodeDragGestures.standardDragAndDrop(
       onWillInsert: (Node node, NodeContainer owner, int level) {
-        if (node is Directory) {
-          node.redepthChildren(currentLevel: level);
-        }
         if (node is File && controller.selection.value?.id == node.id) {
-          controller.selectNode(
-            node.copyWith(
-              details: node.details.copyWith(owner: owner, level: level),
-            ),
-          );
+          controller.selectNode(node);
         }
       },
     );

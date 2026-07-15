@@ -25,7 +25,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       if (Node.canMoveTo(
         node: details.draggedNode,
         target: details.targetNode,
-        inside: details.exactPosition() == DragHandlerPosition.into,
+        inside: details.exactPosition() == DropPosition.inside,
       )) {
         border = context.details?.mapDropPosition<BoxBorder?>(
           whenAbove: () => Border(top: borderSide),
@@ -82,8 +82,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
     if (node.isExpanded) {
       return;
     }
-    if ((details != null &&
-        details.exactPosition() == DragHandlerPosition.into)) {
+    if ((details != null && details.exactPosition() == DropPosition.inside)) {
       node.asDirectory.openOrClose(forceOpen: true);
     }
   }
@@ -94,15 +93,8 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
         context.extraArgs['controller'] as TreeController;
     return NodeDragGestures.standardDragAndDrop(
       onWillInsert: (Node node, NodeContainer owner, int level) {
-        if (node is Directory) {
-          node.redepthChildren(currentLevel: level);
-        }
         if (node is File && controller.selection.value?.id == node.id) {
-          controller.selectNode(
-            node.copyWith(
-              details: node.details.copyWith(owner: owner, level: level),
-            ),
-          );
+          controller.selectNode(node);
         }
       },
     );

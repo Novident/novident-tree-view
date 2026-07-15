@@ -83,7 +83,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     // we need to avoid initialize notifications when we are not using animated lists
     _builder?.didUpdateWidget(
       _buildContext,
-      widget.nodeContainer.hasNotifiersAttached,
+      widget.nodeContainer.hasEventListeners,
     );
 
     if (oldWidget.nodeContainer != widget.nodeContainer) {
@@ -107,8 +107,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB =
-        configuration.components.firstWhereOrNull(
+    final NodeComponentBuilder? tempB = configuration.builders.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(
         widget.nodeContainer,
         widget.depth,
@@ -135,7 +134,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         marksNeedBuild: _markNeedsBuild,
         details: null,
         extraArgs: context.mounted
-            ? configuration.extraArgs
+            ? configuration.sharedData
             : const <String, dynamic>{},
       );
 

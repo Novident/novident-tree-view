@@ -56,7 +56,7 @@ abstract class NodeComponentBuilder {
   /// [Widget.key], the framework will update the [widget] property of this
   /// [State] object to refer to the new widget and then call this method
   /// with the previous widget as an argument.
-  void didUpdateWidget(ComponentContext context, bool hasNotifierAttached) {}
+  void didUpdateWidget(ComponentContext context, bool hasEventListeners) {}
 
   /// Called when this object is inserted into the widgets tree.
   void initState(Node node, int depth) {}

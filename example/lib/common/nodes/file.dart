@@ -22,10 +22,9 @@ class File extends Node implements DragAndDropMixin {
   @override
   bool isDropPositionValid(
     Node draggedNode,
-    DragHandlerPosition dropPosition,
+    DropPosition dropPosition,
   ) =>
-      dropPosition == DragHandlerPosition.above ||
-      dropPosition == DragHandlerPosition.below;
+      dropPosition != DropPosition.inside;
 
   @override
   bool isDropTarget() => true;

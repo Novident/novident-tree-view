@@ -140,18 +140,26 @@ final class NodeDragGestures {
     final Node target = details.targetNode;
     details.mapDropPosition<void>(
       whenAbove: () {
+        if (!target.cast<DragAndDropMixin>().isDropPositionValid(
+              details.draggedNode,
+              DropPosition.above,
+            )) {
+          return;
+        }
+        final int nodeIndex = details.draggedNode.index;
+        final int effectiveIndex = target.index;
+        if (details.draggedNode.owner?.id == target.owner?.id &&
+            details.draggedNode.level == target.level &&
+            nodeIndex + 1 == target.index) {
+          return;
+        }
         final NodeContainer parent = target.owner as NodeContainer;
         onWillInsert?.call(
           details.draggedNode,
           parent,
           parent.level + 1,
         );
-        final int effectiveIndex = target.index;
 
-        if (effectiveIndex == details.draggedNode.index &&
-            details.draggedNode.id == details.targetNode.id) {
-          return;
-        }
         Node.moveTo(
           node: details.draggedNode,
           newOwner: parent,
@@ -161,8 +169,17 @@ final class NodeDragGestures {
         );
       },
       whenInside: () {
+        if (!target.cast<DragAndDropMixin>().isDropPositionValid(
+              details.draggedNode,
+              DropPosition.inside,
+            )) {
+          return;
+        }
         if (!Node.canMoveTo(
-            node: details.draggedNode, target: target, inside: true)) {
+          node: details.draggedNode,
+          target: target,
+          inside: true,
+        )) {
           return;
         }
         final NodeContainer dragParent =
@@ -187,25 +204,31 @@ final class NodeDragGestures {
         );
       },
       whenBelow: () {
+        if (!target.cast<DragAndDropMixin>().isDropPositionValid(
+              details.draggedNode,
+              DropPosition.below,
+            )) {
+          return;
+        }
+        // will be inserted at next index
+        // the before one effective, is the exact current
+        final int targetIndex = target.index;
+        final int draggedIndex = details.draggedNode.index;
+        if (details.draggedNode.owner?.id == target.owner?.id &&
+            details.draggedNode.level == target.level &&
+            targetIndex + 1 == draggedIndex) {
+          return;
+        }
         final NodeContainer parent = target.owner as NodeContainer;
         onWillInsert?.call(
           details.draggedNode,
           parent,
           parent.level,
         );
-        // will be inserted at next index
-        // the before one effective, is the exact current
-        final int targetIndex = target.index;
-        final int draggedIndex = details.draggedNode.index;
 
         // adjust the index if the dragged node is before the target
         int effectiveIndex =
             draggedIndex < targetIndex ? targetIndex : targetIndex + 1;
-
-        if (effectiveIndex == details.draggedNode.index &&
-            details.draggedNode.id == details.targetNode.id) {
-          return;
-        }
 
         Node.moveTo(
           node: details.draggedNode,
@@ -226,16 +249,16 @@ final class NodeDragGestures {
     Node target,
     NodeContainer? parent,
   ) {
+    if (target is! DragAndDropMixin ||
+        !target.cast<DragAndDropMixin>().isDropTarget()) {
+      return false;
+    }
     final Node node = details?.draggedNode ?? dragDetails.data;
     final Node effectiveTarget = details?.targetNode ?? target;
-    final bool inside = details == null
-        ? true
-        : details.exactPosition() == DragHandlerPosition.into;
-    final bool result = Node.canMoveTo(
+    return Node.canMoveTo(
       node: node,
       target: effectiveTarget,
-      inside: inside,
+      inside: details?.exactPosition() == DropPosition.inside,
     );
-    return result;
   }
 }

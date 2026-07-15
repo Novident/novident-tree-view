@@ -84,12 +84,12 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     );
   }
 
-  DragHandlerPosition exactPosition() {
+  DropPosition? exactPosition() {
     return mapDropPosition(
-            whenAbove: () => DragHandlerPosition.above,
-            whenInside: () => DragHandlerPosition.into,
-            whenBelow: () => DragHandlerPosition.below) ??
-        DragHandlerPosition.unknown;
+      whenAbove: () => DropPosition.above,
+      whenInside: () => DropPosition.inside,
+      whenBelow: () => DropPosition.below,
+    );
   }
 
   /// Determines the relative vertical position of a dragged node relative to a target widget

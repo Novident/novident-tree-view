@@ -30,21 +30,17 @@ final class TreeView extends StatefulWidget {
 
 class _TreeViewState extends State<TreeView> {
   /// Persistent drag state shared across tree rebuilds.
-  ///
-  /// Must be stored as a field (not created inside [build]) so all
-  /// [NodeDragAndDropBuilder] instances and feedback widgets reference
-  /// the same [DragListener] object regardless of [setState] calls.
   final DragListener _dragListener = DragListener();
 
   /// Widget displayed when no nodes are found in the tree
   Widget get noNodesFoundWidget =>
-      widget.configuration.onDetectEmptyRoot ?? _kDefaultNotFoundWidget;
+      widget.configuration.emptyPlaceholder ?? _kDefaultNotFoundWidget;
 
   @override
   Widget build(BuildContext context) {
     return DragAndDropDetailsListener(
       child: DraggableListener(
-        dragListener: _dragListener,
+        listener: _dragListener,
         child: Provider<TreeConfiguration>(
           create: (BuildContext context) => widget.configuration,
           child: ListView(
@@ -56,9 +52,7 @@ class _TreeViewState extends State<TreeView> {
             clipBehavior:
                 widget.configuration.treeListViewConfigurations.clipBehavior ??
                     Clip.hardEdge,
-            addRepaintBoundaries: false,
-            addSemanticIndexes: widget
-                .configuration.treeListViewConfigurations.addSemanticIndexes,
+            addRepaintBoundaries: true,
             addAutomaticKeepAlives: false,
             physics: widget.configuration.treeListViewConfigurations.physics ??
                 const NeverScrollableScrollPhysics(),
@@ -73,6 +67,8 @@ class _TreeViewState extends State<TreeView> {
                   scrollDirection: Axis.vertical,
                   physics: const NeverScrollableScrollPhysics(),
                   primary: false,
+                  addSemanticIndexes: widget.configuration
+                      .treeListViewConfigurations.addSemanticIndexes,
                   clipBehavior: widget.configuration.treeListViewConfigurations
                           .clipBehavior ??
                       Clip.hardEdge,
@@ -88,8 +84,6 @@ class _TreeViewState extends State<TreeView> {
                   findChildIndexCallback: widget.configuration
                       .treeListViewConfigurations.findChildIndexCallback,
                   addAutomaticKeepAlives: false,
-                  addSemanticIndexes: widget.configuration
-                      .treeListViewConfigurations.addSemanticIndexes,
                   cacheExtent: widget
                       .configuration.treeListViewConfigurations.cacheExtent,
                   semanticChildCount: widget.configuration
