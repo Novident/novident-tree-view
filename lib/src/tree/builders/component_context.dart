@@ -51,7 +51,7 @@ class ComponentContext {
   ) wrapWithDragGestures;
 
   /// Custom parameters passed through TreeConfiguration
-  final Map<String, dynamic> extraArgs;
+  final Map<String, dynamic> sharedData;
 
   ComponentContext({
     required this.depth,
@@ -61,8 +61,39 @@ class ComponentContext {
     required this.wrapWithDragGestures,
     required this.marksNeedBuild,
     required this.index,
-    this.extraArgs = const <String, dynamic>{},
+    this.sharedData = const <String, dynamic>{},
   });
+
+  /// Creates a copy of this context replacing the given fields.
+  ///
+  /// [details] is nullable: omit it to keep the current value, or pass
+  /// `null` explicitly to clear it.
+  ComponentContext copyWith({
+    int? depth,
+    BuildContext? nodeContext,
+    Node? node,
+    NovDragAndDropDetails<Node>? details,
+    void Function()? marksNeedBuild,
+    int? index,
+    Widget Function(
+      ComponentContext context,
+      NodeComponentBuilder builder,
+      Widget child,
+      bool wrapWithListenableBuilder,
+    )? wrapWithDragGestures,
+    Map<String, dynamic>? sharedData,
+  }) {
+    return ComponentContext(
+      depth: depth ?? this.depth,
+      nodeContext: nodeContext ?? this.nodeContext,
+      node: node ?? this.node,
+      details: details ?? this.details,
+      wrapWithDragGestures: wrapWithDragGestures ?? this.wrapWithDragGestures,
+      marksNeedBuild: marksNeedBuild ?? this.marksNeedBuild,
+      index: index ?? this.index,
+      sharedData: sharedData ?? this.sharedData,
+    );
+  }
 
   @override
   bool operator ==(covariant ComponentContext other) {
@@ -76,7 +107,7 @@ class ComponentContext {
         marksNeedBuild == other.marksNeedBuild &&
         index == other.index &&
         wrapWithDragGestures == other.wrapWithDragGestures &&
-        extraArgs == other.extraArgs;
+        sharedData == other.sharedData;
   }
 
   @override
@@ -88,6 +119,6 @@ class ComponentContext {
         marksNeedBuild.hashCode ^
         index.hashCode ^
         wrapWithDragGestures.hashCode ^
-        extraArgs.hashCode;
+        sharedData.hashCode;
   }
 }

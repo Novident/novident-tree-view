@@ -35,7 +35,8 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
 
   @override
   void initState() {
-    treeController = widget.controller..selectLastNode();
+    treeController = widget.controller
+      ..selectNode(widget.controller.root.atPath([1, 0]));
     _lastNode = treeController.selection.value! as File;
     _loadContent();
     super.initState();
@@ -206,8 +207,7 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
                                         // Without this, NodeContainer.update()
                                         // may mutate _lastNode.details.owner
                                         // as a side effect.
-                                        details:
-                                            _lastNode!.details.copyWith(),
+                                        details: _lastNode!.details.copyWith(),
                                         content: jsonEncode(
                                           document.toDelta().toJson(),
                                         ),

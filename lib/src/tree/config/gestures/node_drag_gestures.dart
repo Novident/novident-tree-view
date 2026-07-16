@@ -147,7 +147,6 @@ final class NodeDragGestures {
           return;
         }
         final int nodeIndex = details.draggedNode.index;
-        final int effectiveIndex = target.index;
         if (details.draggedNode.owner?.id == target.owner?.id &&
             details.draggedNode.level == target.level &&
             nodeIndex + 1 == target.index) {
@@ -157,13 +156,28 @@ final class NodeDragGestures {
         onWillInsert?.call(
           details.draggedNode,
           parent,
-          parent.level + 1,
+          parent.childrenLevel,
         );
+        //TODO: by some reason, this type operation ends like:
+        //
+        // root
+        //   | File      <========== If we try to move from here
+        //   | Directory 1         |
+        //   |   <================= To here
+        //   |_ Directory 2
+        //
+        // Ends with a weird position
+        //
+        // root
+        //   | Directory 1
+        //   | Directory 2
+        //   |_  File
+        //
 
         Node.moveTo(
           node: details.draggedNode,
+          index: target.index,
           newOwner: parent,
-          index: effectiveIndex,
           shouldNotify: true,
           propagate: true,
         );

@@ -70,6 +70,10 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       _initStateCalled = true;
     }
     _builder?.didChangeDependencies(_buildContext);
+
+    _builder?.setState = setState;
+    _builder?.context = context;
+    _builder?.componentContext = _buildContext;
     super.didChangeDependencies();
   }
 
@@ -80,15 +84,26 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     oldWidget.nodeContainer.removeListener(_markNeedsBuild);
     widget.nodeContainer.addListener(_markNeedsBuild);
 
-    // we need to avoid initialize notifications when we are not using animated lists
+    if (oldWidget.nodeContainer != widget.nodeContainer) {
+      _builder = null;
+      builder.didUpdateWidget(
+        _buildContext,
+        false,
+      );
+      _builder?.context = context;
+      _builder?.componentContext = _buildContext;
+      _builder?.setState = setState;
+      return;
+    }
+
+    _builder?.context = context;
+    _builder?.componentContext = _buildContext;
+    _builder?.setState = setState;
+
     _builder?.didUpdateWidget(
       _buildContext,
       widget.nodeContainer.hasEventListeners,
     );
-
-    if (oldWidget.nodeContainer != widget.nodeContainer) {
-      _builder = null;
-    }
   }
 
   NodeComponentBuilder get builder {
@@ -102,6 +117,9 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       widget.depth,
     )) {
       _builder = _checkForBuilder();
+      _builder?.setState = setState;
+      _builder?.context = context;
+      _builder?.componentContext = _buildContext;
     }
     return _builder!;
   }
@@ -133,9 +151,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         index: widget.index,
         marksNeedBuild: _markNeedsBuild,
         details: null,
-        extraArgs: context.mounted
-            ? configuration.sharedData
-            : const <String, dynamic>{},
+        sharedData: configuration.sharedData,
       );
 
   @override
@@ -150,6 +166,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       builder: builder,
       configuration: configuration,
       owner: widget.owner,
+      componentContext: _buildContext,
     );
 
     final NodeConfiguration? nodeConfig =
@@ -338,6 +355,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         visible: widget.nodeContainer.isExpanded,
         maintainSize: false,
         maintainState: false,
+        // jklistview could be faster?
         child: ListView.builder(
           scrollDirection: Axis.vertical,
           physics: const NeverScrollableScrollPhysics(),

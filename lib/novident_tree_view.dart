@@ -25,6 +25,3 @@ export 'src/tree/target/listeners/node_target_details_listener.dart';
 export 'src/tree/config/draggable/draggable_configurations.dart';
 // widgets for drag and drop
 export 'src/tree/target/node_drag_and_drop_builder.dart';
-// Kept for backward compatibility — delegates to NodeDragAndDropBuilder.
-export 'src/tree/target/node_target_builder.dart';
-export 'src/tree/target/node_draggable_builder.dart';

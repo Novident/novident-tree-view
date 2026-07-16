@@ -25,7 +25,7 @@ TreeConfiguration treeConfigurationBuilder(
       activateDragAndDropFeature: true,
       indentConfiguration: IndentConfiguration.systemFile(
         directoryLeading: false,
-        indentation: 20,
+        indentation: 14,
       ),
       dragConfig: DraggableConfigurations.simple(
         longPressOnMobile: isMobile,

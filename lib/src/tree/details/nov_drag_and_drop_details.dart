@@ -24,10 +24,18 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     required this.globalTargetNodeOffset,
     this.candidateData = const [],
     this.rejectedData = const <dynamic>[],
+    this.topZoneHeight = 7,
+    this.bottomZoneHeight = 5.5,
   });
 
   /// The node that was dragged around and dropped on [targetNode].
   final T draggedNode;
+
+  /// The size of the top zone of every drop target (default: 7 logical pixels)
+  final double topZoneHeight;
+
+  /// The size of the bottom zone of every drop target (default: 5.5 logical pixels)
+  final double bottomZoneHeight;
 
   /// The node that received the drop of [draggedNode].
   final T targetNode;
@@ -81,6 +89,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
       targetBounds: targetBounds,
       candidateData: candidateData,
       rejectedData: rejectedData,
+      topZoneHeight: topZoneHeight,
+      bottomZoneHeight: bottomZoneHeight,
     );
   }
 
@@ -90,6 +100,14 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
       whenInside: () => DropPosition.inside,
       whenBelow: () => DropPosition.below,
     );
+  }
+
+  bool isDragging() {
+    return mapDropPosition(
+      whenAbove: () => true,
+      whenInside: () => true,
+      whenBelow: () => true,
+    ) != null;
   }
 
   /// Determines the relative vertical position of a dragged node relative to a target widget
@@ -106,8 +124,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   /// - [whenAbove]: Callback executed when node is in the upper threshold zone
   /// - [whenInside]: Callback executed when node is in the main content zone
   /// - [whenBelow]: Callback executed when node is in the lower threshold zone
-  /// - [aboveZoneHeight]: Size of the upper threshold zone (default: 7 logical pixels)
-  /// - [belowZoneHeight]: Size of the lower threshold zone (default: 5.5 logical pixels)
+  /// - [topZoneHeight]: Size of the upper threshold zone (default: 7 logical pixels)
+  /// - [bottomZoneHeight]: Size of the lower threshold zone (default: 5.5 logical pixels)
   ///
   /// ## Visual Representation
   /// ```
@@ -130,8 +148,6 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
   ///   whenAbove: () => 'InsertBefore',
   ///   whenInside: () => 'AddAsChild',
   ///   whenBelow: () => 'InsertAfter',
-  ///   aboveZoneHeight: 10,
-  ///   belowZoneHeight: 10,
   /// );
   /// ```
   P? mapDropPosition<P>({
@@ -141,20 +157,18 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     bool ignoreInsideZone = false,
     bool ignoreAboveZone = false,
     bool ignoreBelowZone = false,
-    double aboveZoneHeight = 7,
-    double belowZoneHeight = 5.5,
   }) {
     final double cursorPos = globalDropPosition.dy;
     if (cursorPos < globalTargetNodeOffset.dy ||
         cursorPos > (globalTargetNodeOffset.dy + targetBounds.height)) {
       return null;
     }
-    assert(aboveZoneHeight >= 0, 'Above zone cannot be negative');
-    assert(belowZoneHeight >= 0, 'Below zone cannot be negative');
+    assert(topZoneHeight >= 0, 'Above zone cannot be negative');
+    assert(bottomZoneHeight >= 0, 'Below zone cannot be negative');
     final double effectiveAboveZone =
-        globalTargetNodeOffset.dy + aboveZoneHeight;
+        globalTargetNodeOffset.dy + topZoneHeight;
     final double effectiveBelowZone =
-        (globalTargetNodeOffset.dy + targetBounds.height) - belowZoneHeight;
+        (globalTargetNodeOffset.dy + targetBounds.height) - bottomZoneHeight;
     final bool isInAboveZone = cursorPos <= effectiveAboveZone;
     final bool isInBelowZone = cursorPos >= effectiveBelowZone;
     final bool isInsideZone =
@@ -181,6 +195,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     properties
       ..add(DiagnosticsProperty<T>('draggedNode', draggedNode))
       ..add(DiagnosticsProperty<T>('targetNode', targetNode))
+      ..add(DiagnosticsProperty<double>('aboveZoneHeight', topZoneHeight))
+      ..add(DiagnosticsProperty<double>('belowZoneHeight', bottomZoneHeight))
       ..add(DiagnosticsProperty<Offset>('dropPosition', dropPosition))
       ..add(DiagnosticsProperty<Offset>(
           'globalTargetNodeOffset', globalTargetNodeOffset))
@@ -198,6 +214,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     Rect? targetBounds,
     List<T?>? candidateData,
     List<dynamic>? rejectedData,
+    double? topZoneHeight,
+    double? bottomZoneHeight,
   }) {
     return NovDragAndDropDetails<T>(
       draggedNode: draggedNode ?? this.draggedNode,
@@ -209,6 +227,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
       targetBounds: targetBounds ?? this.targetBounds,
       candidateData: candidateData ?? this.candidateData,
       rejectedData: rejectedData ?? this.rejectedData,
+      topZoneHeight: topZoneHeight ?? this.topZoneHeight,
+      bottomZoneHeight: bottomZoneHeight ?? this.bottomZoneHeight,
     );
   }
 
@@ -219,6 +239,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     return other.draggedNode == draggedNode &&
         other.targetNode == targetNode &&
         other.dropPosition == dropPosition &&
+        other.topZoneHeight == topZoneHeight &&
+        other.bottomZoneHeight == bottomZoneHeight &&
         other.targetBounds == targetBounds &&
         other.globalDropPosition == globalDropPosition &&
         other.globalTargetNodeOffset == globalTargetNodeOffset &&
@@ -231,6 +253,8 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     return draggedNode.hashCode ^
         targetNode.hashCode ^
         dropPosition.hashCode ^
+        topZoneHeight.hashCode ^
+        bottomZoneHeight.hashCode ^
         globalTargetNodeOffset.hashCode ^
         globalDropPosition.hashCode ^
         targetBounds.hashCode ^

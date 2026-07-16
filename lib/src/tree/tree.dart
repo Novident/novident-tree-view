@@ -33,7 +33,7 @@ class _TreeViewState extends State<TreeView> {
   final DragListener _dragListener = DragListener();
 
   /// Widget displayed when no nodes are found in the tree
-  Widget get noNodesFoundWidget =>
+  Widget? Function(BuildContext) get noNodesFoundWidget =>
       widget.configuration.emptyPlaceholder ?? _kDefaultNotFoundWidget;
 
   @override
@@ -114,7 +114,7 @@ class _TreeViewState extends State<TreeView> {
 
   Widget? _itemBuilder(BuildContext context, int index) {
     if (widget.root.isEmpty) {
-      return noNodesFoundWidget;
+      return noNodesFoundWidget(context) ?? const SizedBox.shrink();
     }
     final Node node = widget.root.children.elementAt(index);
     // Build appropriate node type
@@ -139,7 +139,7 @@ class _TreeViewState extends State<TreeView> {
 }
 
 /// Default widget shown when no nodes are present in the tree
-Widget get _kDefaultNotFoundWidget => Column(
+Widget _kDefaultNotFoundWidget(BuildContext context) => Column(
       children: <Widget>[
         Container(
           alignment: Alignment.bottomCenter,

@@ -39,8 +39,8 @@ typedef AnimatedWidgetBuilder = Widget Function(
 ///   shrinkWrap: true,
 ///   physics: NeverScrollableScrollPhysics(),
 ///   scrollController: myController,
-///   emptyPlaceholder: Text('Nothing here'),
-///   extraArgs: {'theme': myTheme},
+///   emptyPlaceholder: (context) => Text('Nothing here'),
+///   sharedData: {'theme': myTheme},
 ///   activateDragAndDropFeature: true,
 ///   addRepaintBoundaries: false,
 /// )
@@ -79,7 +79,7 @@ final class TreeConfiguration {
   final IndentConfiguration? indentConfiguration;
 
   /// Widget shown when the root has no children.
-  final Widget? emptyPlaceholder;
+  final Widget? Function(BuildContext)? emptyPlaceholder;
 
   /// Whether each row is wrapped in a [RepaintBoundary].
   final bool addRepaintBoundaries;
@@ -93,6 +93,12 @@ final class TreeConfiguration {
   /// Controller for the main scroll view.
   final ScrollController? scrollController;
 
+  /// The size of the top zone of every drop target (default: 7 logical pixels)
+  final double topZoneHeight;
+
+  /// The size of the bottom zone of every drop target (default: 5.5 logical pixels)
+  final double bottomZoneHeight;
+
   /// Full list-view configuration (advanced override).
   ///
   /// When provided, [shrinkWrap], [physics] and [scrollController]
@@ -100,7 +106,7 @@ final class TreeConfiguration {
   final ListViewConfigurations? listView;
 
   /// Arbitrary data shared with every [NodeComponentBuilder] via
-  /// [ComponentContext.extraArgs].
+  /// [ComponentContext.sharedData].
   final Map<String, dynamic> sharedData;
 
   /// Full list-view configuration.
@@ -132,6 +138,8 @@ final class TreeConfiguration {
     this.scrollController,
     this.listView,
     this.sharedData = const <String, dynamic>{},
+    this.topZoneHeight = 7,
+    this.bottomZoneHeight = 5.5,
   })  : dragConfig = dragConfig ?? _defaultDragConfig,
         assert(
           builders.isNotEmpty,
@@ -142,11 +150,13 @@ final class TreeConfiguration {
     List<NodeComponentBuilder>? builders,
     DraggableConfigurations? dragConfig,
     double? indent,
+    double? topZoneHeight,
+    double? bottomZoneHeight,
     IndentConfiguration? indentConfiguration,
-    Map<String, dynamic>? extraArgs,
+    Map<String, dynamic>? sharedData,
     bool? activateDragAndDropFeature,
     bool? addRepaintBoundaries,
-    Widget? emptyPlaceholder,
+    Widget? Function(BuildContext)? emptyPlaceholder,
     bool? shrinkWrap,
     ScrollPhysics? physics,
     ScrollController? scrollController,
@@ -157,7 +167,7 @@ final class TreeConfiguration {
       dragConfig: dragConfig ?? this.dragConfig,
       indent: indent ?? this.indent,
       indentConfiguration: indentConfiguration ?? this.indentConfiguration,
-      sharedData: extraArgs ?? this.sharedData,
+      sharedData: sharedData ?? this.sharedData,
       activateDragAndDropFeature:
           activateDragAndDropFeature ?? this.activateDragAndDropFeature,
       addRepaintBoundaries: addRepaintBoundaries ?? this.addRepaintBoundaries,
@@ -166,6 +176,8 @@ final class TreeConfiguration {
       physics: physics ?? this.physics,
       scrollController: scrollController ?? this.scrollController,
       listView: listView ?? this.listView,
+      topZoneHeight: topZoneHeight ?? this.topZoneHeight,
+      bottomZoneHeight: bottomZoneHeight ?? this.bottomZoneHeight,
     );
   }
 
@@ -176,6 +188,8 @@ final class TreeConfiguration {
         other.listView == listView &&
         other.activateDragAndDropFeature == activateDragAndDropFeature &&
         other.emptyPlaceholder == emptyPlaceholder &&
+        other.topZoneHeight == topZoneHeight &&
+        other.bottomZoneHeight == bottomZoneHeight &&
         other.indent == indent &&
         listEquals<NodeComponentBuilder>(other.builders, builders) &&
         mapEquals<String, dynamic>(other.sharedData, sharedData);
@@ -188,6 +202,8 @@ final class TreeConfiguration {
         dragConfig,
         listView,
         activateDragAndDropFeature,
+        topZoneHeight.hashCode,
+        bottomZoneHeight.hashCode,
         emptyPlaceholder,
         indent,
       ]);

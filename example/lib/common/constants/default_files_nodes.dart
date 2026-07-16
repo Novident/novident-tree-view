@@ -8,60 +8,48 @@ import 'package:novident_nodes/novident_nodes.dart';
 final List<Node> defaultNodes = <Node>[
   Directory(
     details: NodeDetails.zero(),
-    name: 'Directory root',
+    name: 'Manuscript',
     createAt: DateTime.now(),
     children: [
       Directory(
         children: [
           File(
             details: NodeDetails.withLevel(2),
-            name: 'Sub file',
+            name: 'Dark Woords',
             content: r'[{"insert":"\n"}]',
             createAt: DateTime.now(),
           ),
         ],
         details: NodeDetails(level: 1),
-        name: 'Sub directory',
+        name: 'Chapter 1',
         createAt: DateTime.now(),
       ),
-      File(
-        details: NodeDetails.withLevel(1),
-        name: 'Sub file',
-        content: r'[{"insert":"\n"}]',
+      Directory(
+        children: [
+          File(
+            details: NodeDetails.withLevel(2),
+            name: 'Tabern',
+            content: r'[{"insert":"\n"}]',
+            createAt: DateTime.now(),
+          ),
+        ],
+        details: NodeDetails(level: 1),
+        name: 'Chapter 2',
         createAt: DateTime.now(),
       ),
     ],
   ),
   Directory(
     details: NodeDetails.withLevel(0),
-    name: 'Directory root 2 -',
+    name: 'Research',
     createAt: DateTime.now(),
     children: List.from([
-      Directory(
-        children: [
-          File(
-            details: NodeDetails.withLevel(2),
-            name: 'Sub file',
-            content: r'[{"insert":"\n"}]',
-            createAt: DateTime.now(),
-          ),
-        ],
-        details: NodeDetails(level: 1),
-        name: 'Sub directory',
-        createAt: DateTime.now(),
-      ),
       File(
-        details: NodeDetails.withLevel(1),
-        name: 'Sub file',
-        content: r'[{"insert":"\n"}]',
+        details: NodeDetails.withLevel(0),
+        name: 'Root File',
+        content: jsonEncode(exampleDelta.toJson()),
         createAt: DateTime.now(),
       ),
     ]),
-  ),
-  File(
-    details: NodeDetails.withLevel(0),
-    name: 'Root File',
-    content: jsonEncode(exampleDelta.toJson()),
-    createAt: DateTime.now(),
   ),
 ];

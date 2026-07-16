@@ -20,8 +20,7 @@ final class NodeConfiguration {
 
   /// Callback triggered when the [Node] is tapped.
   ///
-  /// **Note**: This does not affect the default implementation where tapping
-  /// a node selects it using the [TreeController].
+  /// **Note**: This does not affect the default implementation
   final void Function(BuildContext context)? onTap;
 
   /// Callback triggered when the [Node] is double-tapped.

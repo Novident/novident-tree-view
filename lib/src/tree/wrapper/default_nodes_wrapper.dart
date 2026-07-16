@@ -19,6 +19,7 @@ Widget wrapWithDragAndDropWidgets(
     builder: builder,
     configuration: configuration,
     owner: node.owner!,
+    componentContext: context,
     child: child,
   );
 
