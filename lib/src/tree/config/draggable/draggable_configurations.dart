@@ -83,7 +83,7 @@ final class DraggableConfigurations {
     Offset? feedbackOffset,
     int? longPressDelay,
     Axis? axis,
-    bool? allowAutoExpandOnHover,
+    bool? expandOnHover,
     bool? preferLongPressDraggable,
     Widget Function(Node node)? childWhenDraggingBuilder,
   }) {
@@ -95,7 +95,7 @@ final class DraggableConfigurations {
       feedbackOffset: feedbackOffset ?? this.feedbackOffset,
       longPressDelay: longPressDelay ?? this.longPressDelay,
       axis: axis ?? this.axis,
-      expandOnHover: allowAutoExpandOnHover ?? this.expandOnHover,
+      expandOnHover: expandOnHover ?? this.expandOnHover,
       preferLongPressDraggable:
           preferLongPressDraggable ?? this.preferLongPressDraggable,
       childWhenDraggingBuilder:

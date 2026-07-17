@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:novident_nodes/novident_nodes.dart';
-import 'package:novident_tree_view/novident_tree_view.dart';
 
 /// The details of the drag-and-drop relationship of [NodeTargetBuilder] and
 /// [NodeDraggableBuilder].
