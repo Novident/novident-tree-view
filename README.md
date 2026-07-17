@@ -59,7 +59,6 @@ Since there's a lot to explain and implement, we prefer to provide a separate do
 | [📏 Indentation Configuration](doc/indentation_configuration.md) | `IndentConfiguration` — static per‑level indentation, dynamic per‑node builders, system‑file presets |
 | [📜 Drag and Drop details](doc/drag_and_drop_details.md) | `NovDragAndDropDetails` — drop‑position calculation, three‑zone mapping (`mapDropPosition`), global vs local offset |
 | [✍️ Nodes Gestures](doc/nodes_gestures.md) | `NodeDragGestures` — lifecycle callbacks (`onWillAcceptWithDetails`, `onAcceptWithDetails`, `onDragStart`, `onDragCanceled`, …) |
-| [🎨 Scrivener‑like Design Guide](doc/design/scrivener-like-design-guide.md) | Complete visual design documentation for the example workspace — colours, typography, spacing, motion, drag visual language, binder architecture, Scrivener design principles applied |
 
 ## 📝 Recipes
 
