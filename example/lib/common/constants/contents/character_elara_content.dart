@@ -29,6 +29,8 @@ final Delta characterElaraDelta = Delta()
   ..insert('Voice notes')
   ..insert('\n', {'header': 3})
   ..insert('\n')
-  ..insert('Short sentences under pressure. Counts things when she is '
-      'afraid — stones, steps, breaths.', {'italic': true})
+  ..insert(
+      'Short sentences under pressure. Counts things when she is '
+      'afraid — stones, steps, breaths.',
+      {'italic': true})
   ..insert('\n');

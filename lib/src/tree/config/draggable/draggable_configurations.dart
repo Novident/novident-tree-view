@@ -95,8 +95,7 @@ final class DraggableConfigurations {
       feedbackOffset: feedbackOffset ?? this.feedbackOffset,
       longPressDelay: longPressDelay ?? this.longPressDelay,
       axis: axis ?? this.axis,
-      expandOnHover:
-          allowAutoExpandOnHover ?? this.expandOnHover,
+      expandOnHover: allowAutoExpandOnHover ?? this.expandOnHover,
       preferLongPressDraggable:
           preferLongPressDraggable ?? this.preferLongPressDraggable,
       childWhenDraggingBuilder:

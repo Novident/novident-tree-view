@@ -104,10 +104,11 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
 
   bool isDragging() {
     return mapDropPosition(
-      whenAbove: () => true,
-      whenInside: () => true,
-      whenBelow: () => true,
-    ) != null;
+          whenAbove: () => true,
+          whenInside: () => true,
+          whenBelow: () => true,
+        ) !=
+        null;
   }
 
   /// Determines the relative vertical position of a dragged node relative to a target widget
@@ -165,8 +166,7 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     }
     assert(topZoneHeight >= 0, 'Above zone cannot be negative');
     assert(bottomZoneHeight >= 0, 'Below zone cannot be negative');
-    final double effectiveAboveZone =
-        globalTargetNodeOffset.dy + topZoneHeight;
+    final double effectiveAboveZone = globalTargetNodeOffset.dy + topZoneHeight;
     final double effectiveBelowZone =
         (globalTargetNodeOffset.dy + targetBounds.height) - bottomZoneHeight;
     final bool isInAboveZone = cursorPos <= effectiveAboveZone;

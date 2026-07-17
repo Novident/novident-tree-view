@@ -27,8 +27,7 @@ class DirectoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // While dragged, every element of the row is muted to the same tone.
-    final Color? mutedColor =
-        beingDragged ? Colors.black.withAlpha(150) : null;
+    final Color? mutedColor = beingDragged ? Colors.black.withAlpha(150) : null;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 3),
       child: Row(

@@ -152,8 +152,9 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
 
   @override
   Widget build(BuildContext context) {
-    final double binderWidth =
-        (MediaQuery.sizeOf(context).width * 0.30).clamp(240.0, 320.0).toDouble();
+    final double binderWidth = (MediaQuery.sizeOf(context).width * 0.30)
+        .clamp(240.0, 320.0)
+        .toDouble();
     return Scaffold(
       backgroundColor: _kWorkspaceBackground,
       body: ValueListenableBuilder<Node?>(
