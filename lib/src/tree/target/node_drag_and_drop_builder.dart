@@ -156,25 +156,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       details: candidateData == null
           ? _details
           : _details?.applyData(candidateData, rejectedData!),
-      wrapWithDragGestures: _wrapWithDragAndDrop,
     );
-  }
-
-  static Widget _wrapWithDragAndDrop(
-    ComponentContext context,
-    NodeComponentBuilder builder,
-    Widget child,
-    bool wrapWithListenableBuilder,
-  ) {
-    // When called from within our own build, just return the child as-is.
-    // The wrapping is already handled at the top level.
-    if (wrapWithListenableBuilder) {
-      return ListenableBuilder(
-        listenable: context.node,
-        builder: (_, __) => child,
-      );
-    }
-    return child;
   }
 
   void _onDragStarted() {

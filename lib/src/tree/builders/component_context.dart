@@ -37,19 +37,6 @@ class ComponentContext {
   /// The current index of this component into it's owner
   final int index;
 
-  /// Gesture wrapper factory for adding drag interactions
-  ///
-  /// - [context]: Current component context
-  /// - [builder]: Node component builder reference
-  /// - [child]: Underlying widget to wrap
-  /// - [wrapWithListenableBuilder]: Flag for reactive rebuilds
-  final Widget Function(
-    ComponentContext context,
-    NodeComponentBuilder builder,
-    Widget child,
-    bool wrapWithListenableBuilder,
-  ) wrapWithDragGestures;
-
   /// Custom parameters passed through TreeConfiguration
   final Map<String, dynamic> sharedData;
 
@@ -58,7 +45,6 @@ class ComponentContext {
     required this.nodeContext,
     required this.node,
     required this.details,
-    required this.wrapWithDragGestures,
     required this.marksNeedBuild,
     required this.index,
     this.sharedData = const <String, dynamic>{},
@@ -75,12 +61,6 @@ class ComponentContext {
     NovDragAndDropDetails<Node>? details,
     void Function()? marksNeedBuild,
     int? index,
-    Widget Function(
-      ComponentContext context,
-      NodeComponentBuilder builder,
-      Widget child,
-      bool wrapWithListenableBuilder,
-    )? wrapWithDragGestures,
     Map<String, dynamic>? sharedData,
   }) {
     return ComponentContext(
@@ -88,7 +68,6 @@ class ComponentContext {
       nodeContext: nodeContext ?? this.nodeContext,
       node: node ?? this.node,
       details: details ?? this.details,
-      wrapWithDragGestures: wrapWithDragGestures ?? this.wrapWithDragGestures,
       marksNeedBuild: marksNeedBuild ?? this.marksNeedBuild,
       index: index ?? this.index,
       sharedData: sharedData ?? this.sharedData,
@@ -106,7 +85,6 @@ class ComponentContext {
         details == other.details &&
         marksNeedBuild == other.marksNeedBuild &&
         index == other.index &&
-        wrapWithDragGestures == other.wrapWithDragGestures &&
         sharedData == other.sharedData;
   }
 
@@ -118,7 +96,6 @@ class ComponentContext {
         details.hashCode ^
         marksNeedBuild.hashCode ^
         index.hashCode ^
-        wrapWithDragGestures.hashCode ^
         sharedData.hashCode;
   }
 }

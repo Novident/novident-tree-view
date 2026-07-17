@@ -1,11 +1,8 @@
-// ignore_for_file: invalid_use_of_protected_member
-
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_tree_view/src/tree/wrapper/default_nodes_wrapper.dart';
 import 'package:provider/provider.dart';
 
 /// Represents the leaf [Node] into the Tree
@@ -125,7 +122,6 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   ComponentContext get _buildContext => ComponentContext(
         depth: widget.depth,
         nodeContext: context,
-        wrapWithDragGestures: wrapWithDragAndDropWidgets,
         node: widget.node,
         index: widget.index,
         marksNeedBuild: _markNeedsBuild,
