@@ -1,15 +1,17 @@
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/nodes/file.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_quill/internal.dart';
-import 'package:novident_nodes/novident_nodes.dart';
 
 class FileTile extends StatefulWidget {
   final File file;
   final TreeController controller;
+  final bool beingDragged;
   const FileTile({
     required this.file,
     required this.controller,
+    this.beingDragged = false,
     super.key,
   });
 
@@ -32,37 +34,26 @@ class _FileTileState extends State<FileTile> {
                   widget.file.content.isEmpty
                       ? CupertinoIcons.doc_text
                       : CupertinoIcons.doc_text_fill,
-                  size: isAndroid ? 20 : null,
+                  size: 18,
+                  color:
+                      widget.beingDragged ? Colors.black.withAlpha(150) : null,
                 ),
               ),
               Expanded(
                 child: Text(
                   widget.file.name,
+                  style: widget.beingDragged
+                      ? TextStyle(
+                          color: widget.beingDragged
+                              ? Colors.black.withAlpha(150)
+                              : null,
+                        )
+                      : null,
                   maxLines: 1,
                   softWrap: true,
                   overflow: TextOverflow.fade,
                 ),
               ),
-            ],
-          ),
-          Row(
-            spacing: 10,
-            children: [
-              Text('ID: ${widget.file.id.substring(0, 4)}'),
-              Text(
-                'OWID: ${widget.file.owner?.id.substring(0, 4) ?? 'N/A'}',
-              ),
-              Text(
-                'L: ${widget.file.childrenLevel}',
-              ),
-              if (widget.file.nextSibling != null)
-                Text(
-                  'M: ${Node.canMoveTo(
-                    node: widget.file,
-                    target: widget.file.nextSibling!,
-                    inside: true,
-                  )!.toString()}',
-                ),
             ],
           ),
         ],

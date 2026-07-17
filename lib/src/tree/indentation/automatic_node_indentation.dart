@@ -38,7 +38,7 @@ final class AutomaticNodeIndentation extends StatelessWidget {
     final TreeConfiguration treeConfiguration =
         Provider.of<TreeConfiguration>(context);
     final IndentConfiguration configuration =
-        treeConfiguration.indentConfiguration;
+        treeConfiguration.effectiveIndentConfig;
     return Padding(
       // Combine the base padding with calculated indentation
       padding: configuration.padding.add(

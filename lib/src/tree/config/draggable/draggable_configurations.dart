@@ -33,7 +33,7 @@ final class DraggableConfigurations {
   final int longPressDelay;
   final Axis? axis;
 
-  final bool allowAutoExpandOnHover;
+  final bool expandOnHover;
 
   /// If the current device is Android or IOS the
   /// items will be wrapped by [LongPressDraggable] instead
@@ -49,7 +49,7 @@ final class DraggableConfigurations {
 
   const DraggableConfigurations({
     required this.buildDragFeedbackWidget,
-    this.allowAutoExpandOnHover = true,
+    this.expandOnHover = true,
     this.preferLongPressDraggable = false,
     this.childDragAnchorStrategy = _effectiveChildAnchorStrategy,
     this.feedbackOffset = Offset.zero,
@@ -58,6 +58,24 @@ final class DraggableConfigurations {
     this.childWhenDraggingBuilder,
   }) : longPressDelay = longPressDelay ??
             (preferLongPressDraggable ? kLongPressTimeout : 0);
+
+  /// Minimal configuration — only requires a drag feedback widget.
+  ///
+  /// All other settings use sensible defaults:
+  /// - Auto-expand on hover: enabled
+  /// - Long-press on mobile: disabled
+  /// - Axis: unconstrained
+  factory DraggableConfigurations.simple({
+    required Widget Function(Node, BuildContext) feedback,
+    bool expandOnHover = true,
+    bool longPressOnMobile = false,
+  }) {
+    return DraggableConfigurations(
+      buildDragFeedbackWidget: feedback,
+      expandOnHover: expandOnHover,
+      preferLongPressDraggable: longPressOnMobile,
+    );
+  }
 
   DraggableConfigurations copyWith({
     Widget Function(Node, BuildContext)? buildDragFeedbackWidget,
@@ -77,8 +95,8 @@ final class DraggableConfigurations {
       feedbackOffset: feedbackOffset ?? this.feedbackOffset,
       longPressDelay: longPressDelay ?? this.longPressDelay,
       axis: axis ?? this.axis,
-      allowAutoExpandOnHover:
-          allowAutoExpandOnHover ?? this.allowAutoExpandOnHover,
+      expandOnHover:
+          allowAutoExpandOnHover ?? this.expandOnHover,
       preferLongPressDraggable:
           preferLongPressDraggable ?? this.preferLongPressDraggable,
       childWhenDraggingBuilder:
@@ -94,7 +112,7 @@ final class DraggableConfigurations {
         'feedbackOffset: $feedbackOffset, '
         'longPressDelay: $longPressDelay, '
         'axis: $axis, '
-        'allowAutoExpandOnHover: $allowAutoExpandOnHover, '
+        'allowAutoExpandOnHover: $expandOnHover, '
         'preferLongPressDraggable: $preferLongPressDraggable, '
         'childWhenDraggingBuilder: $childWhenDraggingBuilder'
         ')';
@@ -109,7 +127,7 @@ final class DraggableConfigurations {
         other.feedbackOffset == feedbackOffset &&
         other.longPressDelay == longPressDelay &&
         other.axis == axis &&
-        other.allowAutoExpandOnHover == allowAutoExpandOnHover &&
+        other.expandOnHover == expandOnHover &&
         other.preferLongPressDraggable == preferLongPressDraggable &&
         other.childWhenDraggingBuilder == childWhenDraggingBuilder;
   }
@@ -121,7 +139,7 @@ final class DraggableConfigurations {
         feedbackOffset.hashCode ^
         longPressDelay.hashCode ^
         axis.hashCode ^
-        allowAutoExpandOnHover.hashCode ^
+        expandOnHover.hashCode ^
         preferLongPressDraggable.hashCode ^
         childWhenDraggingBuilder.hashCode;
   }

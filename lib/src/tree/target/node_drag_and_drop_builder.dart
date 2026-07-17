@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -26,6 +28,7 @@ class NodeDragAndDropBuilder extends StatefulWidget {
     required this.depth,
     required this.index,
     required this.owner,
+    required this.componentContext,
     this.child,
     super.key,
   });
@@ -35,6 +38,7 @@ class NodeDragAndDropBuilder extends StatefulWidget {
   final TreeConfiguration configuration;
   final int depth;
   final int index;
+  final ComponentContext componentContext;
 
   /// The container that owns and manages this node (used by drop logic).
   final NodeContainer owner;
@@ -66,11 +70,12 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
           NodeDragAndDropDetails(
         draggedNode: __details!.draggedNode,
         targetNode: __details!.targetNode,
-        inside: __details!.exactPosition() == DragHandlerPosition.into,
+        inside: __details!.exactPosition() == DropPosition.inside,
       );
     }
   }
 
+  // ── Dragging state ──
   bool get isDragging => _isDragging;
   bool _isDragging = false;
 
@@ -96,11 +101,13 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
 
   set _inactiveCursorOffset(Offset? offset) {
     __inactiveCursorOffset = offset;
-    _dragListener.dragListener.userPosition = __inactiveCursorOffset;
+    _dragListener.listener.userPosition = __inactiveCursorOffset;
   }
 
   // ── Auto-expand timer ──
   Timer? _timer;
+
+  // ── Lifecycle ──
 
   @override
   void initState() {
@@ -110,16 +117,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
 
   NodeDragGestures _buildGestures() {
     return widget.builder.buildDragGestures(
-      ComponentContext(
-        depth: widget.depth,
-        index: widget.index,
-        nodeContext: context,
-        node: widget.node,
-        details: _details,
-        marksNeedBuild: _markNeedsBuild,
-        wrapWithDragGestures: _wrapWithDragAndDrop,
-        extraArgs: widget.configuration.extraArgs,
-      ),
+      _buildContext(),
     );
   }
 
@@ -130,6 +128,10 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       _timer?.cancel();
       _timer = null;
     }
+    widget.builder.isDragging = false;
+    widget.builder.setState = (VoidCallback fn) {};
+    widget.builder.context = null;
+    widget.builder.componentContext = null;
     super.dispose();
   }
 
@@ -137,41 +139,27 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
   void didUpdateWidget(covariant NodeDragAndDropBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget
-            .configuration.draggableConfigurations.allowAutoExpandOnHover !=
-        widget.configuration.draggableConfigurations.allowAutoExpandOnHover) {
-      if (!widget
-          .configuration.draggableConfigurations.allowAutoExpandOnHover) {
+    if (oldWidget.configuration.dragConfig.expandOnHover !=
+        widget.configuration.dragConfig.expandOnHover) {
+      if (!widget.configuration.dragConfig.expandOnHover) {
         _cancelHoverExpansion();
       }
     }
-  }
-
-  void _markNeedsBuild() {
-    if (context.mounted && mounted) {
-      setState(() {});
-    }
+    widget.builder.isDragging = isDragging;
   }
 
   ComponentContext _buildContext([
     List<dynamic>? rejectedData,
     List<Node?>? candidateData,
   ]) {
-    return ComponentContext(
-      depth: widget.depth,
-      index: widget.index,
-      nodeContext: context,
-      node: widget.node,
+    return widget.componentContext.copyWith(
       details: candidateData == null
           ? _details
           : _details?.applyData(candidateData, rejectedData!),
-      marksNeedBuild: _markNeedsBuild,
       wrapWithDragGestures: _wrapWithDragAndDrop,
-      extraArgs: widget.configuration.extraArgs,
     );
   }
 
-  // Re-entrant guard to avoid infinite recursion in wrapWithDragAndDropWidgets.
   static Widget _wrapWithDragAndDrop(
     ComponentContext context,
     NodeComponentBuilder builder,
@@ -193,17 +181,18 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     isDragging = true;
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final Offset cursorPosition = renderBox.localToGlobal(Offset.zero);
-    _dragListener.dragListener
+    _dragListener.listener
       ..globalPosition = cursorPosition
       ..localPosition = renderBox.globalToLocal(cursorPosition)
       ..targetNode = widget.node
       ..userPosition = _inactiveCursorOffset
       ..draggedNode = widget.node;
     _gestures.onDragStart?.call(cursorPosition, widget.node);
+    widget.builder.isDragging = true;
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
-    _dragListener.dragListener
+    _dragListener.listener
       ..globalPosition = details.globalPosition
       ..localPosition = details.localPosition
       ..userPosition = _inactiveCursorOffset
@@ -213,7 +202,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
 
   void _onDraggableCanceled(Velocity velocity, Offset point) {
     _endDrag();
-    _dragListener.dragListener
+    _dragListener.listener
       ..globalPosition = null
       ..localPosition = null
       ..userPosition = _inactiveCursorOffset
@@ -221,11 +210,12 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       ..draggedNode = null;
     DragAndDropDetailsListener.of(context).details.value = null;
     _gestures.onDragCanceled?.call(velocity, point);
+    widget.builder.isDragging = false;
   }
 
   void _onDragCompleted() {
     _endDrag();
-    _dragListener.dragListener
+    _dragListener.listener
       ..globalPosition = null
       ..localPosition = null
       ..userPosition = _inactiveCursorOffset
@@ -236,6 +226,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
 
   void _endDrag() {
     isDragging = false;
+    widget.builder.isDragging = false;
   }
 
   NovDragAndDropDetails<Node>? _getDropDetails(
@@ -249,7 +240,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     if (!renderBox.attached) {
       throw StateError(
         'The node ${widget.node.runtimeType}(${widget.node.id}) is '
-        'not attached into the widgets tree',
+        'not attached inside the widgets tree',
       );
     }
 
@@ -257,26 +248,28 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
         renderBox.getTransformTo(null).getTranslation();
     final Offset offset = Offset(vectorPosition.x, vectorPosition.y);
 
-    if (starting && !_dragListener.dragListener.isDragging) {
+    if (starting && !_dragListener.listener.isDragging) {
       _needsInitializeDragListener = false;
-      _dragListener.dragListener
+      _dragListener.listener
         ..draggedNode = draggedNode
         ..targetNode = widget.node
-        ..globalPosition = _dragListener.dragListener.userPosition != null
+        ..globalPosition = _dragListener.listener.userPosition != null
             ? renderBox.localToGlobal(
-                _dragListener.dragListener.userPosition!,
+                _dragListener.listener.userPosition!,
               )
             : renderBox.globalToLocal(pointer);
     }
 
     return NovDragAndDropDetails<Node>(
-      draggedNode: _dragListener.dragListener.draggedNode ?? draggedNode,
+      draggedNode: _dragListener.listener.draggedNode ?? draggedNode,
       globalTargetNodeOffset: offset,
       targetNode: widget.node,
       dropPosition: renderBox
-          .globalToLocal(_dragListener.dragListener.globalPosition ?? pointer),
-      globalDropPosition: _dragListener.dragListener.globalPosition ?? offset,
+          .globalToLocal(_dragListener.listener.globalPosition ?? pointer),
+      globalDropPosition: _dragListener.listener.globalPosition ?? offset,
       targetBounds: Offset.zero & renderBox.size,
+      topZoneHeight: widget.configuration.topZoneHeight,
+      bottomZoneHeight: widget.configuration.bottomZoneHeight,
     );
   }
 
@@ -286,18 +279,17 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       details.data,
       starting: _needsInitializeDragListener,
     );
-    final bool accepted = _gestures.onWillAcceptWithDetails(
+    return _gestures.onWillAcceptWithDetails(
       _details,
       details,
       widget.node,
       widget.owner,
     );
-    return accepted;
   }
 
   void _onMove(DragTargetDetails<Node> details) {
     _cancelHoverExpansion();
-    _dragListener.dragListener.targetNode = widget.node;
+    _dragListener.listener.targetNode = widget.node;
 
     setState(() {
       _details = _getDropDetails(details.offset, details.data);
@@ -315,6 +307,11 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
 
     if (_details == null || _details!.draggedNode != details.data) return;
 
+    // Do NOT clear _dragListener.listener here — that belongs to
+    // the Draggable lifecycle (_onDragCompleted / _onDraggableCanceled).
+    // Clearing it here would zero globalPosition while the drag feedback
+    // widget is still visible, because both live in the same unified state
+    // (unlike the old separate Widget architecture).
     _gestures.onAcceptWithDetails.call(
       _details!,
       widget.node,
@@ -329,11 +326,12 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     // depending on DragAndDropDetailsListener stops showing
     // drag feedback (borders, highlights).
     DragAndDropDetailsListener.of(context).details.value = null;
+    widget.builder.isDragging = false;
   }
 
   void _onLeave(Node? data) {
     _needsInitializeDragListener = true;
-    _dragListener.dragListener.targetNode = null;
+    _dragListener.listener.targetNode = null;
 
     if (_details == null || data == null || _details!.draggedNode != data) {
       return;
@@ -346,6 +344,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     });
 
     _gestures.onLeave?.call(data);
+    widget.builder.isDragging = false;
   }
 
   void _cancelHoverExpansion() {
@@ -357,7 +356,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     final ComponentContext compCtx = _buildContext();
     widget.builder.onHover(compCtx, _details);
 
-    if (!widget.configuration.draggableConfigurations.allowAutoExpandOnHover &&
+    if (!widget.configuration.dragConfig.expandOnHover &&
         widget.node is NodeContainer) {
       return;
     }
@@ -385,10 +384,15 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     List<dynamic>? rejectedData,
     List<Node?>? candidateData,
   ]) {
-    if (widget.child != null) return widget.child!;
-    return widget.builder.build(
-      _buildContext(rejectedData, candidateData),
+    if (widget.child != null) {
+      return widget.child!;
+    }
+    final ComponentContext ctx = _buildContext(
+      rejectedData,
+      candidateData,
     );
+    widget.builder.isDragging = isDragging;
+    return widget.builder.build(ctx);
   }
 
   @override
@@ -434,7 +438,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
   }
 
   Widget _buildDraggable({required Widget child}) {
-    final cfg = widget.configuration.draggableConfigurations;
+    final cfg = widget.configuration.dragConfig;
 
     if (cfg.preferLongPressDraggable || cfg.longPressDelay > 0) {
       return LongPressDraggable<Node>(
@@ -473,7 +477,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       onDragUpdate: _onDragUpdate,
       onDraggableCanceled: _onDraggableCanceled,
       onDragEnd: _gestures.onDragEnd,
-      onDragCompleted: () => _gestures.onDragCompleted?.call(widget.node),
+      onDragCompleted: _onDragCompleted,
       feedback: cfg.buildDragFeedbackWidget(widget.node, context),
       dragAnchorStrategy: (
         Draggable<Object> object,

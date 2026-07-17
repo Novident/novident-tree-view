@@ -4,8 +4,6 @@ library;
 export 'src/tree/config/node/node_configuration.dart';
 // interfaces
 export 'src/interfaces/draggable_node.dart';
-// utils
-export 'src/enums/drag_handler_position.dart';
 export 'src/tree/target/listeners/draggable_listener.dart';
 // widgets
 export 'src/tree/tree_items/node_container/container_builder.dart';
@@ -27,6 +25,3 @@ export 'src/tree/target/listeners/node_target_details_listener.dart';
 export 'src/tree/config/draggable/draggable_configurations.dart';
 // widgets for drag and drop
 export 'src/tree/target/node_drag_and_drop_builder.dart';
-// Kept for backward compatibility — delegates to NodeDragAndDropBuilder.
-export 'src/tree/target/node_target_builder.dart';
-export 'src/tree/target/node_draggable_builder.dart';

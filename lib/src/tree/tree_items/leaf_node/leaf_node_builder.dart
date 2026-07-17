@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -37,13 +39,14 @@ class LeafNodeBuilder extends StatefulWidget {
 class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
   bool _initStateCalled = false;
   NodeComponentBuilder? _builder;
-  late final TreeConfiguration configuration = Provider.of<TreeConfiguration>(context);
+  late final TreeConfiguration configuration =
+      Provider.of<TreeConfiguration>(context);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty('Tree depth', widget.depth));
-    properties.add(DiagnosticsProperty('owner', widget.owner));
+    properties.add(DiagnosticsProperty('owner', widget.owner.id));
     properties.add(DiagnosticsProperty('leaf', widget.node));
   }
 
@@ -55,17 +58,28 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
       _initStateCalled = true;
     }
     _builder?.didChangeDependencies(_buildContext);
+    _builder?.setState = setState;
+    _builder?.context = context;
+    _builder?.componentContext = _buildContext;
     super.didChangeDependencies();
   }
 
   @override
   didUpdateWidget(covariant LeafNodeBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _builder?.didUpdateWidget(_buildContext, false);
 
     if (oldWidget.node != widget.node) {
       _builder = null;
+      builder.didUpdateWidget(
+        _buildContext,
+        false,
+      );
+      return;
     }
+    _builder?.didUpdateWidget(_buildContext, false);
+    _builder?.context = context;
+    _builder?.componentContext = _buildContext;
+    _builder?.setState = setState;
   }
 
   void _markNeedsBuild() {
@@ -76,16 +90,20 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
 
   NodeComponentBuilder get builder {
     _builder ??= _checkForBuilder();
-    return _builder!.validate(
+    final NodeComponentBuilder builder = _builder!.validate(
       widget.node,
       widget.depth,
     )
         ? _builder!
         : _builder = _checkForBuilder();
+    builder.setState = setState;
+    builder.context = context;
+    builder.componentContext = _buildContext;
+    return builder;
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB = configuration.components.firstWhereOrNull(
+    final NodeComponentBuilder? tempB = configuration.builders.firstWhereOrNull(
       (NodeComponentBuilder b) => b.validate(
         widget.node,
         widget.depth,
@@ -100,6 +118,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
         '${widget.node}',
       );
     }
+
     return tempB;
   }
 
@@ -111,7 +130,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
         index: widget.index,
         marksNeedBuild: _markNeedsBuild,
         details: null,
-        extraArgs: configuration.extraArgs,
+        sharedData: configuration.sharedData,
       );
 
   @override
@@ -126,9 +145,11 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           builder: builder,
           configuration: configuration,
           owner: widget.owner,
+          componentContext: _buildContext,
         );
 
-        final NodeConfiguration? nodeConfig = builder.buildConfigurations(_buildContext);
+        final NodeConfiguration? nodeConfig =
+            builder.buildConfigurations(_buildContext);
 
         if (nodeConfig == null) {
           return child;
@@ -161,19 +182,33 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           focusNode: nodeConfig.focusNode,
           focusColor: nodeConfig.focusColor,
           onTap: () => nodeConfig.onTap?.call(context),
-          onTapDown: (TapDownDetails details) => nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) => nodeConfig.onTapUp?.call(details, context),
+          onTapDown: (TapDownDetails details) =>
+              nodeConfig.onTapDown?.call(details, context),
+          onTapUp: (TapUpDetails details) =>
+              nodeConfig.onTapUp?.call(details, context),
           onTapCancel: () => nodeConfig.onTapCancel?.call(context),
-          onDoubleTap: nodeConfig.onDoubleTap == null ? null : () => nodeConfig.onDoubleTap?.call(context),
-          onLongPress: nodeConfig.onLongPress == null ? null : () => nodeConfig.onLongPress?.call(context),
-          onSecondaryTap: nodeConfig.onSecondaryTap == null ? null : () => nodeConfig.onSecondaryTap?.call(context),
-          onSecondaryTapUp:
-              nodeConfig.onSecondaryTapUp == null ? null : (TapUpDetails details) => nodeConfig.onSecondaryTapUp?.call(details, context),
+          onDoubleTap: nodeConfig.onDoubleTap == null
+              ? null
+              : () => nodeConfig.onDoubleTap?.call(context),
+          onLongPress: nodeConfig.onLongPress == null
+              ? null
+              : () => nodeConfig.onLongPress?.call(context),
+          onSecondaryTap: nodeConfig.onSecondaryTap == null
+              ? null
+              : () => nodeConfig.onSecondaryTap?.call(context),
+          onSecondaryTapUp: nodeConfig.onSecondaryTapUp == null
+              ? null
+              : (TapUpDetails details) =>
+                  nodeConfig.onSecondaryTapUp?.call(details, context),
           onSecondaryTapDown: nodeConfig.onSecondaryTapDown == null
               ? null
-              : (TapDownDetails details) => nodeConfig.onSecondaryTapDown?.call(details, context),
-          onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null ? null : () => nodeConfig.onSecondaryTapCancel?.call(context),
-          onHover: (bool isHovered) => nodeConfig.onHoverInkWell?.call(isHovered, context),
+              : (TapDownDetails details) =>
+                  nodeConfig.onSecondaryTapDown?.call(details, context),
+          onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null
+              ? null
+              : () => nodeConfig.onSecondaryTapCancel?.call(context),
+          onHover: (bool isHovered) =>
+              nodeConfig.onHoverInkWell?.call(isHovered, context),
           mouseCursor: nodeConfig.mouseCursor,
           hoverDuration: nodeConfig.hoverDuration,
           hoverColor: nodeConfig.hoverColor,

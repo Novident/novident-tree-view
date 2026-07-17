@@ -5,27 +5,6 @@ import 'package:novident_nodes/novident_nodes.dart';
 /// A controller class that manages drag-and-drop operations within a tree structure.
 ///
 /// Tracks the state of a dragged node and its position information during drag operations.
-///
-/// ## Properties
-/// - [draggedNode]: The currently dragged tree node (null when not dragging)
-/// - [globalPosition]: The drag position in global coordinates (screen-relative)
-/// - [localPosition]: The drag position in local coordinates (widget-relative)
-///
-/// ## State Check
-/// - [isDragging]: Returns true when a valid drag operation is in progress
-///
-/// ## Usage
-/// ```dart
-/// final dragListener = DragListener(
-///   draggedNode: currentlyDraggedNode,
-///   globalPosition: Offset(100, 200),
-///   localPosition: Offset(50, 75)
-/// );
-///
-/// if (dragListener.isDragging) {
-///   // Handle active drag
-/// }
-/// ```
 class DragListener {
   Node? draggedNode;
   Node? targetNode;
@@ -66,13 +45,13 @@ class DragListener {
 /// ```
 class DraggableListener extends InheritedWidget {
   /// The drag state controller instance
-  final DragListener dragListener;
+  final DragListener listener;
 
-  DraggableListener({
+  const DraggableListener({
     required super.child,
-    DragListener? dragListener,
+    required this.listener,
     super.key,
-  }) : dragListener = dragListener ?? DragListener();
+  });
 
   /// Retrieves the nearest [DraggableListener] instance from the widget tree
   ///
@@ -83,18 +62,18 @@ class DraggableListener extends InheritedWidget {
       throw Exception('Cannot access DraggableListener from unmounted context');
     }
 
-    final DraggableListener? listener = listen
+    final DraggableListener? widget = listen
         ? context.dependOnInheritedWidgetOfExactType<DraggableListener>()
         : context.getInheritedWidgetOfExactType<DraggableListener>();
 
-    if (listener == null) {
+    if (widget == null) {
       throw FlutterError(
           'DraggableListener not found. Wrap your tree with DraggableListener.\n'
           'Ensure your TreeView is within a MaterialApp/CupertinoApp that '
           'contains a DraggableListener in its widget ancestry.');
     }
 
-    return listener;
+    return widget;
   }
 
   @override

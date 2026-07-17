@@ -5,6 +5,7 @@ import 'package:example/common/nodes/file.dart';
 import 'package:example/extensions/node_ext.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+// ignore: experimental_member_use
 import 'package:flutter_quill/internal.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
@@ -14,66 +15,38 @@ TreeConfiguration treeConfigurationBuilder(
   BuildContext context,
 ) =>
     TreeConfiguration(
-      activateDragAndDropFeature: true,
-      addRepaintBoundaries: false,
-      components: <NodeComponentBuilder>[
+      builders: <NodeComponentBuilder>[
         DirectoryComponentBuilder(),
         FileComponentBuilder(),
       ],
-      extraArgs: <String, dynamic>{
+      sharedData: <String, dynamic>{
         'controller': controller,
       },
-      treeListViewConfigurations: ListViewConfigurations(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        addSemanticIndexes: false,
-        addAutomaticKeepAlives: false,
+      activateDragAndDropFeature: true,
+      indentConfiguration: IndentConfiguration.systemFile(
+        directoryLeading: false,
+        indentation: 14,
       ),
-      indentConfiguration: IndentConfiguration.basic(
-        indentPerLevel: 14,
-        // we need to build a different indentation
-        // for files, since folders has a leading
-        // button
-        indentPerLevelBuilder: (Node node) {
-          if (node is File) {
-            final double effectiveLeft =
-                node.level <= 0 ? 29 : (node.level * 14) + 30;
-            return effectiveLeft;
-          }
-          return null;
-        },
-      ),
-      draggableConfigurations: DraggableConfigurations(
-        buildDragFeedbackWidget: (Node node, BuildContext context) {
-          if (!context.mounted) {
-            throw Exception('Not mounted');
-          }
-          final DragAndDropDetailsListener listener =
-              DragAndDropDetailsListener.of(context);
-          final DraggableListener drag =
-              DraggableListener.of(context, listen: true);
+      dragConfig: DraggableConfigurations.simple(
+        longPressOnMobile: isMobile,
+        expandOnHover: true,
+        feedback: (Node node, BuildContext context) {
           return NodeDragCard(
             node: node,
-            listener: listener,
-            dragListener: drag,
+            treeContext: context,
           );
         },
-        allowAutoExpandOnHover: true,
-        preferLongPressDraggable: isMobile,
       ),
     );
 
 class NodeDragCard extends StatefulWidget {
   const NodeDragCard({
     super.key,
-    required this.listener,
     required this.node,
-    required this.dragListener,
+    required this.treeContext,
   });
   final Node node;
-
-  final DraggableListener dragListener;
-  final DragAndDropDetailsListener listener;
+  final BuildContext treeContext;
 
   @override
   State<NodeDragCard> createState() => _NodeDragCardState();
@@ -82,6 +55,12 @@ class NodeDragCard extends StatefulWidget {
 class _NodeDragCardState extends State<NodeDragCard> {
   @override
   Widget build(BuildContext context) {
+    assert(
+      widget.treeContext.mounted,
+      'context of the tree view should be mounted at this point',
+    );
+    final DragAndDropDetailsListener listener =
+        DragAndDropDetailsListener.of(widget.treeContext);
     return Material(
       type: MaterialType.canvas,
       borderRadius: BorderRadius.circular(10),
@@ -96,12 +75,8 @@ class _NodeDragCardState extends State<NodeDragCard> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Builder(builder: (context) {
-                return Text(
-                    ' ${widget.dragListener.dragListener.globalPosition}   ');
-              }),
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
               if (widget.node.isFile)
                 Padding(
                   padding: const EdgeInsets.only(left: 5, right: 5),
@@ -133,7 +108,7 @@ class _NodeDragCardState extends State<NodeDragCard> {
                 ),
               ),
               ValueListenableBuilder<NodeDragAndDropDetails?>(
-                valueListenable: widget.listener.details,
+                valueListenable: listener.details,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 4, top: 2.5),
                   child: Container(
@@ -156,7 +131,7 @@ class _NodeDragCardState extends State<NodeDragCard> {
                   if (value == null || value.targetNode == null) {
                     return const SizedBox.shrink();
                   }
-                  final canMove = Node.canMoveTo(
+                  final bool canMove = Node.canMoveTo(
                     node: value.draggedNode,
                     target: value.targetNode!,
                     inside: value.inside,

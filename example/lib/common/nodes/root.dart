@@ -10,35 +10,7 @@ class Root extends NodeContainer {
         child.owner = this;
       }
     }
-    redepthChildren(checkFirst: true);
-  }
-
-  /// adjust the depth level of the children
-  void redepthChildren({int? currentLevel, bool checkFirst = false}) {
-    void redepth(List<Node> unformattedChildren, int currentLevel) {
-      for (int i = 0; i < unformattedChildren.length; i++) {
-        final Node node = unformattedChildren.elementAt(i);
-        unformattedChildren[i] = node.cloneWithNewLevel(currentLevel + 1);
-        if (node is NodeContainer && node.isNotEmpty) {
-          redepth(node.children, currentLevel + 1);
-        }
-      }
-    }
-
-    bool ignoreRedepth = false;
-    if (checkFirst) {
-      final int childLevel = level + 1;
-      for (final child in children) {
-        if (child.level != childLevel) {
-          ignoreRedepth = true;
-          break;
-        }
-      }
-    }
-    if (ignoreRedepth) return;
-
-    redepth(children, currentLevel ?? level);
-    notify();
+    redepthDescendants();
   }
 
   @override
