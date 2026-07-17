@@ -1,46 +1,60 @@
 # 🌲 Tree Indentation
 
-**Novident Tree View** provides precise control over indentation behavior in tree structures through two main components:
+**Novident Tree View** provides precise control over indentation
+behaviour through two components:
 
-- `IndentConfiguration`: Configures indentation rules
-- `AutomaticNodeIndentation`: Widget that applies indentation based on node depth
+- `IndentConfiguration`: configuration object that defines indentation rules.
+- `AutomaticNodeIndentation`: convenience widget that applies the
+  indentation based on `node.childrenLevel`.
 
 ## 📌 `IndentConfiguration`
 
-Defines indentation rules for tree nodes with configurable:
+| Property | Type | Default | Notes |
+|---|---|---|---|
+| `indentPerLevel` | `double` | `20` | Base pixels per tree level. |
+| `indentPerLevelBuilder` | `double? Function(Node)` | `null` | Dynamic per‑node indentation — overrides `indentPerLevel` when set. |
+| `maxLevel` | `int` | unbounded | Nodes deeper than this level receive the same indentation as `maxLevel`. |
+| `directoryLeading` | `bool` | `true` | Whether directory items should add their own leading before children. |
+| `padding` | `EdgeInsetsGeometry` | `EdgeInsets.zero` | Additional padding around node rows. |
+| `addExtraPaddingFromLevel` | `int` | `0` | Extra indentation applied starting at this depth. |
 
-- Base indentation per level
-- Maximum indentation depth
-- Dynamic indentation rules using `indentPerLevelBuilder`
-- Additional node padding
-
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `indentPerLevel` | `double` | Base pixels to indent per tree level (default: 20px) |
-| `indentPerLevelBuilder` | `double? Function(Node)` | Dynamic indentation calculator (optional) |
-| `maxLevel` | `int` | Maximum level to indent (default: unlimited) |
-| `padding` | `EdgeInsetsGeometry` | Additional padding around nodes (default: zero) |
-
-### Constructor
+### Constructors
 
 ```dart
+// Basic: uniform indentation
+IndentConfiguration.basic({
+  double indentPerLevel = 20,
+  EdgeInsetsGeometry padding = EdgeInsets.zero,
+  int maxLevel = 999,
+});
+
+// Full control
 IndentConfiguration({
-  this.indentPerLevel = 20,
-  this.padding = EdgeInsets.zero,
-  this.indentPerLevelBuilder,
-  this.maxLevel = largestIndentAccepted,
+  double indentPerLevel = 20,
+  EdgeInsetsGeometry padding = EdgeInsets.zero,
+  double? Function(Node)? indentPerLevelBuilder,
+  int addExtraPaddingFromLevel = 0,
+  int maxLevel = 999,
+});
+
+// Pre‑set: system file‑tree style
+IndentConfiguration.systemFile({
+  bool directoryLeading = false,
+  double indentation = 20,
+  int maxLevel = 999,
+  int addExtraPaddingFromLevel = 0,
 });
 ```
-
-Now, keep in mind that this configuration will be used and passed throughout the entire Tree, but how can we apply this indentation to our Nodes? Well, for this, there's `AutomaticNodeIndentation`, which, as its name suggests, only needs a few properties to properly indent your widgets (it internally obtains `IndentConfiguration`).
 
 ## 🧷 `AutomaticNodeIndentation` Example
 
 ```dart
-final Widget child = AutomaticNodeIndentation(
+AutomaticNodeIndentation(
   node: myNode,
   child: myNodeWidget(),
-);
+)
 ```
+
+The widget reads the current `IndentConfiguration` from the tree
+context and applies `node.childrenLevel * indentPerLevel` as leading
+padding.  No additional configuration is needed inside the builder.

@@ -87,7 +87,7 @@ abstract class NodeComponentBuilder {
 
   /// Builds the node's interaction configuration.
   NodeConfiguration? buildConfigurations(ComponentContext context) =>
-      NodeConfiguration(makeTappable: false);
+      NodeConfiguration(touchable: false);
 
   /// Determines if we will use async build for custom children
   @mustCallSuper

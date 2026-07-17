@@ -1,20 +1,18 @@
 ## 🏹 Drag And Drop Details
 
-The details of the **drag-and-drop** relationship of `NodeTargetBuilder` and `NodeDraggableBuilder`.
+`NovDragAndDropDetails` is the data object produced and updated during a
+drag‑and‑drop operation. It is created when a dragged node (`draggedNode`)
+hovers over a potential drop target (`targetNode`).
 
-Details are created and updated when a node `draggedNode` starts being dragged or when it is hovering
-another node `targetNode`.
-
-Contains the exact position where the drop ocurred `globalDropPosition` as well
-as the bounding box `targetBounds` with `globalTargetNodeOffset` of the target widget 
-which enables many different ways for a node to adopt another node depending 
-on where it was dropped.
+It contains positional data (local and global offsets, the target's
+bounding box) so builders can compute **where** inside the target the
+user intends to drop — and therefore **what operation** to perform
+(insert before, insert after, insert as child, etc.).
 
 ### 🔎 Class Declaration
 
 ```dart
-class NovDragAndDropDetails<T extends Node> with Diagnosticable {
-  /// Creates a [NovDragAndDropDetails].
+class NovDragAndDropDetails<T extends Node> {
   const NovDragAndDropDetails({
     required this.draggedNode,
     required this.targetNode,
@@ -23,77 +21,75 @@ class NovDragAndDropDetails<T extends Node> with Diagnosticable {
     required this.globalDropPosition,
     required this.globalTargetNodeOffset,
     this.candidateData = const [],
-    this.rejectedData = const [],
+    this.rejectedData = const <dynamic>[],
+    this.topZoneHeight = 7,
+    this.bottomZoneHeight = 5.5,
   });
 
-  /// The node that was dragged around and dropped on [targetNode].
   final T draggedNode;
-
-  /// The node that received the drop of [draggedNode].
   final T targetNode;
-
-  /// The exact hovering position of [draggedNode] inside [targetBounds].
-  ///
-  /// This can be used to decide what will happen to [draggedNode] once it is
-  /// dropped at this vicinity of [targetBounds], whether it will become a
-  /// child of [targetNode], a sibling, its parent, etc.
-  final Offset dropPosition;
-
-  /// The exact global hovering position of [draggedNode] inside [targetBounds].
-  final Offset globalDropPosition;
-
-  /// The exact global position of the targetBounds on the screen.
-  final Offset globalTargetNodeOffset;
-
-  /// The widget bounding box of [targetNode].
-  ///
-  /// This combined with [dropPosition] can be used to allow the user to drop
-  /// the dragging node at different parts of the target node which could lead
-  /// to different behaviors, e.g. drop as: previous sibling, first child, last
-  /// child, next sibling, parent, etc.
-  final Rect targetBounds;
-
-  /// Contains the list of drag data that is hovering over the [TreeDragTarget]
-  /// that that will be accepted by the [TreeDragTarget].
-  ///
-  /// This and [rejectedData] are collected from the data given to the builder
-  /// callback of the [DragTarget] widget.
-  final List<T?> candidateData;
-
-  /// Contains the list of drag data that is hovering over this [TreeDragTarget]
-  /// that will not be accepted by the [TreeDragTarget].
-  ///
-  /// This and [candidateData] are collected from the data given to the builder
-  /// callback of the [DragTarget] widget.
-  final List<dynamic> rejectedData;
+  final Offset dropPosition;            // local (inside targetBounds)
+  final Offset globalDropPosition;      // screen‑space
+  final Offset globalTargetNodeOffset;  // top‑left of target in screen space
+  final Rect targetBounds;              // size + position of the target widget
+  final double topZoneHeight;           // height of the "above" sensitive band
+  final double bottomZoneHeight;        // height of the "below" sensitive band
+  final List<T?> candidateData;         // data accepted by the DragTarget
+  final List<dynamic> rejectedData;     // data rejected by the DragTarget
 }
 ```
 
-### 💡 Useful method `mapDropPosition`
+### 💡 Useful methods
 
-Determines the relative vertical position of a dragged node relative to a target widget
-and returns a value based on the current drop position.
+#### `DropPosition? exactPosition()`
 
-### 📊 Visual Representation of how works `mapDropPosition`
+Returns the current zone as an enum value:
 
-Take in account that the higher the `aboveZoneHeight`, the greater the range in which the upper zone of the `Node` will be detected, and the same goes for `belowZoneHeight`. In any case, the default values are sufficient to simulate the standard behavior of all `Node` trees (that accept **drag and drop**).
+```dart
+final DropPosition? pos = details.exactPosition();
+// DropPosition.above  → user is in the upper band
+// DropPosition.inside → user is in the middle
+// DropPosition.below  → user is in the lower band
+// null                → pointer is outside the target's vertical bounds
+```
 
-![Image](https://github.com/user-attachments/assets/ab95c634-f80f-4f23-b515-abcd70bd0d60)
+#### `bool isDragging()`
 
-### 📑 Properties 
+Returns `true` while any zone is active (pointer is inside the
+target's vertical bounds). Shorthand for `exactPosition() != null`.
 
-| Property/Method        | Type/Default Value                     | Description |
-|------------------------|----------------------------------------|-------------|
-| `whenAbove`            | `P Function()`                         | Callback executed when node is in the upper threshold zone |
-| `whenInside`           | `P Function()`                         | Callback executed when node is in the main content zone |
-| `whenBelow`            | `P Function()`                         | Callback executed when node is in the lower threshold zone |
-| `aboveZoneHeight`      | `double` (**default: 7 logical pixels**) | Size of the upper threshold zone |
-| `belowZoneHeight`      | `double` (**default: 5.5 logical pixels**) | Size of the lower threshold zone |
-| `ignoreAboveZone`      | `bool` (**default: false**)            | Determines if the above sections will be completely ignored |
-| `ignoreInsideZone`     | `bool` (**default: false**)            | Determines if the inside sections will be completely ignored |
-| `ignoreBelowZone`      | `bool` (**default: false**)            | Determines if the below sections will be completely ignored |
+#### `P? mapDropPosition<P>(…)`
 
-### 🔎 Method Signature
+The core method for rendering drop‑zone feedback. Maps the pointer's
+vertical position to a typed result:
+
+```dart
+final border = details.mapDropPosition<BoxBorder?>(
+  whenAbove:  () => Border(top: blueBorder),
+  whenInside: () => Border.fromBorderSide(blueBorder),
+  whenBelow:  () => Border(bottom: blueBorder),
+);
+```
+
+### 📊 Visual Representation
+
+```
+┌───────────────────────────────┐  ← topZoneHeight (default 7 px)
+│          Above Zone           │     whenAbove() callback
+├───────────────────────────────┤
+│                               │
+│         Inside Zone           │     whenInside() callback
+│                               │
+├───────────────────────────────┤  ← targetBounds.height - bottomZoneHeight
+│          Below Zone           │     whenBelow() callback
+└───────────────────────────────┘  ← bottomZoneHeight (default 5.5 px)
+```
+
+Higher `topZoneHeight` / `bottomZoneHeight` values make the upper
+and lower bands larger, making "insert as sibling" easier to trigger
+vs "insert as child".
+
+### 📑 Method Signature
 
 ```dart
 P? mapDropPosition<P>({
@@ -103,8 +99,5 @@ P? mapDropPosition<P>({
   bool ignoreInsideZone = false,
   bool ignoreAboveZone = false,
   bool ignoreBelowZone = false,
-  double aboveZoneHeight = 7,
-  double belowZoneHeight = 5,
 });
 ```
-

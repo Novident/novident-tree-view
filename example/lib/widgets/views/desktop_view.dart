@@ -1,15 +1,20 @@
 import 'dart:convert';
 
 import 'package:example/common/controller/tree_controller.dart';
+import 'package:example/common/nodes/file.dart';
 import 'package:example/extensions/node_ext.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Node;
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 
-import '../../common/nodes/file.dart';
 import '../drawer/tree_view_drawer.dart';
 import '../editor/my_editor.dart';
+
+/// Scrivener-like workspace colors.
+const Color _kWorkspaceBackground = Color(0xFFECECEC);
+const Color _kPaneDivider = Color(0xFFD6D6D6);
 
 class DesktopTreeViewExample extends StatefulWidget {
   final TreeController controller;
@@ -103,6 +108,35 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
     }
   }
 
+  void _onDocumentChange(Document document) {
+    if (_lastNode == null) return;
+    if (!_onChangeCalledFromSelectionHandler) {
+      final Delta currentDelta = document.toDelta();
+      // making this check, we avoid make a update when it does not
+      // needed. OnChange also is called when the selection changes
+      if (oldVersion != currentDelta) {
+        oldVersion = currentDelta;
+        final NodeContainer? owner = _lastNode!.owner;
+        final File newCopy = _lastNode!.copyWith(
+          // Clone details to break shared
+          // mutable reference with _lastNode.
+          // Without this, NodeContainer.update()
+          // may mutate _lastNode.details.owner
+          // as a side effect.
+          details: _lastNode!.details.copyWith(),
+          content: jsonEncode(
+            document.toDelta().toJson(),
+          ),
+        );
+        if (owner != null) {
+          owner.asContainer.update(
+            newCopy,
+          );
+        }
+      }
+    }
+  }
+
   bool onWillAcceptWithDetails(DragTargetDetails<Node> details) {
     _isDraggingAboveEditor.value = true;
     return details.data is File;
@@ -118,12 +152,10 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.sizeOf(context);
+    final double binderWidth =
+        (MediaQuery.sizeOf(context).width * 0.30).clamp(240.0, 320.0).toDouble();
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(_lastNode?.name ?? 'No name'),
-      ),
+      backgroundColor: _kWorkspaceBackground,
       body: ValueListenableBuilder<Node?>(
         valueListenable: widget.controller.selection,
         builder: (BuildContext context, Node? value, Widget? __) {
@@ -132,155 +164,246 @@ class _DesktopTreeViewExampleState extends State<DesktopTreeViewExample> {
           } else {
             _handleOnChangeSelection(value);
           }
-          return SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: size.width * 0.30,
-                      height: size.height * 0.95,
-                      child: RepaintBoundary(
-                        child: TreeViewDrawer(controller: widget.controller),
-                      ),
-                    ),
-                    if (_showNoFileToWatch)
-                      SizedBox(
-                        width: size.width * 0.70,
-                        height: size.height * 0.90,
-                        child: const Center(
-                          child: Text(
-                            'There\'s no File to watch...',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (!_showNoFileToWatch)
-                      Container(
-                        width: size.width * 0.70,
-                        height: size.height * 0.90,
-                        padding: const EdgeInsets.only(
-                            left: 5, right: 5, top: 17, bottom: 5),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          clipBehavior: Clip.hardEdge,
-                          children: [
-                            QuillSimpleToolbar(
-                              controller: _controller,
-                              config: const QuillSimpleToolbarConfig(),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                  left: 20,
-                                  right: 10,
-                                  top: size.height * 0.17,
-                                  bottom: 10),
-                              child: MyEditor(
-                                controller: _controller,
-                                scrollController: _scrollController,
-                                configurations: const QuillEditorConfig(
-                                  placeholder: 'Write something',
-                                  scrollable: true,
-                                  expands: true,
-                                ),
-                                focusNode: _focusNode,
-                                onChange: (Document document) {
-                                  if (_lastNode == null) return;
-                                  if (!_onChangeCalledFromSelectionHandler) {
-                                    final Delta currentDelta =
-                                        document.toDelta();
-                                    // making this check, we avoid make a update when it does not
-                                    // needed. OnChange also is called when the selection changes
-                                    if (oldVersion != currentDelta) {
-                                      oldVersion = currentDelta;
-                                      final NodeContainer? owner =
-                                          _lastNode!.owner;
-                                      final File newCopy = _lastNode!.copyWith(
-                                        // Clone details to break shared
-                                        // mutable reference with _lastNode.
-                                        // Without this, NodeContainer.update()
-                                        // may mutate _lastNode.details.owner
-                                        // as a side effect.
-                                        details: _lastNode!.details.copyWith(),
-                                        content: jsonEncode(
-                                          document.toDelta().toJson(),
-                                        ),
-                                      );
-                                      if (owner != null) {
-                                        owner.asContainer.update(
-                                          newCopy,
-                                        );
-                                      }
-                                    }
-                                  }
-                                },
-                              ),
-                            ),
-                            ValueListenableBuilder(
-                              valueListenable: _isDraggingAboveEditor,
-                              builder: (BuildContext context, bool isDragging,
-                                  Widget? _) {
-                                return Container(
-                                  color: isDragging
-                                      ? Colors.grey.withAlpha(140)
-                                      : null,
-                                  width: size.height,
-                                  height: size.height,
-                                  child: DragTarget<Node>(
-                                    onMove: (_) => onMove(),
-                                    onLeave: (_) => onLeave(),
-                                    onWillAcceptWithDetails:
-                                        onWillAcceptWithDetails,
-                                    onAcceptWithDetails:
-                                        (DragTargetDetails<Node> details) {
-                                      _isDraggingAboveEditor.value = false;
-                                      widget.controller
-                                          .selectNode(details.data);
-                                    },
-                                    builder: (
-                                      BuildContext context,
-                                      List<Node?> candidateData,
-                                      List<dynamic> rejectedData,
-                                    ) {
-                                      if (!isDragging) {
-                                        return const SizedBox.shrink();
-                                      }
-                                      return Container(
-                                        padding: EdgeInsets.only(
-                                          left: size.width / 4,
-                                          right: 10,
-                                          top: size.height / 2.5,
-                                          bottom: 10,
-                                        ),
-                                        child: Text(
-                                          'Select this node',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 30,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              SizedBox(
+                width: binderWidth,
+                child: RepaintBoundary(
+                  child: TreeViewDrawer(controller: widget.controller),
                 ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: _showNoFileToWatch
+                    ? _buildEmptyEditorPlaceholder()
+                    : _buildEditorPane(context),
+              ),
+            ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildEditorPane(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _buildBreadcrumb(),
+        _buildFormatBar(),
+        Expanded(
+          child: Stack(
+            children: <Widget>[
+              Positioned.fill(child: _buildPage()),
+              Positioned.fill(child: _buildEditorDropTarget(context)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Document path shown above the editor, e.g. `Research ▸ README`.
+  List<String> _breadcrumbSegments() {
+    final List<String> segments = <String>[];
+    Node? current = _lastNode;
+    while (current != null && !current.isRoot) {
+      if (current.isFile) {
+        segments.insert(0, current.asFile.name);
+      } else if (current.isDirectory) {
+        segments.insert(0, current.asDirectory.name);
+      }
+      current = current.owner;
+    }
+    return segments;
+  }
+
+  Widget _buildBreadcrumb() {
+    final List<String> segments = _breadcrumbSegments();
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: _kPaneDivider)),
+      ),
+      child: Row(
+        children: <Widget>[
+          for (int i = 0; i < segments.length; i++) ...<Widget>[
+            if (i > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Icon(
+                  CupertinoIcons.chevron_right,
+                  size: 11,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            Text(
+              segments[i],
+              style: TextStyle(
+                fontSize: 13,
+                color: i == segments.length - 1
+                    ? Colors.black87
+                    : Colors.grey.shade600,
+                fontWeight: i == segments.length - 1
+                    ? FontWeight.w600
+                    : FontWeight.w400,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormatBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: _kPaneDivider)),
+      ),
+      child: QuillSimpleToolbar(
+        controller: _controller,
+        config: const QuillSimpleToolbarConfig(
+          multiRowsDisplay: false,
+        ),
+      ),
+    );
+  }
+
+  /// White "sheet of paper" centered over the gray workspace.
+  Widget _buildPage() {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 750),
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(32, 24, 32, 24),
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(3),
+            boxShadow: const <BoxShadow>[
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 14,
+                offset: Offset(0, 4),
+              ),
+              BoxShadow(
+                color: Color(0x14000000),
+                blurRadius: 3,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+          child: MyEditor(
+            controller: _controller,
+            scrollController: _scrollController,
+            configurations: const QuillEditorConfig(
+              placeholder: 'Write something',
+              scrollable: true,
+              expands: true,
+              padding: EdgeInsets.symmetric(horizontal: 56, vertical: 40),
+            ),
+            focusNode: _focusNode,
+            onChange: _onDocumentChange,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Invisible while idle; shows a veil + `Open "<file>"` card while a
+  /// node from the binder is dragged over the editor. Dropping a [File]
+  /// selects (opens) it.
+  Widget _buildEditorDropTarget(BuildContext context) {
+    return DragTarget<Node>(
+      onMove: (_) => onMove(),
+      onLeave: (_) => onLeave(),
+      onWillAcceptWithDetails: onWillAcceptWithDetails,
+      onAcceptWithDetails: (DragTargetDetails<Node> details) {
+        _isDraggingAboveEditor.value = false;
+        widget.controller.selectNode(details.data);
+      },
+      builder: (
+        BuildContext context,
+        List<Node?> candidateData,
+        List<dynamic> rejectedData,
+      ) {
+        final Node? candidate =
+            candidateData.isEmpty ? null : candidateData.first;
+        return ValueListenableBuilder<bool>(
+          valueListenable: _isDraggingAboveEditor,
+          builder: (BuildContext context, bool isDragging, Widget? _) {
+            if (!isDragging) return const SizedBox.expand();
+            final Color accent = Theme.of(context).colorScheme.primary;
+            return Container(
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0x40000000),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: accent, width: 2),
+              ),
+              child: Center(
+                child: Material(
+                  elevation: 6,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 14,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Icon(
+                          CupertinoIcons.doc_text_fill,
+                          size: 20,
+                          color: accent,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          candidate != null && candidate.isFile
+                              ? 'Open "${candidate.asFile.name}"'
+                              : 'Drop here to open',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyEditorPlaceholder() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(
+            CupertinoIcons.doc_text,
+            size: 44,
+            color: Colors.grey.shade500,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'There\'s no File to watch...',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
       ),
     );
   }

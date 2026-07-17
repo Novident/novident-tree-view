@@ -1,9 +1,6 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Smoke test: boots the Scrivener-like workspace and verifies that the
+// binder shows the default project structure and that the README file
+// (Research ▸ README) is selected/visible on startup.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,20 +8,33 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:example/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('Workspace boots with binder and README selected',
+      (WidgetTester tester) async {
+    // Desktop-like viewport so MiddlewareView renders the desktop view.
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // QuillSimpleToolbar starts a periodic timer in initState.
+    // pumpAndSettle drains pending timers so _verifyInvariants does
+    // not fail at the end of the test.
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Binder header (project name).
+    expect(find.text('The Hollow Forest'), findsWidgets);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Default root directories from default_files_nodes.dart.
+    expect(find.text('Manuscript'), findsOneWidget);
+    // 'Research' appears twice: binder row + editor breadcrumb
+    // (Research ▸ README), since README is the initial selection.
+    expect(find.text('Research'), findsNWidgets(2));
+    expect(find.text('Characters'), findsOneWidget);
+    expect(find.text('Places'), findsOneWidget);
+
+    // README is the initial selection (root.atPath([1, 0])) and its
+    // name must appear in the binder and in the editor breadcrumb.
+    expect(find.text('README'), findsWidgets);
   });
 }

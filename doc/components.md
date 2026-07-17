@@ -2,63 +2,90 @@
 
 `NodeComponentBuilder` defines the blueprint for creating customizable node components in tree structures. Implementations control:
 
-### Example implementation 
+- **Visual construction** — the `build()` method returns the widget for a single tree row.
+- **Drag‑and‑drop feedback** — the builder receives `NovDragAndDropDetails` via `ComponentContext.details` to draw drop‑zone borders (above / inside / below) and can react to the persistent `isDragging` flag.
+- **Interaction configuration** — `buildConfigurations()` returns a `NodeConfiguration` (tap handlers, selection decoration, InkWell properties).
+- **Drag gesture wiring** — `buildDragGestures()` returns `NodeDragGestures` (standard or custom callbacks).
+- **Optional custom children** — override `buildChildren()` to take full control of the subtree layout.
+
+### Component Context
+
+`ComponentContext` provides contextual information and utilities for node construction.
+
+| Property | Type | Description |
+|---|---|---|
+| `nodeContext` | `BuildContext` | Widget tree context of the current node |
+| `depth` | `int` | Node depth in the hierarchy |
+| `index` | `int` | Index of the node inside its owner |
+| `node` | `Node` | Current node instance |
+| `details` | `NovDragAndDropDetails?` | Drag operation details — non‑null only while a dragged node hovers this row as a drop target |
+| `isDragging` | `bool` | `true` while this node is the one being dragged (persistent during the whole drag lifecycle, unlike `details`) |
+| `sharedData` | `Map<String, dynamic>` | Custom parameters passed via `TreeConfiguration.sharedData` |
+| `marksNeedBuild` | `void Function()` | Force‑rebuild the node (call inside gesture handlers when a state change must trigger a repaint) |
+
+### Example implementation
 
 ```dart
 class CustomComponentBuilder extends NodeComponentBuilder {
   // Node Validation
   @override
-  bool validate(Node node) => node is YourNode;
+  bool validate(Node node, int depth) => node is YourNode;
 
   // Visual Construction
   @override
   Widget build(ComponentContext context) {
-    // you can add a visual border to represent
-    // where will be inserted your node
+    // Drop‑zone border: blue = valid, red = invalid
     Decoration? decoration;
     final BorderSide borderSide = BorderSide(
-      color: Theme.of(context.nodeContext).colorScheme.outline,
+      color: Colors.blueAccent,
       width: 2.0,
     );
 
     if (context.details != null) {
-      // Add a border to indicate in which portion of the target's height
-      // the dragging node will be inserted.
       final border = context.details?.mapDropPosition<BoxBorder?>(
-        whenAbove: () => Border(top: borderSide),
-        whenInside: () => const Border(),
-        whenBelow: () => Border(bottom: borderSide),
+        whenAbove:  () => Border(top: borderSide),
+        whenInside: () => Border.fromBorderSide(borderSide),
+        whenBelow:  () => Border(bottom: borderSide),
       );
       decoration = BoxDecoration(
         border: border,
-        color: border == null ? null : Colors.grey.withValues(alpha: 130),
+        color: border == null ? null : Colors.blueAccent.withAlpha(50),
+        borderRadius: BorderRadius.circular(5),
       );
     }
+
+    // Dim the row while it is being dragged
+    if (decoration == null && isDragging) {
+      decoration = BoxDecoration(
+        color: Colors.grey.withAlpha(30),
+        borderRadius: BorderRadius.circular(5),
+      );
+    }
+
     return DecoratedBox(
-      decoration: decoration ?? BoxDecoration(),
+      decoration: decoration ?? const BoxDecoration(),
       position: DecorationPosition.foreground,
       child: AutomaticNodeIndentation(
+        node: context.node,
         child: YourNodeWidgetRepresentation(
           file: context.node as YourNode,
+          beingDragged: isDragging, // dim tile content too
         ),
       ),
     );
   }
-
-  // Custom children rendering
-  //
-  // Tip: you can use [wrapWithDragGestures] method into [ComponentContext] 
-  //  to add drag interactions automatically to your custom children
-  @override
-  Widget? buildChildren(ComponentContext context) => null;
 
   // Interaction Configuration
   @override
   NodeConfiguration buildConfigurations(ComponentContext context) {
     return NodeConfiguration(
       makeTappable: true,
-      decoration: _buildSelectionHighlight(context),
-      onTap: _handleNodeSelection,
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)
+            : null,
+      ),
+      onTap: (_) => selectNode(context.node),
     );
   }
 
@@ -68,56 +95,44 @@ class CustomComponentBuilder extends NodeComponentBuilder {
     return NodeDragGestures.standardDragAndDrop();
   }
 
-  /* Optional methods for async rendering */
+  // Custom children rendering (optional)
+  @override
+  Widget? buildChildren(ComponentContext context) => null;
 
-  /// Determines if we will use async build for custom children
+  /* ── Async rendering (optional) ── */
+
+  /// Return `true` to use the async children pipeline.
   bool get useAsyncBuild => false;
 
-  /// Determines if we will use the async calls
-  /// in every reload of the node container widget
-  ///
-  /// * If true is provided, will use [buildChildrenAsync] once time
-  /// and after will use non async functions (tree's standard rendering
-  /// or the [buildChildren] if it's provided)
-  ///
-  /// * If false is provided, will use [buildChildrenAsync] every time
-  /// the container widget is reloaded
+  /// When `true`, [buildChildrenAsync] runs once and the result is
+  /// cached; subsequent rebuilds use the standard renderer.
   bool get cacheChildrenAfterFirstAsyncBuild => false;
 
-  /// Optionally builds a custom children widgets using Futures
-  ///
-  /// When null or [useAsyncBuild] returns false, children are
-  /// rendered using the tree's standard layout algorithm.
+  /// Async children builder — renders a placeholder while loading,
+  /// then replaces it.
   Future<List<Widget>?> buildChildrenAsync(ComponentContext context) async =>
       null;
 
-  /// Constructs a visual placeholder that will be showed while
-  /// the data is being loaded into [buildChildrenAsync]
+  /// Placeholder shown while [buildChildrenAsync] is in flight.
   Widget? buildChildrenAsyncPlaceholder(ComponentContext context) => null;
 
-  /// Constructs a visual widget error that will be showed if the
-  /// [FutureBuilder] gets an error instead data
+  /// Error widget shown when [buildChildrenAsync] fails.
   Widget? buildChildrenAsyncError(
     ComponentContext context,
     StackTrace? stacktrace,
     Object error,
-  ) =>
-      null;
+  ) => null;
 }
 ```
 
-## Component Context
+### Dev‑time lifecycle
 
-`ComponentContext` provides contextual information and utilities for node construction.
+| Method | When |
+|---|---|
+| `initState(node, depth)` | First time the builder is assigned to a tree node. |
+| `didChangeDependencies(ctx)` | An `InheritedWidget` above the node changed. |
+| `didUpdateWidget(ctx, hasListeners)` | The parent widget that wraps this node was updated (e.g. after a tree mutation). |
+| `dispose(ctx)` | The builder is being removed (node deleted from the tree). |
 
-### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `nodeContext` | `BuildContext` | Widget tree context |
-| `depth` | `int` | Node depth in hierarchy |
-| `index` | `int` | Index of the Node into its owner |
-| `node` | `Node` | Current node instance |
-| `details` | `NovDragAndDropDetails?` | Drag operation details |
-| `wrapWithDragGestures` | `Function` | custom Drag gesture wrapper (for custom children) |
-| `extraArgs` | `Map<String,dynamic>` | Custom parameters |
+All four receive a `ComponentContext` so you can interact with the tree
+state during the lifecycle event.

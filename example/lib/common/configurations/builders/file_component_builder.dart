@@ -115,7 +115,7 @@ class FileComponentBuilder extends NodeComponentBuilder {
         context.sharedData['controller'] as TreeController;
     final Node node = context.node;
     return NodeConfiguration(
-      makeTappable: true,
+      touchable: true,
       decoration: BoxDecoration(
         color: controller.selectedNode?.id == node.id
             ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)

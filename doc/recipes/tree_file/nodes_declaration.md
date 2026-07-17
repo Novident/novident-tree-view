@@ -34,10 +34,10 @@ class File extends Node implements DragAndDropMixin {
   @override
   bool isDropPositionValid(
     Node draggedNode,
-    DragHandlerPosition dropPosition,
+    DropPosition dropPosition,
   ) =>
-      dropPosition == DragHandlerPosition.above ||
-      dropPosition == DragHandlerPosition.below;
+      dropPosition == DropPosition.above ||
+      dropPosition == DropPosition.below;
 
   /// Determine if this Node allows dropping other nodes into/above/below it 
   @override
@@ -184,7 +184,7 @@ class Directory extends NodeContainer implements DragAndDropMixin {
   @override
   bool isDropPositionValid(
     Node draggedNode, 
-    DragHandlerPosition dropPosition,
+    DropPosition dropPosition,
   ) => true;
 
   @override

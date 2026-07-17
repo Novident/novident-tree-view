@@ -1,63 +1,105 @@
-# 🖱️ Node Drag Gestures 
+# 🖱️ Node Drag Gestures
 
-`NodeDragGestures` all the possible interactions during a **drag-and-drop**
-operation, including start, move, update, completion, cancellation, and acceptance events.
+`NodeDragGestures` encapsulates all the callbacks for drag‑and‑drop
+operations involving `Node` objects — start, move, update, completion,
+cancellation, and acceptance.
 
-Each callback corresponds to a specific phase in the **drag-and-drop** lifecycle.
+Each callback corresponds to a specific phase in the drag‑and‑drop
+lifecycle. The two **required** callbacks (`onWillAcceptWithDetails`
+and `onAcceptWithDetails`) control whether and how a drop is handled.
 
 ## 🏗️ Core Structure
 
-### 🔧 Configurable Callbacks
+### 📋 Required callbacks
 
-| Callback | Type | Description |
-|----------|------|-------------|
-| `onDragStart` | `Function(Offset, Node)?` | Called when drag operation initiates |
-| `onDragMove` | `Function(DragTargetDetails<Node>)?` | Called during node movement |
-| `onDragUpdate` | `Function(DragUpdateDetails)?` | Updates drag position (default updates controller) |
-| `onDragEnd` | `Function(DraggableDetails)?` | Called when drag completes (default resets controller) |
-| `onDragCanceled` | `Function(Velocity, Offset)?` | Called when drag is canceled (default resets controller) |
-| `onLeave` | `Function(Node)?` | Called when dragged node leaves target |
-| `onDragCompleted` | `Function(Node)?` | Called when drag successfully completes (default resets controller) |
-| `onWillAcceptWithDetails` | `Function(NovDragAndDropDetails<Node>?, DragTargetDetails<Node>, Node, NodeContainer?)` | **(Required)** Validates drop acceptance |
-| `onAcceptWithDetails` | `Function(NovDragAndDropDetails<Node>, Node, NodeContainer?)` | **(Required)** Handles accepted drops |
+| Callback | Signature | Purpose |
+|---|---|---|
+| `onWillAcceptWithDetails` | `bool Function(NovDragAndDropDetails<Node>?, DragTargetDetails<Node>, Node target, NodeContainer? parent)` | Validate whether a drop is allowed. Return `true` to accept, `false` to reject. |
+| `onAcceptWithDetails` | `void Function(NovDragAndDropDetails<Node>, Node target, NodeContainer? parent)` | Handle the accepted drop — insert, move, or reorder the node. |
+
+### 🔧 Optional callbacks
+
+| Callback | Signature | Trigger |
+|---|---|---|
+| `onDragStart` | `void Function(Offset offset, Node node)` | Drag operation initiates. |
+| `onDragUpdate` | `void Function(DragUpdateDetails details)` | Pointer moves during a drag. |
+| `onDragMove` | `void Function(DragTargetDetails<Node> details)` | Dragged node moves over a potential drop target. |
+| `onDragEnd` | `void Function(DraggableDetails)` | Pointer is released (drag completes or is dropped). |
+| `onDragCanceled` | `void Function(Velocity velocity, Offset point)` | Drag is cancelled (e.g. Esc key). |
+| `onLeave` | `void Function(Node data)` | Dragged node leaves a drop target without being dropped. |
+| `onDragCompleted` | `void Function(Node node)` | Drag completed successfully (node was dropped and accepted). |
+
+Note: `onDragEnd` fires for **every** pointer release (dropped *and*
+cancelled). Use `onDragCompleted` for the "success" path specifically.
 
 ## 🔄 Typical Usage
 
+### Full custom callbacks
+
 ```dart
 const NodeDragGestures(
-  onWillAcceptWithDetails: (NovDragAndDropDetails<Node>? details, DragTargetDetails<Node> dragDetails, Node? parent ) {
+  onWillAcceptWithDetails: (
+    NovDragAndDropDetails<Node>? details,
+    DragTargetDetails<Node> dragDetails,
+    Node target,
+    NodeContainer? parent,
+  ) {
     // Custom validation logic
-    return details?.draggedNode != parent?.node;
+    return details?.draggedNode != target;
   },
-  onAcceptWithDetails: (NovDragAndDropDetails<Node> details, Node? parent) {
+  onAcceptWithDetails: (
+    NovDragAndDropDetails<Node> details,
+    void Function(Node node, NodeContainer newOwner, int level)? onWillInsert,
+    Node target,
+    NodeContainer? parent,
+  ) {
     // Handle successful drop
-    final draggedNode = details.draggedNode;
-    final position = details.handlerPosition;
-    // Perform node insertion/movement
+    final DropPosition? position = details.exactPosition();
+    final Node dragged = details.draggedNode;
+    // Perform node insertion/move based on position
   },
   onDragStart: (Offset offset, Node node) {
     debugPrint('Dragging started: ${node.details.id}');
   },
   onDragEnd: (DraggableDetails details) {
-    debugPrint('Drag operation completed');
+    debugPrint('Drag operation ended');
   },
 );
 ```
 
-You can also use a standard file tree behavior for **Drag and Drop**:
+### Standard file‑tree behaviour (recommended)
+
+`NodeDragGestures.standardDragAndDrop()` provides sensible defaults
+for a file‑tree‑like drag‑and‑drop experience:
 
 ```dart
-final ValueNotifier<Node?> _selectedNode = ValueNotifier<Node?>(/*your node selection*/);
-const NodeDragGestures.standardDragAndDrop(
+NodeDragGestures.standardDragAndDrop(
   onWillInsert: (Node node, NodeContainer owner, int level) {
-    // you can use onWillInsert to update the state of the selected node
-    // to avoid an our of sync selection (since the new node state could have 
-    // a new owner and level)
-    if (node is File && _selectedNode.value?.id == node.id) {
-      _selectedNode.value = node.copyWith(
-        details: node.details.copyWith(owner: owner, level: newLevel),
-      ),
+    // Called BEFORE the node is inserted into its new parent.
+    // Use this to update external state that depends on
+    // the node's owner or level (e.g. a selection controller).
+    if (node is File && selectedNode?.id == node.id) {
+      selectedNode = node.copyWith(
+        details: node.details.copyWith(owner: owner, level: level),
+      );
     }
   },
 );
+```
+
+All standard callbacks accept optional overrides — only provide
+the ones you need; the rest fall back to sensible defaults:
+
+```dart
+factory NodeDragGestures.standardDragAndDrop({
+  NovOnWillAcceptOnNode? onWillAcceptWithDetails,
+  void Function(Node node, NodeContainer newOwner, int level)? onWillInsert,
+  void Function(DragTargetDetails<Node> details)? onDragMove,
+  void Function(Offset offset, Node node)? onDragStart,
+  void Function(DragUpdateDetails details)? onDragUpdate,
+  void Function(Node data)? onLeave,
+  void Function(DraggableDetails)? onDragEnd,
+  void Function(Velocity velocity, Offset point)? onDragCanceled,
+  void Function(Node node)? onDragCompleted,
+})
 ```

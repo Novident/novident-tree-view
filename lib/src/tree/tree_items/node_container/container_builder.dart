@@ -171,7 +171,7 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
         builder.buildConfigurations(componentContext);
 
     if (nodeConfig != null) {
-      if (nodeConfig.makeTappable) {
+      if (nodeConfig.touchable) {
         child = InkWell(
           onFocusChange: nodeConfig.onFocusChange,
           focusNode: nodeConfig.focusNode,

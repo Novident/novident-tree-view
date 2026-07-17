@@ -118,7 +118,7 @@ final class NodeConfiguration {
   /// NodeConfiguration(
   ///  // set this to false to avoid default implementation
   ///  // that wraps the node into a InkWell button
-  ///  makeTappable: false,
+  ///  touchable: false,
   ///  nodeWrapper: (Node node, BuildContext context, Widget child) {
   ///    return MaterialButton(
   ///      child: child,
@@ -131,7 +131,7 @@ final class NodeConfiguration {
 
   /// Determine if the Node should be wrapped by an InkWell
   /// Or not
-  final bool makeTappable;
+  final bool touchable;
 
   /// This is the decoration of the node
   final BoxDecoration? decoration;
@@ -150,7 +150,7 @@ final class NodeConfiguration {
   final Color? focusColor;
 
   const NodeConfiguration({
-    required this.makeTappable,
+    required this.touchable,
     this.focusNode,
     this.onFocusChange,
     this.focusColor,

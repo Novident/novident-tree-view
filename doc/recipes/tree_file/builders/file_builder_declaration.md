@@ -1,14 +1,14 @@
 ## File Component Builder
 
-In this section we build the component that will define: the gesture configurations, the method in charge of rendering your node, and the **Drag and Drop** feature through `NodeDragGestures`.
-
 ```dart
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:your/path/file.dart';
 
 class FileComponentBuilder extends NodeComponentBuilder {
+  @override
+  bool validate(Node node, int depth) => node is File;
+
   @override
   Widget build(ComponentContext context) {
     final Node node = context.node;
@@ -18,54 +18,63 @@ class FileComponentBuilder extends NodeComponentBuilder {
       width: 2.0,
     );
 
+    // Drop‑zone feedback
     final NovDragAndDropDetails<Node>? details = context.details;
     if (details != null) {
-      // Add a border to indicate in which portion of the target's height
-      // the dragging node will be inserted.
       BoxBorder? border;
       if (Node.canMoveTo(
         node: details.draggedNode,
         target: details.targetNode,
-        inside: details.exactPosition() == DragHandlerPosition.into,
+        inside: details.exactPosition() == DropPosition.inside,
       )) {
-        border = context.details?.mapDropPosition<BoxBorder?>(
-          whenAbove: () => Border(top: borderSide),
+        border = details.mapDropPosition<BoxBorder?>(
+          whenAbove:  () => Border(top: borderSide),
           whenInside: () => Border.fromBorderSide(borderSide),
-          whenBelow: () => Border(bottom: borderSide),
+          whenBelow:  () => Border(bottom: borderSide),
         );
       }
 
       decoration = BoxDecoration(
         border: border,
-        color: border == null ? null : Colors.grey.withValues(alpha: 180),
+        color: border == null
+            ? null
+            : Colors.grey.withAlpha(50),
+        borderRadius: BorderRadius.circular(5),
+      );
+    }
+
+    // Dim when being dragged
+    if (decoration == null && isDragging) {
+      decoration = BoxDecoration(
+        color: Colors.grey.withAlpha(30),
+        borderRadius: BorderRadius.circular(5),
       );
     }
 
     return DecoratedBox(
-      decoration: decoration ?? BoxDecoration(),
+      decoration: decoration ?? const BoxDecoration(),
       position: DecorationPosition.foreground,
-      // [AutomaticNodeIndentation] adds the correct indentation
-      // for the [Node] using the [IndentConfiguration] passed
       child: AutomaticNodeIndentation(
         node: node,
-        child: FileTile(file: node.asFile),
+        child: FileTile(
+          file: node.asFile,
+          beingDragged: isDragging,
+        ),
       ),
     );
   }
 
   @override
   NodeConfiguration buildConfigurations(ComponentContext context) {
-    // you need to make your implementation 
-    // to know if the node is selected
-    final bool isSelected = false; 
+    final bool isSelected = false; // your selection logic
     return NodeConfiguration(
-      makeTappable: true,
+      touchable: true,
       decoration: BoxDecoration(
         color: isSelected
             ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)
             : null,
       ),
-      onTap: (BuildContext context) {
+      onTap: (BuildContext _) {
         // select or focus your node
       },
     );
@@ -73,9 +82,6 @@ class FileComponentBuilder extends NodeComponentBuilder {
 
   @override
   NodeDragGestures buildDragGestures(ComponentContext context) {
-    final Node node = context.node;
-    // You can also use [NodeDragGestures.standardDragAndDrop] that 
-    // already have this implementation
     return NodeDragGestures.standardDragAndDrop(
       onWillInsert: (Node node, NodeContainer newOwner, int newLevel) {
         if (node is Directory) {
@@ -84,56 +90,45 @@ class FileComponentBuilder extends NodeComponentBuilder {
       },
     );
   }
-
-  @override
-  Widget? buildChildren(ComponentContext context) => null;
-
-  @override
-  bool validate(Node node) => node is File;
-}
-
-extension on int {
-  int get oneIfZero => this <= 0 ? 1 : this;
-  int get zeroIfNegative => this < 0 ? 0 : this;
-  int exactByLimit(int limit) => this >= limit ? limit : this;
 }
 ```
 
 ### FileTile Widget
 
 ```dart
-import 'package:your/path/file.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
-class FileTile extends StatefulWidget {
+class FileTile extends StatelessWidget {
   final File file;
+  final bool beingDragged;
   const FileTile({
     required this.file,
+    this.beingDragged = false,
     super.key,
   });
 
   @override
-  State<FileTile> createState() => _FileTileState();
-}
-
-class _FileTileState extends State<FileTile> {
-  @override
   Widget build(BuildContext context) {
+    final Color? mutedColor =
+        beingDragged ? Colors.black.withAlpha(150) : null;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        children: [
+        children: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 5),
             child: Icon(
-              widget.file.content.isEmpty
+              file.content.isEmpty
                   ? CupertinoIcons.doc_text
                   : CupertinoIcons.doc_text_fill,
+              color: mutedColor,
             ),
           ),
           Expanded(
             child: Text(
-              "${widget.file.name}${widget.file.level}",
+              file.name,
+              style: TextStyle(color: mutedColor),
               maxLines: 1,
               softWrap: true,
               overflow: TextOverflow.fade,

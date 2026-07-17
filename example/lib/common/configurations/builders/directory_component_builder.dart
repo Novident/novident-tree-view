@@ -118,7 +118,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
         context.sharedData['controller'] as TreeController;
     final Node node = context.node;
     return NodeConfiguration(
-      makeTappable: true,
+      touchable: true,
       decoration: BoxDecoration(
         color: controller.selectedNode == node
             ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)

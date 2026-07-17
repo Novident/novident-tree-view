@@ -1,14 +1,14 @@
 ## Directory Component Builder
 
-In this section we build the component that will define: the gesture configurations, the method in charge of rendering your node, and the **Drag and Drop** feature through `NodeDragGestures`.
-
 ```dart
-import 'package:novident_tree_view/novident_tree_view.dart';
-import 'package:novident_nodes/novident_nodes.dart';
 import 'package:flutter/material.dart';
-import 'package:your/path/directory.dart';
+import 'package:novident_nodes/novident_nodes.dart';
+import 'package:novident_tree_view/novident_tree_view.dart';
 
 class DirectoryComponentBuilder extends NodeComponentBuilder {
+  @override
+  bool validate(Node node, int depth) => node is Directory;
+
   @override
   Widget build(ComponentContext context) {
     final Node node = context.node;
@@ -18,41 +18,48 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       width: 2.0,
     );
 
+    // Drop‑zone feedback
     final NovDragAndDropDetails<Node>? details = context.details;
     if (details != null) {
-      // Add a border to indicate in which portion of the target's height
-      // the dragging node will be inserted.
       BoxBorder? border;
       if (Node.canMoveTo(
         node: details.draggedNode,
         target: details.targetNode,
-        inside: details.exactPosition() == DragHandlerPosition.into,
+        inside: details.exactPosition() == DropPosition.inside,
       )) {
-        border = context.details?.mapDropPosition<BoxBorder?>(
-          whenAbove: () => Border(top: borderSide),
+        border = details.mapDropPosition<BoxBorder?>(
+          whenAbove:  () => Border(top: borderSide),
           whenInside: () => Border.fromBorderSide(borderSide),
-          whenBelow: () => Border(bottom: borderSide),
+          whenBelow:  () => Border(bottom: borderSide),
         );
       }
 
       decoration = BoxDecoration(
         border: border,
-        color: border == null ? null : Colors.grey.withValues(alpha: 180),
+        color: border == null
+            ? null
+            : Colors.grey.withAlpha(50),
+        borderRadius: BorderRadius.circular(5),
+      );
+    }
+
+    // Dim when being dragged
+    if (decoration == null && isDragging) {
+      decoration = BoxDecoration(
+        color: Colors.grey.withAlpha(30),
+        borderRadius: BorderRadius.circular(5),
       );
     }
 
     return DecoratedBox(
-      decoration: decoration ?? BoxDecoration(),
+      decoration: decoration ?? const BoxDecoration(),
       position: DecorationPosition.foreground,
-      // [AutomaticNodeIndentation] adds the correct indentation
-      // for the [Node] using the [IndentConfiguration] passed
       child: AutomaticNodeIndentation(
         node: node,
         child: DirectoryTile(
-          onTapExpandButton: () {
-            (node as Directory).openOrClose();
-          },
+          onTap: () => (node as Directory).openOrClose(),
           directory: node as Directory,
+          beingDragged: isDragging,
         ),
       ),
     );
@@ -60,19 +67,17 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
 
   @override
   NodeConfiguration buildConfigurations(ComponentContext context) {
-    // you need to make your implementation 
-    // to expand the node   
     final Node node = context.node;
     return NodeConfiguration(
-      makeTappable: true,
-      onTap: (BuildContext context) {
+      touchable: true,
+      onTap: (BuildContext _) {
         (node as Directory).openOrClose();
       },
     );
   }
 
   @override
-  NodeDragGestures buildGestures(ComponentContext context) {
+  NodeDragGestures buildDragGestures(ComponentContext context) {
     return NodeDragGestures.standardDragAndDrop(
       onWillInsert: (Node node, NodeContainer newOwner, int newLevel) {
         if (node is Directory) {
@@ -81,79 +86,65 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
       },
     );
   }
-
-  @override
-  Widget? buildChildren(ComponentContext context) => null;
-
-  @override
-  bool validate(Node node) => node is Directory;
-}
-
-extension on int {
-  int get oneIfZero => this <= 0 ? 1 : this;
-  int get zeroIfNegative => this < 0 ? 0 : this;
-  int exactByLimit(int limit) => this >= limit ? limit : this;
 }
 ```
 
-## DirectoryTile Widget
+### DirectoryTile Widget
 
 ```dart
-import 'package:your/path/directory.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
-class DirectoryTile extends StatefulWidget {
+class DirectoryTile extends StatelessWidget {
   final Directory directory;
-  final VoidCallback onTapExpandButton;
+  final VoidCallback onTap;
+  final bool beingDragged;
   const DirectoryTile({
     required this.directory,
-    required this.onTapExpandButton,
+    required this.onTap,
+    this.beingDragged = false,
     super.key,
   });
 
   @override
-  State<DirectoryTile> createState() => _DirectoryTileState();
-}
-
-class _DirectoryTileState extends State<DirectoryTile> {
-  @override
   Widget build(BuildContext context) {
+    final Color? mutedColor =
+        beingDragged ? Colors.black.withAlpha(150) : null;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
-      child: ListenableBuilder(
-        listenable: widget.directory,
-        builder: (context, _) {
-          return Row(
-            children: <Widget>[
-              InkWell(
-                onTap: widget.onTapExpandButton,
-                child: widget.directory.isExpanded
-                    ? const Icon(Icons.expand_less)
-                    : const Icon(
-                        Icons.expand_more,
-                      ),
+      child: Row(
+        children: <Widget>[
+          GestureDetector(
+            onTap: onTap,
+            child: AnimatedRotation(
+              turns: directory.isExpanded ? 0.25 : 0.0,
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              child: Icon(
+                CupertinoIcons.chevron_right,
+                size: 12,
+                color: mutedColor ?? Colors.grey.shade600,
               ),
-              const SizedBox(width: 5),
-              Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: Icon(
-                  widget.directory.isExpanded && widget.directory.isEmpty
-                      ? CupertinoIcons.folder_open
-                      : CupertinoIcons.folder_fill,
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  "${widget.directory.name}${widget.directory.level}",
-                  maxLines: 1,
-                  softWrap: true,
-                  overflow: TextOverflow.fade,
-                ),
-              ),
-            ],
-          );
-        },
+            ),
+          ),
+          const SizedBox(width: 5),
+          Icon(
+            directory.isExpanded
+                ? CupertinoIcons.folder_open
+                : CupertinoIcons.folder_fill,
+            color: mutedColor,
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              directory.name,
+              style: TextStyle(color: mutedColor),
+              maxLines: 1,
+              softWrap: true,
+              overflow: TextOverflow.fade,
+            ),
+          ),
+        ],
       ),
     );
   }

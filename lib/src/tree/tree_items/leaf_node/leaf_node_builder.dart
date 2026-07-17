@@ -169,7 +169,7 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
           child = RepaintBoundary(child: child);
         }
 
-        if (!nodeConfig.makeTappable) {
+        if (!nodeConfig.touchable) {
           return child;
         }
 

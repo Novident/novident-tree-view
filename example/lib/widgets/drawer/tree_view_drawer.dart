@@ -1,11 +1,20 @@
-import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/configurations/tree_configs/tree_configurations.dart';
+import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/widgets/drawer/drawer_header.dart';
 import 'package:example/widgets/drawer/tree_view_toolbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
+/// Scrivener-like binder colors.
+const Color _kBinderBackground = Color(0xFFF0EFEE);
+const Color _kBinderBorder = Color(0xFFD6D6D6);
+
+/// The binder: project header + toolbar + scrollable tree.
+///
+/// Kept as a [Drawer] so `android_view.dart` can keep using it inside
+/// `Scaffold.drawer`; on desktop the parent `SizedBox` constrains its
+/// width, so the default drawer width never applies there.
 class TreeViewDrawer extends HookWidget {
   final TreeController controller;
   const TreeViewDrawer({
@@ -15,33 +24,34 @@ class TreeViewDrawer extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.sizeOf(context);
     final scrollController = useScrollController();
     return SafeArea(
       top: true,
       child: Drawer(
+        elevation: 0,
+        backgroundColor: _kBinderBackground,
         shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.zero)),
-        width: size.width * 0.95,
+          borderRadius: BorderRadius.zero,
+        ),
         child: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             border: Border(
-              right: BorderSide(
-                color: Colors.black.withValues(alpha: 150),
-                width: 1,
-              ),
+              right: BorderSide(color: _kBinderBorder),
             ),
           ),
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const TreeViewHeaderTitle(),
-                TreeViewToolbar(controller: controller),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              const TreeViewHeaderTitle(),
+              TreeViewToolbar(controller: controller),
+              const Divider(height: 1, thickness: 1, color: _kBinderBorder),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 6,
+                  ),
                   child: TreeView(
                     root: controller.root,
                     configuration: treeConfigurationBuilder(
@@ -50,8 +60,8 @@ class TreeViewDrawer extends HookWidget {
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
