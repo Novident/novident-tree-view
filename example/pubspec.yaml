@@ -10,25 +10,35 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
+  novident_editor: ^1.0.8
+  novident_split_view: ^1.0.1
   novident_tree_view:
     path: ../
-
   novident_nodes: ^1.2.4
-  flutter_quill: ^11.2.0
+  novident_editor_core: ^1.0.3
+  novident_editor_selection: ^1.0.5
+  novident_editor_rich_text: ^1.0.5
+  novident_editor_styles: ^1.0.3
+  novident_editor_document: ^1.0.6
   cupertino_icons: ^1.0.8
   collection: ^1.19.1
   equatable: ^2.0.7
   flutter_hooks: ^0.21.2
   vector_math: ^2.2.0
-
-  quill_native_bridge_linux: ^0.0.2
+  novident_spell_checker: ^1.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
+  fake_async: any
 flutter:
   uses-material-design: true
+  assets:
+    - assets/dictionaries/en_US.dic
+    - assets/dictionaries/en_US.aff

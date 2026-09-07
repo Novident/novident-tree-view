@@ -42,9 +42,8 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       Provider.of<TreeConfiguration>(context);
 
   @override
-  initState() {
-    super.initState();
-    widget.nodeContainer.addListener(_markNeedsBuild);
+  void setState(VoidCallback fn) {
+    super.setState(fn);
   }
 
   @override
@@ -70,7 +69,6 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
     }
     _builder?.didChangeDependencies(_buildContext);
 
-    _builder?.setState = setState;
     _builder?.context = context;
     _builder?.componentContext = _buildContext;
     super.didChangeDependencies();
@@ -80,28 +78,25 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   void didUpdateWidget(covariant ContainerBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    oldWidget.nodeContainer.removeListener(_markNeedsBuild);
-    widget.nodeContainer.addListener(_markNeedsBuild);
-
     if (oldWidget.nodeContainer != widget.nodeContainer) {
       _builder = null;
       builder.didUpdateWidget(
         _buildContext,
         false,
+        oldWidget,
       );
       _builder?.context = context;
       _builder?.componentContext = _buildContext;
-      _builder?.setState = setState;
       return;
     }
 
     _builder?.context = context;
     _builder?.componentContext = _buildContext;
-    _builder?.setState = setState;
 
     _builder?.didUpdateWidget(
       _buildContext,
       widget.nodeContainer.hasEventListeners,
+      oldWidget,
     );
   }
 
@@ -116,7 +111,6 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
       widget.depth,
     )) {
       _builder = _checkForBuilder();
-      _builder?.setState = setState;
       _builder?.context = context;
       _builder?.componentContext = _buildContext;
     }
@@ -124,12 +118,14 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB = configuration.builders.firstWhereOrNull(
-      (NodeComponentBuilder b) => b.validate(
-        widget.nodeContainer,
-        widget.depth,
-      ),
-    );
+    final NodeComponentBuilder? tempB = configuration.builders
+        .firstWhereOrNull(
+          (NodeComponentBuilder b) => b.validate(
+            widget.nodeContainer,
+            widget.depth,
+          ),
+        )
+        ?.clone(widget.nodeContainer, context);
     if (tempB == null) {
       throw StateError(
         'No NodeComponentBuilder was '
@@ -154,123 +150,128 @@ class _ContainerBuilderState extends State<ContainerBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    _cacheChildrenAfterFirstAsyncBuild =
-        builder.cacheChildrenAfterFirstAsyncBuild;
-    ComponentContext componentContext = _buildContext;
-    Widget child = NodeDragAndDropBuilder(
-      node: widget.nodeContainer,
-      depth: widget.depth,
-      index: widget.index,
-      builder: builder,
-      configuration: configuration,
-      owner: widget.owner,
-      componentContext: _buildContext,
-    );
-
-    final NodeConfiguration? nodeConfig =
-        builder.buildConfigurations(componentContext);
-
-    if (nodeConfig != null) {
-      if (nodeConfig.touchable) {
-        child = InkWell(
-          onFocusChange: nodeConfig.onFocusChange,
-          focusNode: nodeConfig.focusNode,
-          focusColor: nodeConfig.focusColor,
-          onTap: () => nodeConfig.onTap?.call(context),
-          onTapDown: (TapDownDetails details) =>
-              nodeConfig.onTapDown?.call(details, context),
-          onTapUp: (TapUpDetails details) =>
-              nodeConfig.onTapUp?.call(details, context),
-          onTapCancel: () => nodeConfig.onTapCancel?.call(context),
-          onDoubleTap: nodeConfig.onDoubleTap == null
-              ? null
-              : () => nodeConfig.onDoubleTap?.call(context),
-          onLongPress: nodeConfig.onLongPress == null
-              ? null
-              : () => nodeConfig.onLongPress?.call(context),
-          onSecondaryTap: nodeConfig.onSecondaryTap == null
-              ? null
-              : () => nodeConfig.onSecondaryTap?.call(context),
-          onSecondaryTapUp: nodeConfig.onSecondaryTapUp == null
-              ? null
-              : (TapUpDetails details) =>
-                  nodeConfig.onSecondaryTapUp?.call(details, context),
-          onSecondaryTapDown: nodeConfig.onSecondaryTapDown == null
-              ? null
-              : (TapDownDetails details) =>
-                  nodeConfig.onSecondaryTapDown?.call(details, context),
-          onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null
-              ? null
-              : () => nodeConfig.onSecondaryTapCancel?.call(context),
-          onHover: (bool isHovered) =>
-              nodeConfig.onHoverInkWell?.call(isHovered, context),
-          mouseCursor: nodeConfig.mouseCursor,
-          hoverDuration: nodeConfig.hoverDuration,
-          hoverColor: nodeConfig.hoverColor,
-          overlayColor: nodeConfig.overlayColor,
-          splashColor: nodeConfig.tapSplashColor,
-          splashFactory: nodeConfig.splashFactory,
-          borderRadius: nodeConfig.splashBorderRadius,
-          customBorder: nodeConfig.customSplashShape,
-          canRequestFocus: false,
-          excludeFromSemantics: true,
-          enableFeedback: true,
-          child: child,
+    return ListenableBuilder(
+      listenable: widget.nodeContainer,
+      builder: (context, child) {
+        _cacheChildrenAfterFirstAsyncBuild =
+            builder.cacheChildrenAfterFirstAsyncBuild;
+        ComponentContext componentContext = _buildContext;
+        Widget child = NodeDragAndDropBuilder(
+          node: widget.nodeContainer,
+          depth: widget.depth,
+          index: widget.index,
+          builder: builder,
+          configuration: configuration,
+          owner: widget.owner,
+          componentContext: _buildContext,
         );
 
-        if (nodeConfig.decoration != null) {
-          child = Container(
-            decoration: nodeConfig.decoration!,
-            clipBehavior: Clip.hardEdge,
-            child: child,
-          );
+        final NodeConfiguration? nodeConfig =
+            builder.buildConfigurations(componentContext);
+
+        if (nodeConfig != null) {
+          if (nodeConfig.touchable) {
+            child = InkWell(
+              onFocusChange: nodeConfig.onFocusChange,
+              focusNode: nodeConfig.focusNode,
+              focusColor: nodeConfig.focusColor,
+              onTap: () => nodeConfig.onTap?.call(context),
+              onTapDown: (TapDownDetails details) =>
+                  nodeConfig.onTapDown?.call(details, context),
+              onTapUp: (TapUpDetails details) =>
+                  nodeConfig.onTapUp?.call(details, context),
+              onTapCancel: () => nodeConfig.onTapCancel?.call(context),
+              onDoubleTap: nodeConfig.onDoubleTap == null
+                  ? null
+                  : () => nodeConfig.onDoubleTap?.call(context),
+              onLongPress: nodeConfig.onLongPress == null
+                  ? null
+                  : () => nodeConfig.onLongPress?.call(context),
+              onSecondaryTap: nodeConfig.onSecondaryTap == null
+                  ? null
+                  : () => nodeConfig.onSecondaryTap?.call(context),
+              onSecondaryTapUp: nodeConfig.onSecondaryTapUp == null
+                  ? null
+                  : (TapUpDetails details) =>
+                      nodeConfig.onSecondaryTapUp?.call(details, context),
+              onSecondaryTapDown: nodeConfig.onSecondaryTapDown == null
+                  ? null
+                  : (TapDownDetails details) =>
+                      nodeConfig.onSecondaryTapDown?.call(details, context),
+              onSecondaryTapCancel: nodeConfig.onSecondaryTapCancel == null
+                  ? null
+                  : () => nodeConfig.onSecondaryTapCancel?.call(context),
+              onHover: (bool isHovered) =>
+                  nodeConfig.onHoverInkWell?.call(isHovered, context),
+              mouseCursor: nodeConfig.mouseCursor,
+              hoverDuration: nodeConfig.hoverDuration,
+              hoverColor: nodeConfig.hoverColor,
+              overlayColor: nodeConfig.overlayColor,
+              splashColor: nodeConfig.tapSplashColor,
+              splashFactory: nodeConfig.splashFactory,
+              borderRadius: nodeConfig.splashBorderRadius,
+              customBorder: nodeConfig.customSplashShape,
+              canRequestFocus: false,
+              excludeFromSemantics: true,
+              enableFeedback: true,
+              child: child,
+            );
+
+            if (nodeConfig.decoration != null) {
+              child = Container(
+                decoration: nodeConfig.decoration!,
+                clipBehavior: Clip.hardEdge,
+                child: child,
+              );
+            }
+          }
         }
-      }
-    }
 
-    if (configuration.addRepaintBoundaries) {
-      child = RepaintBoundary(child: child);
-    }
+        if (configuration.addRepaintBoundaries) {
+          child = RepaintBoundary(child: child);
+        }
 
-    final bool needsAsync = builder.useAsyncBuild;
+        final bool needsAsync = builder.useAsyncBuild;
 
-    _cacheChildrenAfterFirstAsyncBuild =
-        builder.cacheChildrenAfterFirstAsyncBuild;
-    _isFirstChildrenBuild =
-        _cacheChildrenAfterFirstAsyncBuild ? _isFirstChildrenBuild : true;
-    Widget container = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: <Widget>[
-        child,
-        if (!needsAsync)
-          builder.buildChildren(
-                componentContext,
-              ) ??
-              _buildDefaultChildrenWidgets(configuration, builder),
-        if (needsAsync)
-          _isFirstChildrenBuild
-              ? _buildAsyncChildrenWidgets(
-                  componentContext,
-                  configuration,
-                  builder,
-                )
-              : _buildDefaultChildrenWidgets(configuration, builder),
-      ],
+        _cacheChildrenAfterFirstAsyncBuild =
+            builder.cacheChildrenAfterFirstAsyncBuild;
+        _isFirstChildrenBuild =
+            _cacheChildrenAfterFirstAsyncBuild ? _isFirstChildrenBuild : true;
+        Widget container = Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            child,
+            if (!needsAsync)
+              builder.buildChildren(
+                    componentContext,
+                  ) ??
+                  _buildDefaultChildrenWidgets(configuration, builder),
+            if (needsAsync)
+              _isFirstChildrenBuild
+                  ? _buildAsyncChildrenWidgets(
+                      componentContext,
+                      configuration,
+                      builder,
+                    )
+                  : _buildDefaultChildrenWidgets(configuration, builder),
+          ],
+        );
+
+        final Widget? wrapper = nodeConfig?.nodeWrapper?.call(
+          widget.nodeContainer,
+          context,
+          container,
+        );
+
+        if (wrapper != null) {
+          container = wrapper;
+        }
+
+        return container;
+      },
     );
-
-    final Widget? wrapper = nodeConfig?.nodeWrapper?.call(
-      widget.nodeContainer,
-      context,
-      container,
-    );
-
-    if (wrapper != null) {
-      container = wrapper;
-    }
-
-    return container;
   }
 
   @override

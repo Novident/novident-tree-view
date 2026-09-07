@@ -11,8 +11,6 @@ abstract class NodeComponentBuilder {
 
   bool isDragging = false;
 
-  late void Function(VoidCallback) setState;
-
   bool get mounted => context != null && context!.mounted;
 
   /// Determines whether this builder should handle the given node.
@@ -60,6 +58,19 @@ abstract class NodeComponentBuilder {
   Duration get onHoverCallDelay =>
       const Duration(milliseconds: _kDefaultExpandDelay);
 
+  @mustCallSuper
+  void setState(VoidCallback callback) {
+    if (!mounted) return;
+    callback();
+    componentContext?.marksNeedBuild();
+  }
+
+  /// Clone the current builder.
+  ///
+  /// Commonly used during the build of every [Node]
+  /// to avoid sharing the same builder instance
+  NodeComponentBuilder clone<T extends Node>(T node, BuildContext context);
+
   /// Called when this object is removed from the tree permanently.
   void dispose(ComponentContext context) {}
 
@@ -77,7 +88,8 @@ abstract class NodeComponentBuilder {
   /// [Widget.key], the framework will update the [widget] property of this
   /// [State] object to refer to the new widget and then call this method
   /// with the previous widget as an argument.
-  void didUpdateWidget(ComponentContext context, bool hasEventListeners) {}
+  void didUpdateWidget(
+      ComponentContext context, bool hasEventListeners, Widget oldWidget) {}
 
   /// Called when this object is inserted into the widgets tree.
   void initState(Node node, int depth) {}
@@ -86,6 +98,21 @@ abstract class NodeComponentBuilder {
   NodeDragGestures buildDragGestures(ComponentContext context);
 
   /// Builds the node's interaction configuration.
+  ///
+  ///
+  /// This method IS NOT designed to react to dynamic states.
+  /// Never should be added any type of interaction that depends on the
+  /// state of any object, since this is only called when the node properties
+  /// changes.
+  ///
+  /// Example of the limitation:
+  ///
+  /// 1. Add a tap interaction
+  /// 2. Decoration that takes that tap as "this node is selected"
+  /// 3. Tap more nodes than the last one.
+  /// 4. See how the other nodes are not being rebuilded
+  ///
+  /// For dynamic states reactions, add directly them to the "build" implementation
   NodeConfiguration? buildConfigurations(ComponentContext context) =>
       NodeConfiguration(touchable: false);
 

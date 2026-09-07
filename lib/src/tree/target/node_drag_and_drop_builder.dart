@@ -129,7 +129,6 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       _timer = null;
     }
     widget.builder.isDragging = false;
-    widget.builder.setState = (VoidCallback fn) {};
     widget.builder.context = null;
     widget.builder.componentContext = null;
     super.dispose();
@@ -171,6 +170,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       ..draggedNode = widget.node;
     _gestures.onDragStart?.call(cursorPosition, widget.node);
     widget.builder.isDragging = true;
+    widget.builder.setState(() {});
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
@@ -193,6 +193,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     DragAndDropDetailsListener.of(context).details.value = null;
     _gestures.onDragCanceled?.call(velocity, point);
     widget.builder.isDragging = false;
+    widget.builder.setState(() {});
   }
 
   void _onDragCompleted() {
@@ -209,6 +210,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
   void _endDrag() {
     isDragging = false;
     widget.builder.isDragging = false;
+    widget.builder.setState(() {});
   }
 
   NovDragAndDropDetails<Node>? _getDropDetails(
@@ -300,15 +302,14 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       widget.owner,
     );
 
-    setState(() {
-      _details = null;
-    });
+    _details = null;
+    widget.builder.isDragging = false;
+    widget.builder.setState(() {});
 
     // Explicitly clear the inherited listener so any widget
     // depending on DragAndDropDetailsListener stops showing
     // drag feedback (borders, highlights).
     DragAndDropDetailsListener.of(context).details.value = null;
-    widget.builder.isDragging = false;
   }
 
   void _onLeave(Node? data) {
@@ -327,6 +328,7 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
 
     _gestures.onLeave?.call(data);
     widget.builder.isDragging = false;
+    widget.builder.setState(() {});
   }
 
   void _cancelHoverExpansion() {

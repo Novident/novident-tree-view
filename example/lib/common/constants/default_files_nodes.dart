@@ -1,103 +1,68 @@
 import 'dart:convert';
 
-import 'package:example/common/constants/contents/chapter_one_awakening_content.dart';
-import 'package:example/common/constants/contents/chapter_one_dark_woods_content.dart';
-import 'package:example/common/constants/contents/chapter_two_tavern_content.dart';
-import 'package:example/common/constants/contents/character_elara_content.dart';
-import 'package:example/common/constants/contents/place_hollow_forest_content.dart';
-import 'package:example/common/constants/example_delta_content.dart';
+import 'package:example/common/constants/contents/recipe_content.dart';
+import 'package:example/common/constants/contents/text_formatting_content.dart';
 import 'package:example/common/nodes/directory.dart';
 import 'package:example/common/nodes/file.dart';
-import 'package:flutter_quill/quill_delta.dart';
+import 'package:novident_editor/novident_editor.dart' show Document;
 import 'package:novident_nodes/novident_nodes.dart';
 
-String _content(Delta delta) => jsonEncode(delta.toJson());
+import 'contents/readme_document.dart';
 
-/// Scrivener-like default project structure.
+String _content(Document document) => jsonEncode(document.toJson());
+
+/// A fresh default workspace: project structure + initial document
+/// contents, built together so the node ids match the content map.
 ///
-/// Keep this file structure-only: every document's content lives in its
-/// own file under `constants/contents/` (same pattern as
-/// [exampleDelta] in `example_delta_content.dart`).
+/// Every call builds NEW node instances — tests boot several workspaces
+/// without disposing shared mutable node state.
 ///
-/// Note: `Research` must stay at root index `1` — the desktop view
-/// selects the README on startup through `root.atPath([1, 0])`.
-final List<Node> defaultNodes = <Node>[
-  Directory(
-    details: NodeDetails.zero(),
-    name: 'Manuscript',
+/// The workspace is a capability showcase: each document demonstrates a
+/// group of editor features with realistic content. The README must stay at
+/// root path `[0, 0]` — the desktop and mobile views select it on startup
+/// through `root.atPath([0, 0])`.
+({List<Node> nodes, Map<String, String> contents}) buildDefaultWorkspace() {
+  final readme = File(
+    details: NodeDetails.withLevel(1),
+    name: 'README',
     createAt: DateTime.now(),
-    children: [
-      Directory(
-        details: NodeDetails(level: 1),
-        name: 'Chapter 1',
-        createAt: DateTime.now(),
-        children: [
-          File(
-            details: NodeDetails.withLevel(2),
-            name: 'Awakening',
-            content: _content(awakeningDelta),
-            createAt: DateTime.now(),
-          ),
-          File(
-            details: NodeDetails.withLevel(2),
-            name: 'Dark Woods',
-            content: _content(darkWoodsDelta),
-            createAt: DateTime.now(),
-          ),
-        ],
-      ),
-      Directory(
-        details: NodeDetails(level: 1),
-        name: 'Chapter 2',
-        createAt: DateTime.now(),
-        children: [
-          File(
-            details: NodeDetails.withLevel(2),
-            name: 'The Tavern',
-            content: _content(tavernDelta),
-            createAt: DateTime.now(),
-          ),
-        ],
-      ),
-    ],
-  ),
-  Directory(
-    details: NodeDetails.withLevel(0),
-    name: 'Research',
+  );
+  final textFormatting = File(
+    details: NodeDetails.withLevel(1),
+    name: 'Text & Formatting',
     createAt: DateTime.now(),
-    children: [
-      File(
-        details: NodeDetails.withLevel(1),
-        name: 'README',
-        content: _content(exampleDelta),
-        createAt: DateTime.now(),
-      ),
-    ],
-  ),
-  Directory(
-    details: NodeDetails.withLevel(0),
-    name: 'Characters',
+  );
+  final recipe = File(
+    details: NodeDetails.withLevel(1),
+    name: 'Homemade Sourdough Bread',
     createAt: DateTime.now(),
-    children: [
-      File(
-        details: NodeDetails.withLevel(1),
-        name: 'Elara',
-        content: _content(characterElaraDelta),
-        createAt: DateTime.now(),
-      ),
-    ],
-  ),
-  Directory(
-    details: NodeDetails.withLevel(0),
-    name: 'Places',
-    createAt: DateTime.now(),
-    children: [
-      File(
-        details: NodeDetails.withLevel(1),
-        name: 'The Hollow Forest',
-        content: _content(placeHollowForestDelta),
-        createAt: DateTime.now(),
-      ),
-    ],
-  ),
-];
+  );
+
+  // Keep this file structure-only: every document's content lives in its
+  // own file under `constants/contents/` and is delivered through the
+  // contents map below — the nodes themselves carry no content.
+  //
+  // Note: `README` must stay at root path `[0, 0]` — the desktop and
+  // mobile views select it on startup through `root.atPath([0, 0])`.
+  final nodes = <Node>[
+    Directory(
+      details: NodeDetails.zero(),
+      name: 'Novident Showcase',
+      createAt: DateTime.now(),
+      isExpanded: true,
+      children: [
+        readme,
+        textFormatting,
+        recipe,
+      ],
+    ),
+  ];
+
+  final contents = <String, String>{
+    readme.id: _content(readmeDocument),
+    textFormatting.id: _content(textFormattingDocument),
+    recipe.id: _content(recipeDocument),
+  };
+
+  return (nodes: nodes, contents: contents);
+}

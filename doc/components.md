@@ -4,7 +4,7 @@
 
 - **Visual construction** — the `build()` method returns the widget for a single tree row.
 - **Drag‑and‑drop feedback** — the builder receives `NovDragAndDropDetails` via `ComponentContext.details` to draw drop‑zone borders (above / inside / below) and can react to the persistent `isDragging` flag.
-- **Interaction configuration** — `buildConfigurations()` returns a `NodeConfiguration` (tap handlers, selection decoration, InkWell properties).
+- **Interaction configuration** — `buildConfigurations()` returns a `NodeConfiguration` (tap handlers, decoration, InkWell properties). This method is designed to be stateless and static most of the times. For dynamic state reactions, you should manage them inside the `build` method.
 - **Drag gesture wiring** — `buildDragGestures()` returns `NodeDragGestures` (standard or custom callbacks).
 - **Optional custom children** — override `buildChildren()` to take full control of the subtree layout.
 
@@ -30,6 +30,9 @@ class CustomComponentBuilder extends NodeComponentBuilder {
   // Node Validation
   @override
   bool validate(Node node, int depth) => node is YourNode;
+
+  /// Required method to avoid using shared builder instance
+  CustomComponentBuilder clone(Node node, BuildContext context) => CustomComponentBuilder(); 
 
   // Visual Construction
   @override
@@ -62,7 +65,13 @@ class CustomComponentBuilder extends NodeComponentBuilder {
       );
     }
 
-    return DecoratedBox(
+    return Container( 
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)
+            : null,
+      ),
+      child: DecoratedBox(
       decoration: decoration ?? const BoxDecoration(),
       position: DecorationPosition.foreground,
       child: AutomaticNodeIndentation(
@@ -72,20 +81,28 @@ class CustomComponentBuilder extends NodeComponentBuilder {
           beingDragged: isDragging, // dim tile content too
         ),
       ),
-    );
+    ));
   }
 
-  // Interaction Configuration
+  /// Interaction Configuration
+  ///
+  /// Never should be added any type of interaction that depends on the
+  /// state of any object, since this is only called when the node properties
+  /// changes.
+  ///
+  /// Example of the issue:
+  ///
+  /// 1. Add a tap interaction
+  /// 2. Decoration that takes that tap as "this node is selected"
+  /// 3. Tap more nodes than the last one. 
+  /// 4. See how the other nodes are not being rebuilded
+  ///
+  /// For dynamic decoration states, add directly them to the "build" implementation
   @override
   NodeConfiguration buildConfigurations(ComponentContext context) {
     return NodeConfiguration(
       makeTappable: true,
-      decoration: BoxDecoration(
-        color: isSelected
-            ? Theme.of(context.nodeContext).primaryColor.withAlpha(50)
-            : null,
-      ),
-      onTap: (_) => selectNode(context.node),
+      onTap: (_) => setState(() => selectNode(context.node)),
     );
   }
 
@@ -132,6 +149,8 @@ class CustomComponentBuilder extends NodeComponentBuilder {
 | `initState(node, depth)` | First time the builder is assigned to a tree node. |
 | `didChangeDependencies(ctx)` | An `InheritedWidget` above the node changed. |
 | `didUpdateWidget(ctx, hasListeners)` | The parent widget that wraps this node was updated (e.g. after a tree mutation). |
+| `mounted` | Whether the current builder is already mounted in the tree. |
+| `setState(callback)` | Same method that mirrors the original `setState` from the Widgets. |
 | `dispose(ctx)` | The builder is being removed (node deleted from the tree). |
 
 All four receive a `ComponentContext` so you can interact with the tree

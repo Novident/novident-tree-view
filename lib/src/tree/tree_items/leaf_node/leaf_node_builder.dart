@@ -55,7 +55,6 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
       _initStateCalled = true;
     }
     _builder?.didChangeDependencies(_buildContext);
-    _builder?.setState = setState;
     _builder?.context = context;
     _builder?.componentContext = _buildContext;
     super.didChangeDependencies();
@@ -70,13 +69,19 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
       builder.didUpdateWidget(
         _buildContext,
         false,
+        oldWidget,
       );
+      _builder?.context = context;
+      _builder?.componentContext = _buildContext;
       return;
     }
-    _builder?.didUpdateWidget(_buildContext, false);
+    _builder?.didUpdateWidget(
+      _buildContext,
+      false,
+      oldWidget,
+    );
     _builder?.context = context;
     _builder?.componentContext = _buildContext;
-    _builder?.setState = setState;
   }
 
   void _markNeedsBuild() {
@@ -93,19 +98,21 @@ class _LeafNodeBuilderState extends State<LeafNodeBuilder> {
     )
         ? _builder!
         : _builder = _checkForBuilder();
-    builder.setState = setState;
     builder.context = context;
     builder.componentContext = _buildContext;
     return builder;
   }
 
   NodeComponentBuilder _checkForBuilder() {
-    final NodeComponentBuilder? tempB = configuration.builders.firstWhereOrNull(
-      (NodeComponentBuilder b) => b.validate(
-        widget.node,
-        widget.depth,
-      ),
-    );
+    final NodeComponentBuilder? tempB = configuration.builders
+        .firstWhereOrNull(
+          (NodeComponentBuilder b) => b.validate(
+            widget.node,
+            widget.depth,
+          ),
+        )
+        ?.clone(widget.node, context);
+
     if (tempB == null) {
       throw StateError(
         'No NodeComponentBuilder was '

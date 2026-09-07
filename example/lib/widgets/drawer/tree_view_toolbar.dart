@@ -34,7 +34,6 @@ class _TreeViewToolbarState extends State<TreeViewToolbar> {
           0,
           widget.controller.root,
         ),
-        content: '',
         name: 'Untitled Document',
         createAt: DateTime.now(),
       ),

@@ -3,13 +3,14 @@ import 'package:example/common/configurations/widgets/directory_widget.dart';
 import 'package:example/common/nodes/directory.dart';
 import 'package:example/common/nodes/file.dart';
 import 'package:example/extensions/node_ext.dart';
+import 'package:example/widgets/editor/editor_configuration.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
 class DirectoryComponentBuilder extends NodeComponentBuilder {
   final BorderSide borderSide = BorderSide(
-    color: Colors.blueAccent,
+    color: kEditorAccent,
     width: 2.0,
   );
 
@@ -17,6 +18,14 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
     color: Colors.redAccent,
     width: 2.0,
   );
+
+  @override
+  DirectoryComponentBuilder clone<T extends Node>(
+    T node,
+    BuildContext context,
+  ) {
+    return DirectoryComponentBuilder();
+  }
 
   @override
   Widget build(ComponentContext context) {
@@ -81,7 +90,7 @@ class DirectoryComponentBuilder extends NodeComponentBuilder {
             ? null
             : error
                 ? Colors.redAccent.withAlpha(50)
-                : Colors.blueAccent.withAlpha(50),
+                : kEditorAccent.withAlpha(50),
         borderRadius: BorderRadiusDirectional.circular(5),
       );
     }
