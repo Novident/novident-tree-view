@@ -1,3 +1,11 @@
+## 1.1.1
+
+* fix: cannot rebuild `NodeComponentBuilder` since every node shares the same instance for whole tree.
+* fix: `setState` var inside `NodeComponentBuilder` was replaced with a direct method version.
+* fix(doc): documentation now warn about `buildConfiguration` method implementation should be stateless and static.
+* fix(example): moved "selected node" dynamic feature, to `build` since `buildConfiguration` is not designed to react to dynamic states.
+* feat(breaking changes): added new `clone` required method for `NodeComponentBuilder`.
+
 ## 1.1.0
 
 * Feat(breaking changes): `NodeDraggableBuilder` and `NodeTargetBuilder` replaced by a single `NodeDragAndDropBuilder` widget. The unified widget removes a frame delay that existed between `DraggableListener` updates and `DragTarget` reactions when the two widgets were nested, eliminates duplicate `NodeDragGestures` construction, and makes drag-start events immediately visible to the `DragTarget` on the same node.

@@ -1,3 +1,4 @@
+import 'package:example/common/nodes/file.dart';
 import 'package:example/common/nodes/root.dart';
 import 'package:example/extensions/node_ext.dart';
 import 'package:novident_nodes/novident_nodes.dart';
@@ -15,6 +16,16 @@ class TreeController extends BaseTreeController {
   /// Removes the current node selected
   void invalidateSelection() {
     selectNode(null);
+  }
+
+  /// The current selection as a [File], or null for non-file nodes.
+  ///
+  /// Both editor views open documents through this getter: the desktop
+  /// view feeds it to the split controller, the mobile view to its
+  /// single session.
+  File? get selectedFile {
+    final Node? node = selectedNode;
+    return node is File ? node : null;
   }
 
   void selectFirstNode() {

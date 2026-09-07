@@ -13,7 +13,6 @@ abstract class BaseTreeController extends ChangeNotifier {
 
   bool get disposed => _disposed;
 
-  @protected
   ValueNotifier<Node?> currentSelectedNode = ValueNotifier(null);
 
   ValueNotifier<Node?> get selection => currentSelectedNode;
@@ -30,10 +29,8 @@ abstract class BaseTreeController extends ChangeNotifier {
   /// selectNode just makes of the tree directory
   /// select a node
   void selectNode(Node? node) {
-    if (currentSelectedNode.value.runtimeType == node.runtimeType) {
-      if (currentSelectedNode.value == node) {
-        return;
-      }
+    if (currentSelectedNode.value?.id == node?.id) {
+      return;
     }
     currentSelectedNode.value = node;
   }

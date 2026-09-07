@@ -1,0 +1,5 @@
+# Exclude the test dictionaries from the package published to pub.dev.
+# These files are large (es_ES.dic, en_count_big.txt, ...) and are only
+# needed to run the tests, not by consumers of this package.
+# They remain tracked in git so tests keep working locally and in CI.
+*

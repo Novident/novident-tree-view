@@ -6,9 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
-/// Scrivener-like binder colors.
-const Color _kBinderBackground = Color(0xFFF0EFEE);
-const Color _kBinderBorder = Color(0xFFD6D6D6);
+/// Binder colors — a cool neutral family that harmonizes with the
+/// workspace background ([kWorkspaceBackground]).
+const Color _kBinderBackground = Color(0xFFECEEF1);
+const Color _kBinderBorder = Color(0xFFD5D8DC);
 
 /// The binder: project header + toolbar + scrollable tree.
 ///

@@ -60,12 +60,6 @@ Since there's a lot to explain and implement, we prefer to provide a separate do
 | [📜 Drag and Drop details](doc/drag_and_drop_details.md) | `NovDragAndDropDetails` — drop‑position calculation, three‑zone mapping (`mapDropPosition`), global vs local offset |
 | [✍️ Nodes Gestures](doc/nodes_gestures.md) | `NodeDragGestures` — lifecycle callbacks (`onWillAcceptWithDetails`, `onAcceptWithDetails`, `onDragStart`, `onDragCanceled`, …) |
 
-## 📝 Recipes
-
-- [🗃️ Tree File](doc/recipes/tree_file/tree_file.md) — recreate a file tree quickly: node types (`File`, `Directory`, `Root`), builders, configuration, and drag‑and‑drop wiring.
-
-_More recipes will be added later_
-
 ## 🌳 Contributing
 
 We greatly appreciate your time and effort.

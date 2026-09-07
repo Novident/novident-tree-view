@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-/// Project header of the binder, Scrivener style: project icon +
+/// Project header of the binder, style: project icon +
 /// project name + demo subtitle.
 ///
 /// Converted from StatefulWidget to StatelessWidget: it held no state.

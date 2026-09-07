@@ -2,11 +2,11 @@ import 'package:example/common/configurations/builders/directory_component_build
 import 'package:example/common/configurations/builders/file_component_builder.dart';
 import 'package:example/common/controller/tree_controller.dart';
 import 'package:example/common/nodes/file.dart';
+import 'package:example/common/store/document_content_store.dart';
 import 'package:example/extensions/node_ext.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// ignore: experimental_member_use
-import 'package:flutter_quill/internal.dart';
+import 'dart:io' show Platform;
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 
@@ -28,7 +28,8 @@ TreeConfiguration treeConfigurationBuilder(
         indentation: 14,
       ),
       dragConfig: DraggableConfigurations.simple(
-        longPressOnMobile: isMobile,
+        longPressOnMobile:
+            Platform.isAndroid || Platform.isIOS || Platform.isFuchsia,
         expandOnHover: true,
         feedback: (Node node, BuildContext context) {
           return NodeDragCard(
@@ -81,10 +82,11 @@ class _NodeDragCardState extends State<NodeDragCard> {
                 Padding(
                   padding: const EdgeInsets.only(left: 5, right: 5),
                   child: Icon(
-                    widget.node.asFile.content.isEmpty
-                        ? CupertinoIcons.doc_text
-                        : CupertinoIcons.doc_text_fill,
-                    size: isAndroid ? 20 : null,
+                    DocumentContentProvider.of(context)
+                            .hasContent(widget.node.id)
+                        ? CupertinoIcons.doc_text_fill
+                        : CupertinoIcons.doc_text,
+                    size: Platform.isAndroid ? 20 : null,
                   ),
                 ),
               if (widget.node.isDirectory)
@@ -95,7 +97,7 @@ class _NodeDragCardState extends State<NodeDragCard> {
                             widget.node.asDirectory.isEmpty
                         ? CupertinoIcons.folder_open
                         : CupertinoIcons.folder_fill,
-                    size: isAndroid ? 20 : null,
+                    size: Platform.isAndroid ? 20 : null,
                   ),
                 ),
               Center(
