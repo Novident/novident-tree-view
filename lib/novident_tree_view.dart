@@ -2,6 +2,12 @@ library;
 
 // node entities
 export 'src/tree/config/node/node_configuration.dart';
+// services
+export 'src/services/scroll/auto_scroller.dart';
+export 'src/services/scroll/scroll_driver.dart';
+export 'src/services/scroll/scroll_target_resolver.dart';
+export 'src/services/scroll/scroll_velocity.dart';
+export 'src/services/widgets/auto_scroll_widget.dart';
 // interfaces
 export 'src/interfaces/draggable_node.dart';
 export 'src/tree/target/listeners/draggable_listener.dart';
@@ -9,7 +15,7 @@ export 'src/tree/target/listeners/draggable_listener.dart';
 export 'src/tree/tree_items/node_container/container_builder.dart';
 export 'src/tree/tree_items/leaf_node/leaf_node_builder.dart';
 // tree
-export 'src/tree/tree.dart';
+export 'src/tree/tree.dart' hide TreeListView;
 export 'src/tree/config/list_view_configurations.dart';
 // tree configurations
 export 'src/tree/config/tree_configuration.dart';

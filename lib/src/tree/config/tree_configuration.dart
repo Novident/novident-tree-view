@@ -72,6 +72,10 @@ final class TreeConfiguration {
   /// Use [indentConfiguration] for dynamic per-node indentation.
   final double indent;
 
+  /// The edge inset used by the [AutoScroll]
+  /// Service to know where start the auto-scrolling
+  final double autoScrollEdgeInset;
+
   /// Full indentation configuration.
   ///
   /// When provided, [indent] is ignored. Use this for dynamic
@@ -128,6 +132,7 @@ final class TreeConfiguration {
   TreeConfiguration({
     required this.builders,
     DraggableConfigurations? dragConfig,
+    this.autoScrollEdgeInset = 20,
     this.indent = 20,
     this.indentConfiguration,
     this.activateDragAndDropFeature = true,
@@ -150,6 +155,7 @@ final class TreeConfiguration {
     List<NodeComponentBuilder>? builders,
     DraggableConfigurations? dragConfig,
     double? indent,
+    double? autoScrollEdgeInset,
     double? topZoneHeight,
     double? bottomZoneHeight,
     IndentConfiguration? indentConfiguration,
@@ -178,6 +184,7 @@ final class TreeConfiguration {
       listView: listView ?? this.listView,
       topZoneHeight: topZoneHeight ?? this.topZoneHeight,
       bottomZoneHeight: bottomZoneHeight ?? this.bottomZoneHeight,
+autoScrollEdgeInset: autoScrollEdgeInset ?? this.autoScrollEdgeInset
     );
   }
 
@@ -186,6 +193,7 @@ final class TreeConfiguration {
     if (identical(this, other)) return true;
     return other.dragConfig == dragConfig &&
         other.listView == listView &&
+        other.autoScrollEdgeInset == autoScrollEdgeInset &&
         other.activateDragAndDropFeature == activateDragAndDropFeature &&
         other.emptyPlaceholder == emptyPlaceholder &&
         other.topZoneHeight == topZoneHeight &&
@@ -200,6 +208,7 @@ final class TreeConfiguration {
         builders,
         sharedData,
         dragConfig,
+        autoScrollEdgeInset, 
         listView,
         activateDragAndDropFeature,
         topZoneHeight.hashCode,
