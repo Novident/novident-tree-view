@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart' show Node, NodeContainer;
 import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:provider/provider.dart';
-
-import '../services/widgets/auto_scroll_widget.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 /// A customizable scrollable tree view component with drag-and-drop support
 ///
@@ -39,6 +38,8 @@ final class TreeView extends StatefulWidget {
 class _TreeViewState extends State<TreeView> {
   /// Persistent drag state shared across tree rebuilds.
   final DragListener _dragListener = DragListener();
+  ScrollableState? scrollableState;
+  AutoScrollerService? autoScroller;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -52,6 +53,32 @@ class _TreeViewState extends State<TreeView> {
   /// Widget displayed when no nodes are found in the tree
   Widget? Function(BuildContext) get noNodesFoundWidget =>
       widget.configuration.emptyPlaceholder ?? _kDefaultNotFoundWidget;
+
+  void updateAutoScroller(
+    ScrollableState scrollableState,
+  ) {
+    if (this.scrollableState != scrollableState) {
+      autoScroller?.stopAutoScroll();
+      late AutoScrollerService scroller;
+      scroller = widget.customScrollableService?.call(scrollableState) ??
+          AutoScroller(
+            scrollableState,
+            onScrollViewScrolled: () => _onScrollViewScrolled(scroller),
+          );
+      autoScroller = scroller;
+      this.scrollableState = scrollableState;
+    }
+  }
+
+  void _onScrollViewScrolled(AutoScrollerService scroller) {
+    if (!UniversalPlatform.isMobile) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (autoScroller == scroller) {
+          scroller.continueToAutoScroll();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,12 +102,23 @@ class _TreeViewState extends State<TreeView> {
                 const NeverScrollableScrollPhysics(),
             children: <Widget>[
               // Main tree content
-              AutoScrollWidget(
-                child: TreeListView(
-                  root: widget.root,
-                  noNodesFoundWidget: noNodesFoundWidget,
-                  configuration: widget.configuration,
-                ),
+              Builder(
+                builder: (ctx) {
+                  // We can use manually external scrollables
+                  //
+                  // Or use the main ListView Scrollable
+                  final scrollable =
+                      Scrollable.maybeOf(context) ?? Scrollable.maybeOf(ctx);
+                  if (scrollable != null) updateAutoScroller(scrollable);
+                  return Provider<AutoScrollerService?>(
+                    create: (BuildContext context) => autoScroller,
+                    child: TreeListView(
+                      root: widget.root,
+                      noNodesFoundWidget: noNodesFoundWidget,
+                      configuration: widget.configuration,
+                    ),
+                  );
+                },
               ),
               // Bottom padding spacer
               Padding(

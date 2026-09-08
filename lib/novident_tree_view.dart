@@ -7,7 +7,6 @@ export 'src/services/scroll/auto_scroller.dart';
 export 'src/services/scroll/scroll_driver.dart';
 export 'src/services/scroll/scroll_target_resolver.dart';
 export 'src/services/scroll/scroll_velocity.dart';
-export 'src/services/widgets/auto_scroll_widget.dart';
 // interfaces
 export 'src/interfaces/draggable_node.dart';
 export 'src/tree/target/listeners/draggable_listener.dart';
