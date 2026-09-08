@@ -169,23 +169,22 @@ final class TreeConfiguration {
     ListViewConfigurations? listView,
   }) {
     return TreeConfiguration(
-      builders: builders ?? this.builders,
-      dragConfig: dragConfig ?? this.dragConfig,
-      indent: indent ?? this.indent,
-      indentConfiguration: indentConfiguration ?? this.indentConfiguration,
-      sharedData: sharedData ?? this.sharedData,
-      activateDragAndDropFeature:
-          activateDragAndDropFeature ?? this.activateDragAndDropFeature,
-      addRepaintBoundaries: addRepaintBoundaries ?? this.addRepaintBoundaries,
-      emptyPlaceholder: emptyPlaceholder ?? this.emptyPlaceholder,
-      shrinkWrap: shrinkWrap ?? this.shrinkWrap,
-      physics: physics ?? this.physics,
-      scrollController: scrollController ?? this.scrollController,
-      listView: listView ?? this.listView,
-      topZoneHeight: topZoneHeight ?? this.topZoneHeight,
-      bottomZoneHeight: bottomZoneHeight ?? this.bottomZoneHeight,
-autoScrollEdgeInset: autoScrollEdgeInset ?? this.autoScrollEdgeInset
-    );
+        builders: builders ?? this.builders,
+        dragConfig: dragConfig ?? this.dragConfig,
+        indent: indent ?? this.indent,
+        indentConfiguration: indentConfiguration ?? this.indentConfiguration,
+        sharedData: sharedData ?? this.sharedData,
+        activateDragAndDropFeature:
+            activateDragAndDropFeature ?? this.activateDragAndDropFeature,
+        addRepaintBoundaries: addRepaintBoundaries ?? this.addRepaintBoundaries,
+        emptyPlaceholder: emptyPlaceholder ?? this.emptyPlaceholder,
+        shrinkWrap: shrinkWrap ?? this.shrinkWrap,
+        physics: physics ?? this.physics,
+        scrollController: scrollController ?? this.scrollController,
+        listView: listView ?? this.listView,
+        topZoneHeight: topZoneHeight ?? this.topZoneHeight,
+        bottomZoneHeight: bottomZoneHeight ?? this.bottomZoneHeight,
+        autoScrollEdgeInset: autoScrollEdgeInset ?? this.autoScrollEdgeInset);
   }
 
   @override
@@ -208,7 +207,7 @@ autoScrollEdgeInset: autoScrollEdgeInset ?? this.autoScrollEdgeInset
         builders,
         sharedData,
         dragConfig,
-        autoScrollEdgeInset, 
+        autoScrollEdgeInset,
         listView,
         activateDragAndDropFeature,
         topZoneHeight.hashCode,
