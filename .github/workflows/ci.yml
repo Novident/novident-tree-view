@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-test:
+    name: Analyze & test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
+        with:
+          channel: stable
+          cache: true
+
+      - name: Get dependencies (root)
+        run: flutter pub get
+
+      - name: Analyze (root)
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings lib test
+
+      - name: Test (root)
+        run: flutter test
+
+      - name: Analyze example
+        run: |
+          set -e
+          cd example
+          flutter pub get
+          flutter analyze --no-fatal-infos --no-fatal-warnings
