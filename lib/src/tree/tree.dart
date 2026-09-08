@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:novident_nodes/novident_nodes.dart' show Node, NodeContainer;
 import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:provider/provider.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 /// A customizable scrollable tree view component with drag-and-drop support
 ///
@@ -17,10 +19,15 @@ final class TreeView extends StatefulWidget {
   /// Bottom padding for the scrollable area
   final double bottomInsets;
 
+  /// Custom [AutoScrollerService] implementations to allow making
+  /// a service for auto-scrolling with different behaviors
+  final AutoScrollerService Function(ScrollableState)? customScrollableService;
+
   const TreeView({
     required this.root,
     required this.configuration,
     this.bottomInsets = 30,
+    this.customScrollableService,
     super.key,
   });
 
@@ -31,10 +38,47 @@ final class TreeView extends StatefulWidget {
 class _TreeViewState extends State<TreeView> {
   /// Persistent drag state shared across tree rebuilds.
   final DragListener _dragListener = DragListener();
+  ScrollableState? scrollableState;
+  AutoScrollerService? autoScroller;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    properties.add(DiagnosticsProperty.lazy(
+      'dragListenerState',
+      () => _dragListener,
+    ));
+    super.debugFillProperties(properties);
+  }
 
   /// Widget displayed when no nodes are found in the tree
   Widget? Function(BuildContext) get noNodesFoundWidget =>
       widget.configuration.emptyPlaceholder ?? _kDefaultNotFoundWidget;
+
+  void updateAutoScroller(
+    ScrollableState scrollableState,
+  ) {
+    if (this.scrollableState != scrollableState) {
+      autoScroller?.stopAutoScroll();
+      late AutoScrollerService scroller;
+      scroller = widget.customScrollableService?.call(scrollableState) ??
+          AutoScroller(
+            scrollableState,
+            onScrollViewScrolled: () => _onScrollViewScrolled(scroller),
+          );
+      autoScroller = scroller;
+      this.scrollableState = scrollableState;
+    }
+  }
+
+  void _onScrollViewScrolled(AutoScrollerService scroller) {
+    if (!UniversalPlatform.isMobile) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (autoScroller == scroller) {
+          scroller.continueToAutoScroll();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,46 +102,23 @@ class _TreeViewState extends State<TreeView> {
                 const NeverScrollableScrollPhysics(),
             children: <Widget>[
               // Main tree content
-              ListenableBuilder(
-                listenable: widget.root,
-                builder: (BuildContext context, Widget? child) =>
-                    ListView.builder(
-                  shrinkWrap: widget
-                      .configuration.treeListViewConfigurations.shrinkWrap,
-                  scrollDirection: Axis.vertical,
-                  physics: const NeverScrollableScrollPhysics(),
-                  primary: false,
-                  addSemanticIndexes: widget.configuration
-                      .treeListViewConfigurations.addSemanticIndexes,
-                  clipBehavior: widget.configuration.treeListViewConfigurations
-                          .clipBehavior ??
-                      Clip.hardEdge,
-                  itemCount: widget.root.isEmpty ? 1 : widget.root.length,
-                  reverse:
-                      widget.configuration.treeListViewConfigurations.reverse,
-                  itemExtent: widget
-                      .configuration.treeListViewConfigurations.itemExtent,
-                  itemExtentBuilder: widget.configuration
-                      .treeListViewConfigurations.itemExtentBuilder,
-                  prototypeItem: widget
-                      .configuration.treeListViewConfigurations.prototypeItem,
-                  findChildIndexCallback: widget.configuration
-                      .treeListViewConfigurations.findChildIndexCallback,
-                  addAutomaticKeepAlives: false,
-                  cacheExtent: widget
-                      .configuration.treeListViewConfigurations.cacheExtent,
-                  semanticChildCount: widget.configuration
-                      .treeListViewConfigurations.semanticChildCount,
-                  dragStartBehavior: widget.configuration
-                      .treeListViewConfigurations.dragStartBehavior,
-                  keyboardDismissBehavior: widget.configuration
-                      .treeListViewConfigurations.keyboardDismissBehavior,
-                  restorationId: widget
-                      .configuration.treeListViewConfigurations.restorationId,
-                  hitTestBehavior: widget
-                      .configuration.treeListViewConfigurations.hitTestBehavior,
-                  itemBuilder: _itemBuilder,
-                ),
+              Builder(
+                builder: (ctx) {
+                  // We can use manually external scrollables
+                  //
+                  // Or use the main ListView Scrollable
+                  final scrollable =
+                      Scrollable.maybeOf(context) ?? Scrollable.maybeOf(ctx);
+                  if (scrollable != null) updateAutoScroller(scrollable);
+                  return Provider<AutoScrollerService?>(
+                    create: (BuildContext context) => autoScroller,
+                    child: TreeListView(
+                      root: widget.root,
+                      noNodesFoundWidget: noNodesFoundWidget,
+                      configuration: widget.configuration,
+                    ),
+                  );
+                },
               ),
               // Bottom padding spacer
               Padding(
@@ -111,12 +132,63 @@ class _TreeViewState extends State<TreeView> {
       ),
     );
   }
+}
+
+@internal
+class TreeListView extends StatelessWidget {
+  const TreeListView({
+    super.key,
+    required this.configuration,
+    required this.root,
+    required this.noNodesFoundWidget,
+  });
+
+  final TreeConfiguration configuration;
+  final NodeContainer root;
+  final Widget? Function(BuildContext) noNodesFoundWidget;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: root,
+      builder: (BuildContext context, Widget? child) => ListView.builder(
+        shrinkWrap: configuration.treeListViewConfigurations.shrinkWrap,
+        scrollDirection: Axis.vertical,
+        physics: const NeverScrollableScrollPhysics(),
+        primary: false,
+        addSemanticIndexes:
+            configuration.treeListViewConfigurations.addSemanticIndexes,
+        clipBehavior: configuration.treeListViewConfigurations.clipBehavior ??
+            Clip.hardEdge,
+        itemCount: root.isEmpty ? 1 : root.length,
+        reverse: configuration.treeListViewConfigurations.reverse,
+        itemExtent: configuration.treeListViewConfigurations.itemExtent,
+        itemExtentBuilder:
+            configuration.treeListViewConfigurations.itemExtentBuilder,
+        prototypeItem: configuration.treeListViewConfigurations.prototypeItem,
+        findChildIndexCallback:
+            configuration.treeListViewConfigurations.findChildIndexCallback,
+        addAutomaticKeepAlives: false,
+        cacheExtent: configuration.treeListViewConfigurations.cacheExtent,
+        semanticChildCount:
+            configuration.treeListViewConfigurations.semanticChildCount,
+        dragStartBehavior:
+            configuration.treeListViewConfigurations.dragStartBehavior,
+        keyboardDismissBehavior:
+            configuration.treeListViewConfigurations.keyboardDismissBehavior,
+        restorationId: configuration.treeListViewConfigurations.restorationId,
+        hitTestBehavior:
+            configuration.treeListViewConfigurations.hitTestBehavior,
+        itemBuilder: _itemBuilder,
+      ),
+    );
+  }
 
   Widget? _itemBuilder(BuildContext context, int index) {
-    if (widget.root.isEmpty) {
+    if (root.isEmpty) {
       return noNodesFoundWidget(context) ?? const SizedBox.shrink();
     }
-    final Node node = widget.root.children.elementAt(index);
+    final Node node = root.children.elementAt(index);
     // Build appropriate node type
     if (node is! NodeContainer) {
       return LeafNodeBuilder(
@@ -124,7 +196,7 @@ class _TreeViewState extends State<TreeView> {
         node: node,
         index: index,
         depth: 0,
-        owner: widget.root,
+        owner: root,
       );
     } else {
       return ContainerBuilder(
@@ -132,7 +204,7 @@ class _TreeViewState extends State<TreeView> {
         nodeContainer: node,
         index: index,
         depth: 0,
-        owner: widget.root,
+        owner: root,
       );
     }
   }

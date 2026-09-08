@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:novident_nodes/novident_nodes.dart';
 import 'package:novident_tree_view/novident_tree_view.dart';
 import 'package:novident_tree_view/src/extensions/cast_nodes.dart';
+import 'package:provider/provider.dart';
 import 'package:vector_math/vector_math_64.dart';
 
 /// Unified widget that handles both drag initiation and drop acceptance
@@ -180,6 +181,13 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       ..userPosition = _inactiveCursorOffset
       ..draggedNode = widget.node;
     _gestures.onDragUpdate?.call(details);
+    if (mounted) {
+      context.read<AutoScrollerService?>()?.startAutoScroll(
+            details.globalPosition,
+            inset: widget.configuration.autoScrollEdgeInset,
+            duration: const Duration(milliseconds: 2),
+          );
+    }
   }
 
   void _onDraggableCanceled(Velocity velocity, Offset point) {
@@ -194,6 +202,9 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
     _gestures.onDragCanceled?.call(velocity, point);
     widget.builder.isDragging = false;
     widget.builder.setState(() {});
+    if (mounted) {
+      context.read<AutoScrollerService?>()?.stopAutoScroll();
+    }
   }
 
   void _onDragCompleted() {
@@ -205,6 +216,9 @@ class _NodeDragAndDropBuilderState extends State<NodeDragAndDropBuilder>
       ..targetNode = null
       ..draggedNode = null;
     _gestures.onDragCompleted?.call(widget.node);
+    if (mounted) {
+      context.read<AutoScrollerService?>()?.stopAutoScroll();
+    }
   }
 
   void _endDrag() {
